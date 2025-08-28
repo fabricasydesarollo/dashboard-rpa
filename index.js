@@ -17,15 +17,13 @@ import './models/index.js' // se carga el archivo index.js de models para que se
 //configuracion de los puertos y dominio
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
 const PORT = process.env.PORT || 8000;
+const CERT_KEY = process.env.cert_key || null;
+const CERT_CRT = process.env.cert_crt || null;
 const app = express()
 app.use(express.json())
 app.use(coockieParser()) // Middleware para parsear cookies
 
-// 👉 Configurar HTTPS con certificados autofirmados
-const sslOptions = {
-  key: fs.readFileSync('./certs/avidanti_com.key'),     // Cambia path si están en otra carpeta
-  cert: fs.readFileSync('./certs/avidanti_com.crt'),
-}
+
 
 // Middlewares
 const allowedOrigins = [
@@ -47,8 +45,24 @@ app.use(cors({
   },
   credentials: true
 }));
+ 
+let server
+// Crear servidor HTTPS
+if (CERT_KEY === null && CERT_CRT === null) {
+  console.log('🔓 Iniciando servidor HTTP');
+  server = http.createServer(app);
+}
+else{
+  console.log('🔐 Iniciando servidor HTTPS');
   
-let server = https.createServer(sslOptions, app);
+  // 👉 Configurar HTTPS con certificados autofirmados
+  const sslOptions = {
+    key: fs.readFileSync(`./certs/${CERT_KEY}`),     // Cambia path si están en otra carpeta
+    cert: fs.readFileSync(`./certs/${CERT_CRT}`)    // Cambia path si están en otra carpeta,
+  }
+  server = https.createServer(sslOptions, app);
+}
+
 
 // Configuración de Socket.IO
 const io = new Server(server, {
