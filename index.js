@@ -102,7 +102,7 @@ app.get('/', (req, res) => {
 // Si el BASE_URL comienza con "https", arrancar HTTPS
 server.listen(PORT, async () => {
   await testConnection();
-  console.log(`Servidor corriendo en ${BASE_URL}${PORT}`);
+  console.log(`Servidor corriendo en ${BASE_URL}:${PORT}`);
 });
 
 

@@ -4,15 +4,16 @@ import { User } from '../models/User.js'
 import dotenv from 'dotenv';
 
 dotenv.config();
-const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
+const BASE_URL = process.env.BASE_URL;
 const PORT = process.env.PORT || 8000;
 const clientId = process.env.client_id;
 const clientSecret = process.env.client_secret;
+const portPart = PORT === "443" ? "" : `:${PORT}`;
 
 passport.use(new MicrosoftStrategy({
     clientID: `${clientId}`,
     clientSecret: `${clientSecret}`,
-    callbackURL: `${BASE_URL}${PORT}/api/auth/microsoft/callback`,
+    callbackURL: `${BASE_URL}${portPart}/api/auth/microsoft/callback`,
     scope: ['openid', 'profile', 'email', 'User.Read'],
   },
   async function (accessToken, refreshToken, profile, done) {
