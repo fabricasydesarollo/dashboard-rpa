@@ -23,8 +23,8 @@ app.use(coockieParser()) // Middleware para parsear cookies
 
 // 👉 Configurar HTTPS con certificados autofirmados
 const sslOptions = {
-  key: fs.readFileSync('./certs/localhost-key.pem'),     // Cambia path si están en otra carpeta
-  cert: fs.readFileSync('./certs/localhost.pem'),
+  key: fs.readFileSync('./certs/avidanti_com.key'),     // Cambia path si están en otra carpeta
+  cert: fs.readFileSync('./certs/avidanti_com.crt'),
 }
 
 // Middlewares
@@ -48,13 +48,7 @@ app.use(cors({
   credentials: true
 }));
   
-let server
-if (BASE_URL.startsWith('https')) {
-  server = https.createServer(sslOptions, app);
-} else {
-  // Servidor HTTP
-  server = http.createServer(app);
-}
+let server = https.createServer(sslOptions, app);
 
 // Configuración de Socket.IO
 const io = new Server(server, {

@@ -1,6 +1,6 @@
 # Dependencias
 node_modules/
-
+certs/
 # Archivos de entorno
 .env
 
