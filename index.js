@@ -91,7 +91,7 @@ app.use('/static', express.static('public'));
 
 app.set('io', io); // Para usar io desde cualquier ruta con req.app.get('io')
 
-//cambio en git
+//cambio en git oficina
 
 // Ruta de prueba
 app.get('/', (req, res) => {
