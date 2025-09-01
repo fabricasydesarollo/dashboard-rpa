@@ -18,6 +18,15 @@ Registro.init({
     },
     onDelete: 'CASCADE'
   },
+  solicitud_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'solicitudes_usuario',
+      key: 'id'
+    },
+    onDelete: 'CASCADE' // o CASCADE según tu lógica
+  },
   mensaje: {
     type: DataTypes.TEXT,
     allowNull: true

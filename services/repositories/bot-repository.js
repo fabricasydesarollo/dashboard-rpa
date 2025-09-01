@@ -139,6 +139,7 @@ export class BotRepository {
   static async createSolicitud(formArray, user_id, bot_id) {
     return await sequelize.transaction(async (transaction) => {
       const solicitudes = [];
+      const solicitudesToBot = [];
 
       for (const form of formArray) {
         const solicitud = await SolicitudUsuario.create({
@@ -151,7 +152,7 @@ export class BotRepository {
           cuenta_delegar: form.cuenta_delegar || "",
           buzon_compartido: form.buzon_compartido
         }, { transaction });
-
+        // 
         // 🔹 Traer solicitud con relaciones
         const solicitudConRelaciones = await SolicitudUsuario.findByPk(solicitud.id, {
           include: [
@@ -160,7 +161,9 @@ export class BotRepository {
           ],
           transaction
         });
-
+        // se va a enviar al bot el arreglo solicitudes pero solo con la informacion de la solicitud creada
+        solicitudesToBot.push(solicitud);
+        // se va a enviar al cliente la solicitud con las relaciones
         solicitudes.push(solicitudConRelaciones);
       }
 
