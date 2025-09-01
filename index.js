@@ -85,7 +85,7 @@ app.use('/api/auth', authRoutes);
 
 app.use('/socket/api',socketRoutes);
 
-app.use('/bots',botRoutes);
+app.use('/api/bots',botRoutes);
 
 app.use('/static', express.static('public'));
 
