@@ -6,8 +6,8 @@ import { SolicitudUsuario} from '../models/SolicitudUsuario.js';
 import { sequelize } from '../db/database.js';
 //import { UserRepository } from '../services/repositories/user-repository.js';
 
-export const RegistroController = {
-  async create(req, res) {
+export const SocketController = {
+  async createRegistro(req, res) {
     const t = await sequelize.transaction(); // crea la transacción
     try {
       const registro = req.body;
@@ -68,4 +68,3 @@ export const RegistroController = {
   }
 
 };
-

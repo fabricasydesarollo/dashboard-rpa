@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import { User } from '../../models/User.js' // Asegúrate de que la ruta esté correcta
 import { Bot } from '../../models/Bot.js'
 import { SolicitudUsuario } from '../../models/SolicitudUsuario.js'
+import { Registro } from '../../models/Registro.js';
 
 class Validation {
   static Email(email) {
@@ -90,14 +91,9 @@ export class UserRepository {
       const solicitudes = await SolicitudUsuario.findAll({
         where: whereCondition,
         include: [
-          {
-            model: User,
-            attributes: ['nombre']
-          },
-          {
-            model: Bot,
-            attributes: ['nombre']
-          }
+          { model: User, attributes: ['nombre'] },
+          { model: Bot, attributes: ['nombre'] },
+          { model: Registro, as: 'Registro', attributes: ['mensaje'] }
         ],
         order: [['createdAt', 'DESC']]
       });

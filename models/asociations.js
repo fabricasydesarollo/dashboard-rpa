@@ -40,7 +40,8 @@ User.hasMany(SolicitudUsuario, {
 // 🔹 Una solicitud puede tener muchos registros
 SolicitudUsuario.hasMany(Registro, {
   foreignKey: 'solicitud_id',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
+  as: 'Registro'
 });
 
 SolicitudUsuario.belongsTo(User, { foreignKey: 'user_id' });
