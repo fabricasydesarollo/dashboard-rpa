@@ -17,7 +17,7 @@ router.get('/getUser', authenticateToken, (req, res) => {
 }); // Añade esta ruta si necesitas obtener el usuario autenticado
 
 // Login con Microsoft
-router.get('/microsoft', passport.authenticate('microsoft'));
+router.get('/microsoft', passport.authenticate('microsoft', { prompt: 'select_account'}));
 
 router.get('/microsoft/callback',
   passport.authenticate('microsoft', { session: false }),

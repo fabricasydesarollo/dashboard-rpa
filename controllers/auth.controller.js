@@ -28,12 +28,15 @@ export const AuthController = {
     const user = req.user;
 
     try {
+      if (user.invalidDomain) {
+        return res.redirect(`${FRONTEND_REDIRECT_URL}/?error=dominio`);
+      }
       const token = generateToken(user, SECRET_JWT_KEY);
       setAuthCookie(res, token);
-      console.log('se realizo el login ahora procede a redirigir');
-      res.redirect(`${FRONTEND_REDIRECT_URL}`);
+
+      res.redirect(`${FRONTEND_REDIRECT_URL}/tablero`);
     } catch (error) {
-      res.status(500).json({ message: 'Error al autenticar con Microsoft' });
+      res.redirect(`${FRONTEND_REDIRECT_URL}/?error=server`);
     }
   },
 
