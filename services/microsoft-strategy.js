@@ -17,33 +17,40 @@ passport.use(new MicrosoftStrategy({
     scope: ['openid', 'profile', 'email', 'User.Read'],
   },
   async function (accessToken, refreshToken, profile, done) {
-      try {
-        const email = profile.emails?.[0]?.value;
-        const nombreDesdeMicrosoft = profile.displayName || `${profile.name?.givenName || ''} ${profile.name?.familyName || ''}`.trim();
+    try {
+      const email = profile.emails?.[0]?.value;
+      const nombreDesdeMicrosoft = profile.displayName || `${profile.name?.givenName || ''} ${profile.name?.familyName || ''}`.trim();
 
-        if (!email) {
-          return done(new Error("No se pudo obtener el correo electrónico del perfil de Microsoft"));
-        }
-
-        let user = await User.findOne({ where: { email } });
-
-        if (!user) {
-          // Crear usuario si no existe
-          user = await User.create({
-            email,
-            nombre: nombreDesdeMicrosoft || null,
-            password: null,
-            rol: 'usuario'
-          });
-        } else if ((!user.nombre || user.nombre.trim() === '') && nombreDesdeMicrosoft) {
-          // Si ya existe pero no tiene nombre, lo actualizamos
-          user.nombre = nombreDesdeMicrosoft;
-          await user.save();
-        }
-
-        return done(null, user);
-      } catch (err) {
-        return done(err);
+      if (!email) {
+        return done(new Error("No se pudo obtener el correo electrónico del perfil de Microsoft"));
       }
+      let user = null;
+      // 🚨 Validación del dominio
+      if (!email.endsWith("@zentria.com.co")) {
+        console.log('entro a validar email', email);
+        return done(null, { invalidDomain: true });
+      }
+
+      user = await User.findOne({ where: { email } });
+
+      if (!user) {
+        // Crear usuario solo si pertenece al dominio
+        user = await User.create({
+          email,
+          nombre: nombreDesdeMicrosoft || null,
+          password: null,
+          rol: 'usuario'
+        });
+      } else if ((!user.nombre || user.nombre.trim() === '') && nombreDesdeMicrosoft) {
+        // Si ya existe pero no tiene nombre, lo actualizamos
+        user.nombre = nombreDesdeMicrosoft;
+        await user.save();
+      }
+
+      return done(null, user);
+    } catch (err) {
+      return done(err);
     }
-  ));
+  }
+));
+
