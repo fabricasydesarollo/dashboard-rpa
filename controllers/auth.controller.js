@@ -30,7 +30,7 @@ export const AuthController = {
     try {
       const token = generateToken(user, SECRET_JWT_KEY);
       setAuthCookie(res, token);
-
+      console.log('se realizo el login ahora procede a redirigir');
       res.redirect(`${FRONTEND_REDIRECT_URL}`);
     } catch (error) {
       res.status(500).json({ message: 'Error al autenticar con Microsoft' });
