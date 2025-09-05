@@ -150,7 +150,8 @@ export class BotRepository {
           fecha_inactivacion: form.fecha_inactivacion,
           cargo: form.cargo,
           cuenta_delegar: form.cuenta_delegar || "",
-          buzon_compartido: form.buzon_compartido
+          buzon_compartido: form.buzon_compartido,
+          sucursal: form.sucursal || null
         }, { transaction });
         // 
         // 🔹 Traer solicitud con relaciones
