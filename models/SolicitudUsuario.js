@@ -52,6 +52,11 @@ SolicitudUsuario.init({
     type: DataTypes.STRING(150),
     allowNull: true,
   },
+  sucursal: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+    defaultValue: null, // ✅ por defecto será NULL
+  },
   estado: {
     type: DataTypes.ENUM('exito', 'proceso', 'error'),
     allowNull: false,

@@ -26,7 +26,8 @@ export const SocketController = {
         Bot.update({
           total_registros: registro.total_registros,
           updatedAt: new Date(),
-          procesados: registro.procesados
+          procesados: registro.procesados,
+          estado: registro.estado_bot || 'ejecucion'
         }, {
           where: { id: registro.bot_id },
           transaction: t
