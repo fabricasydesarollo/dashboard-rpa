@@ -166,7 +166,11 @@ export class BotRepository {
         // se va a enviar al bot el arreglo solicitudes pero solo con la informacion de la solicitud creada
         solicitudesToBot.push(solicitud);
         //aqui va la api que se va a mandar las solicitudes al bot 
-
+        await axios.post("http://191.89.40.37:8001/desactivar", solicitudesToBot, {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
         // se va a enviar al cliente la solicitud con las relaciones
         solicitudes.push(solicitudConRelaciones);
       }
