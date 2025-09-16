@@ -4,6 +4,7 @@ import { Registro } from '../../models/Registro.js';
 import { UsuarioBot } from '../../models/UsuarioBot.js';
 import { sequelize } from '../../db/database.js';
 import { SolicitudUsuario } from '../../models/SolicitudUsuario.js';
+import axios from 'axios';
 
 export class BotRepository {
   static async get({ user_id, rol }) {
@@ -166,11 +167,18 @@ export class BotRepository {
         // se va a enviar al bot el arreglo solicitudes pero solo con la informacion de la solicitud creada
         solicitudesToBot.push(solicitud);
         //aqui va la api que se va a mandar las solicitudes al bot 
-        await axios.post("http://191.89.40.37:8001/desactivar", solicitudesToBot, {
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
+         // 🔹 Llamar al bot con try/catch
+        try {
+          const response = await axios.post("http://191.89.40.37:8001/desactivar", solicitudesToBot, {
+            headers: { "Content-Type": "application/json" }
+          });
+          console.log("✅ Bot respondió:", response.data);
+
+        } catch (error) {
+          console.error("❌ Error al enviar solicitud al bot:", error.message);
+          // Lanzamos el error para que Sequelize haga rollback
+          throw error;
+        }
         // se va a enviar al cliente la solicitud con las relaciones
         solicitudes.push(solicitudConRelaciones);
       }
