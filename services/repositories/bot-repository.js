@@ -166,21 +166,21 @@ export class BotRepository {
         });
         // se va a enviar al bot el arreglo solicitudes pero solo con la informacion de la solicitud creada
         solicitudesToBot.push(solicitud);
-        //aqui va la api que se va a mandar las solicitudes al bot 
-         // 🔹 Llamar al bot con try/catch
-        try {
-          const response = await axios.post("http://191.89.40.37:8001/desactivar", solicitudesToBot, {
-            headers: { "Content-Type": "application/json" }
-          });
-          console.log("✅ Bot respondió:", response.data);
-
-        } catch (error) {
-          console.error("❌ Error al enviar solicitud al bot:", error.message);
-          // Lanzamos el error para que Sequelize haga rollback
-          throw error;
-        }
         // se va a enviar al cliente la solicitud con las relaciones
         solicitudes.push(solicitudConRelaciones);
+      }
+      //aqui va la api que se va a mandar las solicitudes al bot 
+      // 🔹 Llamar al bot con try/catch
+      try {
+        const response = await axios.post("http://191.89.40.37:8001/desactivar", solicitudesToBot, {
+          headers: { "Content-Type": "application/json" }
+        });
+        console.log("✅ Bot respondió:", response.data);
+
+      } catch (error) {
+        console.error("❌ Error al enviar solicitud al bot:", error.message);
+        // Lanzamos el error para que Sequelize haga rollback
+        throw error;
       }
 
       return solicitudes;
