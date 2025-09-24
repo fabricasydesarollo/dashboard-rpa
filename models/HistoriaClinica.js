@@ -21,8 +21,6 @@ HistoriaClinica.init({
   ingreso: {
     type: DataTypes.STRING(50),
     allowNull: false,
-    // ❌ quitar unique: true
-    // ✅ en su lugar hacemos un índice compuesto con folio (ver más abajo)
   },
   fecha_historia: {
     type: DataTypes.DATEONLY,
