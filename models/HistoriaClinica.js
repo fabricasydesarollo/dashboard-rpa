@@ -20,7 +20,8 @@ HistoriaClinica.init({
   },
   ingreso: {
     type: DataTypes.STRING(50),
-    allowNull: false
+    allowNull: false,
+    unique: true   // <-- aquí lo marcas como único
   },
   fecha_historia: {
     type: DataTypes.DATEONLY,
