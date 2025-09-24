@@ -3,5 +3,8 @@ import './Bot.js'
 import './UsuarioBot.js'
 import './Registro.js'
 import './SolicitudUsuario.js'
+import './Paciente.js'
+import './HistoriaClinica.js'
+import './TrazabilidadEnvio.js'
 import './asociations.js'
 console.log('Models imported successfully');
