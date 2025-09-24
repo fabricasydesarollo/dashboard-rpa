@@ -21,7 +21,8 @@ HistoriaClinica.init({
   ingreso: {
     type: DataTypes.STRING(50),
     allowNull: false,
-    unique: true   // <-- aquí lo marcas como único
+    // ❌ quitar unique: true
+    // ✅ en su lugar hacemos un índice compuesto con folio (ver más abajo)
   },
   fecha_historia: {
     type: DataTypes.DATEONLY,
@@ -35,5 +36,11 @@ HistoriaClinica.init({
   sequelize,
   modelName: 'HistoriaClinica',
   tableName: 'historias_clinicas',
-  timestamps: true
+  timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['ingreso', 'folio'] // <- combinación única
+    }
+  ]
 });
