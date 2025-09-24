@@ -3,6 +3,9 @@ import { Registro } from './Registro.js';
 import { UsuarioBot } from './UsuarioBot.js';
 import { User } from './User.js';
 import { SolicitudUsuario } from './SolicitudUsuario.js';
+import { Paciente } from './Paciente.js';
+import { HistoriaClinica } from './HistoriaClinica.js';
+import { TrazabilidadEnvio } from './TrazabilidadEnvio.js';
 
 
 User.belongsToMany(Bot, {
@@ -48,3 +51,21 @@ SolicitudUsuario.belongsTo(User, { foreignKey: 'user_id' });
 
 Bot.hasMany(SolicitudUsuario, { foreignKey: 'bot_id', onDelete: 'CASCADE' });
 SolicitudUsuario.belongsTo(Bot, { foreignKey: 'bot_id' });
+
+// Paciente -> Historias clínicas
+Paciente.hasMany(HistoriaClinica, {
+  foreignKey: 'paciente_id',
+  onDelete: 'CASCADE'
+});
+HistoriaClinica.belongsTo(Paciente, {
+  foreignKey: 'paciente_id'
+});
+
+// Historia clínica -> Trazabilidad de envíos
+HistoriaClinica.hasMany(TrazabilidadEnvio, {
+  foreignKey: 'historia_id',
+  onDelete: 'CASCADE'
+});
+TrazabilidadEnvio.belongsTo(HistoriaClinica, {
+  foreignKey: 'historia_id'
+});
