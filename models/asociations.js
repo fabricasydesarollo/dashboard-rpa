@@ -69,3 +69,12 @@ HistoriaClinica.hasMany(TrazabilidadEnvio, {
 TrazabilidadEnvio.belongsTo(HistoriaClinica, {
   foreignKey: 'historia_id'
 });
+
+// Bot -> TrazabilidadEnvios
+Bot.hasMany(TrazabilidadEnvio, {
+  foreignKey: 'bot_id',
+  onDelete: 'CASCADE'
+});
+TrazabilidadEnvio.belongsTo(Bot, {
+  foreignKey: 'bot_id'
+});

@@ -18,6 +18,15 @@ TrazabilidadEnvio.init({
     },
     onDelete: 'CASCADE'
   },
+  bot_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'bots',
+      key: 'id'
+    },
+    onDelete: 'CASCADE'
+  },
   estado_envio: {
     type: DataTypes.ENUM('exito', 'error', 'pendiente'),
     allowNull: false
@@ -25,10 +34,6 @@ TrazabilidadEnvio.init({
   motivo_fallo: {
     type: DataTypes.TEXT,
     allowNull: true
-  },
-  bot: {
-    type: DataTypes.STRING(100),
-    allowNull: false
   },
   fecha_envio: {
     type: DataTypes.DATE,
