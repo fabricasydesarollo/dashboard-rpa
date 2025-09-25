@@ -4,6 +4,9 @@ import { Registro } from '../../models/Registro.js';
 import { UsuarioBot } from '../../models/UsuarioBot.js';
 import { sequelize } from '../../db/database.js';
 import { SolicitudUsuario } from '../../models/SolicitudUsuario.js';
+import {  HistoriaClinica } from '../../models/HistoriaClinica.js';
+import { Paciente } from '../../models/Paciente.js';
+import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js';
 import axios from 'axios';
 
 export class BotRepository {
@@ -187,5 +190,43 @@ export class BotRepository {
     });
   }
 
+  static async getHistoriasClinicas(user_id, rol) {
+    const user = await User.findByPk(user_id);
+
+    if (!user) {
+      const error = new Error('Usuario no encontrado');
+      error.status = 404;
+      throw error;
+    }
+
+    if (!(user.rol === 'admin' || user.rol === 'supervisor')) {
+      const error = new Error('Usuario sin autorización');
+      error.status = 403;
+      throw error;
+    }
+
+    const trazabilidades = await TrazabilidadEnvio.findAll({
+      include: [
+        {
+          model: HistoriaClinica,
+          attributes: ['ingreso', 'fecha_historia', 'folio'],
+          include: [ { model: Paciente, attributes: ['nombre', 'numero_identificacion', 'correo_electronico', 'empresa'] } ]
+        },
+        {
+          model: Bot,
+          attributes: ['nombre']
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (!trazabilidades.length) {
+      const error = new Error('No se encontraron historias clínicas');
+      error.status = 404;
+      throw error;
+    }
+
+    return trazabilidades;
+  }
 
 }

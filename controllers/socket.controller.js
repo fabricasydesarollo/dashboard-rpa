@@ -4,6 +4,10 @@ import { Bot } from '../models/Bot.js';
 import { User } from '../models/User.js';
 import { SolicitudUsuario} from '../models/SolicitudUsuario.js';
 import { sequelize } from '../db/database.js';
+import { HistoriaClinica } from '../models/HistoriaClinica.js';
+import { Paciente } from '../models/Paciente.js';
+import { TrazabilidadEnvio } from '../models/TrazabilidadEnvio.js';
+
 //import { UserRepository } from '../services/repositories/user-repository.js';
 
 export const SocketController = {
@@ -66,6 +70,116 @@ export const SocketController = {
       console.error('Error al crear registro (rollback ejecutado):', error);
       res.status(500).json({ ok: false, error: 'Error al crear registro' });
     }
-  }
+  },
 
+  async createOrUpdateHistoriaClinica(req, res) {
+    const t = await sequelize.transaction();
+    try {
+      const data = req.body;
+
+      // 1. Buscar o crear paciente
+      let paciente = await Paciente.findOne({
+        where: { numero_identificacion: data.numero_identificacion },
+        transaction: t
+      });
+
+      if (!paciente) {
+        paciente = await Paciente.create({
+          numero_identificacion: data.numero_identificacion,
+          nombre: data.nombre,
+          correo_electronico: data.correo_electronico,
+          empresa: data.empresa
+        }, { transaction: t });
+      }
+
+      // 2. Buscar o crear historia clínica
+      let historia = await HistoriaClinica.findOne({
+        where: {
+          paciente_id: paciente.id,
+          ingreso: data.ingreso,
+          folio: data.folio
+        },
+        transaction: t
+      });
+
+      if (historia) {
+        // actualizar campos que puedan cambiar
+        await historia.update({
+          fecha_historia: data.fecha_historia
+        }, { transaction: t });
+      } else {
+        historia = await HistoriaClinica.create({
+          paciente_id: paciente.id,
+          ingreso: data.ingreso,
+          fecha_historia: data.fecha_historia,
+          folio: data.folio
+        }, { transaction: t });
+      }
+
+      // 3. Buscar o crear trazabilidad
+      let trazabilidad = await TrazabilidadEnvio.findOne({
+        where: {
+          historia_id: historia.id,
+          bot_id: data.bot_id
+        },
+        transaction: t
+      });
+
+      if (trazabilidad) {
+        await trazabilidad.update({
+          estado_envio: data.estado_envio || 'pendiente',
+          motivo_fallo: data.motivo_fallo || null,
+          fecha_envio: data.fecha_envio || new Date()
+        }, { transaction: t });
+      } else {
+        trazabilidad = await TrazabilidadEnvio.create({
+          historia_id: historia.id,
+          bot_id: data.bot_id,
+          estado_envio: data.estado_envio || 'pendiente',
+          motivo_fallo: data.motivo_fallo || null,
+          fecha_envio: data.fecha_envio || new Date()
+        }, { transaction: t });
+      }
+
+      // 4. Actualizar bot en paralelo
+      const bot = await Bot.findByPk(data.bot_id, { transaction: t });
+      if (bot) {
+        await bot.update({
+          total_registros: data.total_registros,
+          procesados: data.procesados,
+          estado: data.estado_bot || 'ejecucion',
+          updatedAt: new Date()
+        }, { transaction: t });
+      }
+
+      // 5. Consultar trazabilidad completa
+      const trazabilidadCompleta = await TrazabilidadEnvio.findByPk(trazabilidad.id, {
+        include: [
+          { model: Bot, attributes: ['nombre'] },
+          {
+            model: HistoriaClinica,
+            attributes: ['ingreso', 'fecha_historia', 'folio'],
+            include: [
+              { model: Paciente, attributes: ['nombre', 'numero_identificacion', 'correo_electronico', 'empresa'] }
+            ]
+          }
+        ],
+        transaction: t
+      });
+
+      // 6. Confirmar transacción
+      await t.commit();
+
+      // 7. Emitir socket
+      const io = req.app.get('io');
+      io.emit('nueva_historia', trazabilidadCompleta, bot);
+
+      res.json({ ok: true, historia: trazabilidadCompleta, bot });
+
+    } catch (error) {
+      await t.rollback();
+      console.error('Error en createOrUpdateHistoriaClinica (rollback ejecutado):', error);
+      res.status(500).json({ ok: false, error: 'Error al crear/actualizar historia clínica' });
+    }
+}
 };

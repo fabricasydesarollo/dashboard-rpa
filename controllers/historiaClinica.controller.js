@@ -1,0 +1,21 @@
+// controllers/HistoriaClinicaController.js
+import { sequelize } from '../db/database.js';
+import { HistoriaClinica } from '../models/HistoriaClinica.js';
+import { Paciente } from '../models/Paciente.js';
+import { TrazabilidadEnvio } from '../models/TrazabilidadEnvio.js';
+import { Bot } from '../models/Bot.js';
+import { BotRepository } from '../services/repositories/bot-repository.js';
+
+export const HistoriaClinicaController = {
+  async get(req, res) {
+    try {
+      const { user_id, rol } = req.query;
+
+      const historias_clinicas = await BotRepository.getHistoriasClinicas(user_id, rol);
+      res.status(200).json(historias_clinicas);
+    } catch (err) {
+      console.error(err);
+      res.status(err.status || 400).json({ error: err.message || 'Error al obtener las historias_clínicas' });
+    }
+  }
+};
