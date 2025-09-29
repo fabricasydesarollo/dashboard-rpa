@@ -13,7 +13,7 @@ router.post('/login', AuthController.login);
 router.post('/register', AuthController.register);
 router.post('/logout', AuthController.logout);
 router.get('/getUser', authenticateToken, (req, res) => {
-  res.send({ user: req.user, message: "aqui se podra poner lo que se quiera traer de la ruta puede ser un formulario un objeto o algo"})
+  res.send({ user: req.user })
 }); // Añade esta ruta si necesitas obtener el usuario autenticado
 
 // Login con Microsoft
