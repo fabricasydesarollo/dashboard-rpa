@@ -6,5 +6,6 @@ import './SolicitudUsuario.js'
 import './Paciente.js'
 import './HistoriaClinica.js'
 import './TrazabilidadEnvio.js'
+import './Notificacion.js'
 import './asociations.js'
 console.log('Models imported successfully');

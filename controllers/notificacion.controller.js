@@ -1,0 +1,45 @@
+// controllers/notificacion.controller.js
+import { NotificationService } from '../services/NotificationService.js';
+
+export class NotificacionController {
+  static async getNotificaciones(req, res) {
+    try {
+      const userId = req.user.user_id; // viene del middleware authenticateToken
+      const notificaciones = await NotificationService.getByUser(userId);
+      res.json({ status: 'ok', data: notificaciones });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  }
+
+  static async createNotificacion(req, res) {
+    try {
+      const { titulo, mensaje, tipo } = req.body;
+      const userId = req.user.id; // se asocia al usuario autenticado
+      const notificacion = await NotificationService.create(userId, titulo, mensaje, tipo);
+      res.status(201).json({ status: 'ok', data: notificacion });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  }
+
+  static async markAsRead(req, res) {
+    try {
+      const { id } = req.params;
+      await NotificationService.markAsRead(id);
+      res.json({ status: 'ok', message: 'Notificación marcada como leída' });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  }
+
+  static async deleteNotificacion(req, res) {
+    try {
+      const { id } = req.params;
+      await NotificationService.delete(id);
+      res.json({ status: 'ok', message: 'Notificación eliminada' });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  }
+}

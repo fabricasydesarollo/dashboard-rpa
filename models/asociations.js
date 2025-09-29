@@ -6,6 +6,7 @@ import { SolicitudUsuario } from './SolicitudUsuario.js';
 import { Paciente } from './Paciente.js';
 import { HistoriaClinica } from './HistoriaClinica.js';
 import { TrazabilidadEnvio } from './TrazabilidadEnvio.js';
+import { Notificacion } from './Notificacion.js';
 
 
 User.belongsToMany(Bot, {
@@ -77,4 +78,17 @@ Bot.hasMany(TrazabilidadEnvio, {
 });
 TrazabilidadEnvio.belongsTo(Bot, {
   foreignKey: 'bot_id'
+});
+
+// asociaciones de las notificaciones
+
+// 🔹 Un usuario puede tener muchas notificaciones
+User.hasMany(Notificacion, {
+  foreignKey: 'user_id',
+  onDelete: 'CASCADE'
+});
+
+// 🔹 Una notificación pertenece a un usuario
+Notificacion.belongsTo(User, {
+  foreignKey: 'user_id'
 });
