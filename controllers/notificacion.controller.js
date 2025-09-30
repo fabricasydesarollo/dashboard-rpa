@@ -42,4 +42,25 @@ export class NotificacionController {
       res.status(500).json({ status: 'error', message: error.message });
     }
   }
+
+  static async markAllAsRead(req, res) {
+    try {
+      const userId = req.user.user_id;
+      await NotificationService.markAllAsRead(userId);
+      res.json({ status: 'ok', message: 'Todas las notificaciones fueron marcadas como leídas' });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  }
+
+  static async deleteAll(req, res) {
+    try {
+      const userId = req.user.user_id;
+      await NotificationService.deleteAll(userId);
+      res.json({ status: 'ok', message: 'Todas las notificaciones fueron eliminadas' });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  }
+
 }

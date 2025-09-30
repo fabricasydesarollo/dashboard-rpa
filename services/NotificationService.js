@@ -53,7 +53,7 @@ export class NotificationService {
     }
   }
 
-  /**
+   /**
    * Eliminar una notificación
    * @param {number} id - ID de la notificación
    * @returns {Promise<void>}
@@ -65,4 +65,35 @@ export class NotificationService {
       throw new Error(`Error al eliminar notificación: ${error.message}`);
     }
   }
+
+  /** 
+   * Marcar todas las notificaciones de un usuario como leídas
+   * @param {number} userId - ID del usuario
+   * @returns {Promise<void>}
+  */
+  static async markAllAsRead(userId) {
+    try {
+      await Notificacion.update(
+        { leido: true },
+        { where: { user_id: userId } }
+      );
+    } catch (error) {
+      throw new Error(`Error al marcar las notificaciones como leidas: ${error}`);
+    }
+  }
+  /** 
+   * Eliminar todas las notificaciones de un usuario
+   * @param {number} userId - ID del usuario
+   * @returns {Promise<void>}
+  */
+  static async deleteAll(userId) {
+    try {
+      await Notificacion.destroy({ where:  { user_id: userId } });
+    } catch (error) {
+      throw new Error(`Error al eliminar todas las notificaciones: ${error}`);
+    }
+  
+  }
+
+ 
 }
