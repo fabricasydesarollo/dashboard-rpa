@@ -11,16 +11,38 @@ import { NotificationService } from '../services/NotificationService.js';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
 
-function enviarNotificacion(trazabilidad) {
-  if (trazabilidad.estado_envio === 'error') {
-    return {
-      titulo: 'Error en envío de historia clínica',
-      mensaje: `El envío de la historia clínica para el paciente ${trazabilidad.HistoriaClinica.Paciente.nombre} ha fallado.`,
-      tipo: 'error',
-    };
+// Lógica para crear notificaciones basadas en eventos específicos
+function enviarNotificacion(modulo, tipo) {
+  let notificacion = null;
+
+  switch (tipo) {
+    case 'historia_clinica':
+      const trazabilidad = modulo;
+      if (trazabilidad.estado_envio === 'error') {
+        notificacion = {
+          titulo: 'Error en envío de historia clínica',
+          mensaje: `El envío de la historia clínica para el paciente ${trazabilidad.HistoriaClinica.Paciente.nombre} con <strong> Ingreso ${trazabilidad.HistoriaClinica.ingreso}</strong> ha fallado.`,
+          tipo: 'error',
+          // Aquí puedes guardar un "destino" que luego el frontend use para abrir el modal
+          destino: {
+            modal: 'HistoriaClinica',
+            bot_id: trazabilidad.bot_id,
+          }
+        };
+      }
+      break;
+
+    case 'solicitud_usuario':
+      // similar, según tu lógica
+      break;
+
+    default:
+      break;
   }
-  return null;
+
+  return notificacion;
 }
+
 
 export const SocketController = {
   async createRegistro(req, res) {
@@ -182,12 +204,11 @@ export const SocketController = {
       // 6. Confirmar transacción
       await t.commit();
       // Crear notificación si el envío falló
-      let notificacionNueva = enviarNotificacion(trazabilidadCompleta);
+      let notificacionNueva = enviarNotificacion(trazabilidadCompleta, 'historia_clinica');
       // 7. Emitir socket
       const io = req.app.get('io');
       io.emit('nueva_historia', trazabilidadCompleta, bot);
-      console.log('Notificacion Nueva:', notificacionNueva);
-      
+      //console.log('Notificacion Nueva:', notificacionNueva);
       if (notificacionNueva) {
         io.emit('nueva_notificacion', notificacionNueva);
       }

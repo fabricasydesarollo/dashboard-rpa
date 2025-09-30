@@ -10,13 +10,14 @@ export class NotificationService {
    * @param {string} tipo - Tipo de notificación (info, advertencia, error, exito)
    * @returns {Promise<Notificacion>}
    */
-  static async create(user_id, titulo, mensaje, tipo = 'info') {
+  static async create(user_id, titulo, mensaje, tipo = 'info', destino) {
     try {
       const notificacion = await Notificacion.create({
         user_id,
         titulo,
         mensaje,
-        tipo
+        tipo,
+        destino: destino?.modal || null,
       });
       return notificacion;
     } catch (error) {

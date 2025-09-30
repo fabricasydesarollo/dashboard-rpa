@@ -34,6 +34,10 @@ Notificacion.init({
   leido: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+  destino: {
+    type: DataTypes.STRING(255),
+    allowNull: true
   }
 }, {
   sequelize,
