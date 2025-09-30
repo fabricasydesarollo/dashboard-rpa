@@ -15,7 +15,7 @@ export class NotificacionController {
   static async createNotificacion(req, res) {
     try {
       const { titulo, mensaje, tipo } = req.body;
-      const userId = req.user.id; // se asocia al usuario autenticado
+      const userId = req.user.user_id; // se asocia al usuario autenticado
       const notificacion = await NotificationService.create(userId, titulo, mensaje, tipo);
       res.status(201).json({ status: 'ok', data: notificacion });
     } catch (error) {

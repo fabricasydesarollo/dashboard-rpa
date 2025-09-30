@@ -7,5 +7,4 @@ const router = Router();
 router.post('/nuevo-registro', SocketController.createRegistro);
 router.post('/nueva-historia-clinica', SocketController.createOrUpdateHistoriaClinica);
 
-
 export default router;

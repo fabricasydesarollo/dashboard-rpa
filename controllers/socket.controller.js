@@ -7,8 +7,20 @@ import { sequelize } from '../db/database.js';
 import { HistoriaClinica } from '../models/HistoriaClinica.js';
 import { Paciente } from '../models/Paciente.js';
 import { TrazabilidadEnvio } from '../models/TrazabilidadEnvio.js';
+import { NotificationService } from '../services/NotificationService.js';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
+
+function enviarNotificacion(trazabilidad) {
+  if (trazabilidad.estado_envio === 'error') {
+    return {
+      titulo: 'Error en envío de historia clínica',
+      mensaje: `El envío de la historia clínica para el paciente ${trazabilidad.HistoriaClinica.Paciente.nombre} ha fallado.`,
+      tipo: 'error',
+    };
+  }
+  return null;
+}
 
 export const SocketController = {
   async createRegistro(req, res) {
@@ -169,17 +181,24 @@ export const SocketController = {
 
       // 6. Confirmar transacción
       await t.commit();
-
+      // Crear notificación si el envío falló
+      let notificacionNueva = enviarNotificacion(trazabilidadCompleta);
       // 7. Emitir socket
       const io = req.app.get('io');
       io.emit('nueva_historia', trazabilidadCompleta, bot);
+      console.log('Notificacion Nueva:', notificacionNueva);
+      
+      if (notificacionNueva) {
+        io.emit('nueva_notificacion', notificacionNueva);
+      }
 
       res.json({ ok: true, historia: trazabilidadCompleta, bot });
 
-    } catch (error) {
-      await t.rollback();
-      console.error('Error en createOrUpdateHistoriaClinica (rollback ejecutado):', error);
-      res.status(500).json({ ok: false, error: 'Error al crear/actualizar historia clínica' });
+    } catch (error) { 
+      await t.rollback(); 
+      console.error('Error en createOrUpdateHistoriaClinica (rollback ejecutado):', error); 
+      res.status(500).json({ ok: false, error: 'Error al crear/actualizar historia clínica' }); 
     }
-}
+  },
+
 };
