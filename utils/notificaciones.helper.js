@@ -1,4 +1,4 @@
-import { Notificacion } from '../models/notificacion.js';
+import { Notificacion } from '../models/Notificacion.js';
 import { NotificationService } from '../services/NotificationService.js';
 
 
