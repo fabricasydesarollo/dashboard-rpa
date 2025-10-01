@@ -47,7 +47,7 @@ function enviarNotificacion(modulo, tipo) {
         notificacion = {
           titulo: 'Bot pausado',
           mensaje: `El bot <strong>${bot.nombre}</strong> ha sido pausado.`,
-          tipo: 'pausado',
+          tipo: 'advertencia',
           destino: {
             modal: 'tablero-bot',
             bot_id: bot.id,
