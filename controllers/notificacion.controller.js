@@ -56,7 +56,9 @@ export class NotificacionController {
   static async deleteAll(req, res) {
     try {
       const userId = req.user.user_id;
-      await NotificationService.deleteAll(userId);
+      await NotificationService.deleteAllNotificaciones(userId);
+      console.log(`Todas las notificaciones del usuario ${userId} fueron eliminadas`);
+      
       res.json({ status: 'ok', message: 'Todas las notificaciones fueron eliminadas' });
     } catch (error) {
       res.status(500).json({ status: 'error', message: error.message });

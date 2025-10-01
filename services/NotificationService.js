@@ -62,6 +62,7 @@ export class NotificationService {
   static async delete(id) {
     try {
       await Notificacion.destroy({ where: { id } });
+      console.log(`Notificación ${id} eliminada`);
     } catch (error) {
       throw new Error(`Error al eliminar notificación: ${error.message}`);
     }
@@ -87,9 +88,11 @@ export class NotificationService {
    * @param {number} userId - ID del usuario
    * @returns {Promise<void>}
   */
-  static async deleteAll(userId) {
+  static async deleteAllNotificaciones(userId) {
     try {
       await Notificacion.destroy({ where:  { user_id: userId } });
+      console.log(`Notificaciones del usuario ${userId} eliminadas`);
+      
     } catch (error) {
       throw new Error(`Error al eliminar todas las notificaciones: ${error}`);
     }
