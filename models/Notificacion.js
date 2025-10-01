@@ -36,8 +36,19 @@ Notificacion.init({
     defaultValue: false
   },
   destino: {
-    type: DataTypes.STRING(255),
-    allowNull: true
+    type: DataTypes.JSON,   // ahora será un objeto JSON
+    allowNull: true, 
+    get() {
+      const rawValue = this.getDataValue('destino');
+      try {
+        return typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue; // si es string, parsea, si no, devuelve tal cual
+      } catch (e) {
+        return rawValue; // fallback por si algo raro llega
+      }
+    },
+    set(value) {
+      this.setDataValue('destino', value);
+    }
   }
 }, {
   sequelize,

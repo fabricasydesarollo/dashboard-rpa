@@ -8,48 +8,15 @@ import { HistoriaClinica } from '../models/HistoriaClinica.js';
 import { Paciente } from '../models/Paciente.js';
 import { TrazabilidadEnvio } from '../models/TrazabilidadEnvio.js';
 import { NotificationService } from '../services/NotificationService.js';
+import { NotificationHelper } from '../utils/notificaciones.helper.js';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
-
-// Lógica para crear notificaciones basadas en eventos específicos
-function enviarNotificacion(modulo, tipo) {
-  let notificacion = null;
-
-  switch (tipo) {
-    case 'historia_clinica':
-      const trazabilidad = modulo;
-      if (trazabilidad.estado_envio === 'error') {
-        notificacion = {
-          titulo: 'Error en envío de historia clínica',
-          mensaje: `El envío de la historia clínica para el paciente ${trazabilidad.HistoriaClinica.Paciente.nombre} con <strong> Ingreso ${trazabilidad.HistoriaClinica.ingreso}</strong> ha fallado.`,
-          tipo: 'error',
-          // Aquí puedes guardar un "destino" que luego el frontend use para abrir el modal
-          destino: {
-            modal: 'HistoriaClinica',
-            bot_id: trazabilidad.bot_id,
-          }
-        };
-      }
-      break;
-
-    case 'solicitud_usuario':
-      // similar, según tu lógica
-      break;
-
-    default:
-      break;
-  }
-
-  return notificacion;
-}
-
 
 export const SocketController = {
   async createRegistro(req, res) {
     const t = await sequelize.transaction(); // crea la transacción
     try {
       const registro = req.body;
-
       // 1. Crear el registro y actualizar bot en paralelo
       const [nuevoRegistro] = await Promise.all([
         Registro.create({
@@ -95,7 +62,12 @@ export const SocketController = {
       // Emitir a todos los clientes conectados
       const io = req.app.get('io');
       io.emit('nuevo_registro', nuevoRegistro, bot, solicitud);
-
+      // enviar las notificaciones correspondientes segun el estado de cada modulo
+      NotificationHelper.emitirNotificaciones(io, [
+        { modulo: bot, tipo: 'bot' },
+        { modulo: nuevoRegistro, tipo: 'registro' },
+        { modulo: solicitud, tipo: 'solicitud_usuario' }
+      ]);
       res.json({ ok: true, nuevoRegistro, bot, solicitud });
 
     } catch (error) {
@@ -203,16 +175,12 @@ export const SocketController = {
 
       // 6. Confirmar transacción
       await t.commit();
-      // Crear notificación si el envío falló
-      let notificacionNueva = enviarNotificacion(trazabilidadCompleta, 'historia_clinica');
+      
       // 7. Emitir socket
       const io = req.app.get('io');
       io.emit('nueva_historia', trazabilidadCompleta, bot);
-      //console.log('Notificacion Nueva:', notificacionNueva);
-      if (notificacionNueva) {
-        io.emit('nueva_notificacion', notificacionNueva);
-      }
-
+      // Crear notificación 
+      NotificationHelper.emitirNotificaciones(io,[{ modulo: trazabilidadCompleta, tipo: 'historia_clinica' }]);
       res.json({ ok: true, historia: trazabilidadCompleta, bot });
 
     } catch (error) { 

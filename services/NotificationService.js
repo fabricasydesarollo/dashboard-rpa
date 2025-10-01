@@ -17,7 +17,7 @@ export class NotificationService {
         titulo,
         mensaje,
         tipo,
-        destino: destino?.modal || null,
+        destino: destino || null,
       });
       return notificacion;
     } catch (error) {
