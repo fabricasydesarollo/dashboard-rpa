@@ -25,7 +25,8 @@ Registro.init({
       model: 'solicitudes_usuario',
       key: 'id'
     },
-    onDelete: 'CASCADE' // o CASCADE según tu lógica
+    onDelete: 'CASCADE', // o CASCADE
+    unique: true
   },
   mensaje: {
     type: DataTypes.TEXT,
