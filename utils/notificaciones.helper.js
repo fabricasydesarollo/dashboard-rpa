@@ -62,7 +62,7 @@ async function enviarNotificacion(modulo, tipo) {
       if (solicitud.estado === 'error') {
         notificacionBase = {
           titulo: 'Error en solicitud',
-          mensaje: `La solicitud del usuario <strong>${solicitud.User?.nombre.toLowerCase()}</strong> para el bot <strong>${solicitud.Bot?.nombre}</strong> no pudo ser procesada.`,
+          mensaje: `La solicitud de retiro del usuario <strong>${solicitud.nombre.toLowerCase()}</strong> <strong> (ID) ${solicitud.identificacion}</strong> para el bot <strong>${solicitud.Bot?.nombre}</strong> no pudo ser procesada.`,
           tipo: 'error',
           destino: { modal: 'solicitud_usuario', solicitud_id: solicitud.id }
         };
