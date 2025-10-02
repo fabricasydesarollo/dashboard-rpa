@@ -33,8 +33,6 @@ export class NotificationService {
       // bulkCreate devuelve un array con información sobre la inserción
       const resultado = await Notificacion.bulkCreate(notificaciones);
       
-      // En MySQL, después del bulkCreate, podemos obtener los IDs de las filas insertadas
-      // Sequelize asigna los IDs a las instancias retornadas
       return resultado;
       
     } catch (error) {
