@@ -1,20 +1,24 @@
 import { Notificacion } from '../models/Notificacion.js';
 import { NotificationService } from '../services/NotificationService.js';
 
-
 // Funciones para manejar notificaciones en tiempo real usando Socket.IO
 import { User } from '../models/User.js';
 import { Bot } from '../models/Bot.js';
 
+
 async function emitirNotificaciones(io, modulosConTipo = []) {
   for (const { modulo, tipo } of modulosConTipo) {
-    const notificacionesNuevas = await enviarNotificacion(modulo, tipo);
-    
-    if (notificacionesNuevas && notificacionesNuevas.length > 0) {
-      for (const notificacion of notificacionesNuevas) {
-        console.log('Emitiendo notificación via Socket.IO:', notificacion.toJSON());
-        io.emit('nueva_notificacion', notificacion.toJSON());
+    try {
+      const notificacionesNuevas = await enviarNotificacion(modulo, tipo);
+
+      if (notificacionesNuevas && notificacionesNuevas.length > 0) {
+        for (const notificacion of notificacionesNuevas) {
+          console.log('Emitiendo notificación via Socket.IO:', notificacion.toJSON());
+          io.emit('nueva_notificacion', notificacion.toJSON());
+        }
       }
+    } catch (error) {
+      console.error(`Error al emitir notificaciones para el tipo "${tipo}":`, error);
     }
   }
 }
@@ -27,7 +31,7 @@ async function enviarNotificacion(modulo, tipo) {
 
   switch(tipo) {
     case 'bot':
-      const bot = modulo; // ya es instancia de Bot (Sequelize)
+      const bot = modulo; // instancia de Bot (Sequelize)
 
       // Obtenemos todos los usuarios asociados al bot
       const usuariosBot = await bot.getUsers(); 
@@ -118,28 +122,24 @@ async function enviarNotificacion(modulo, tipo) {
     default:
       return [];
   }
-
-  // Creamos una notificación por cada usuario destinatario
-  // Creamos todas las promesas en paralelo
-  const notificacionesPromesas = destinatarios.map(userId => {
+  // Creamos un array de objetos(notificaciones) planos para insertar masivamente
+  const notificaciones = destinatarios.map(userId => {
     if (!notificacionBase) return null;
-    return NotificationService.create(
-      userId,
-      notificacionBase.titulo,
-      notificacionBase.mensaje,
-      notificacionBase.tipo,
-      notificacionBase.destino
-    );
-  });
+    return {
+      user_id: userId,
+      titulo: notificacionBase.titulo,
+      mensaje: notificacionBase.mensaje,
+      tipo: notificacionBase.tipo,
+      destino: notificacionBase.destino
+    };
+  }).filter(Boolean);
 
-  // Filtramos nulls y ejecutamos en paralelo
-  const notificacionesCreadas = await Promise.all(
-    notificacionesPromesas.filter(Boolean)
-  );
+  // Insertar en lote
+  const notificacionesCreadas = await NotificationService.createMany(notificaciones);
 
   return notificacionesCreadas;
-}
 
+}
 
 export const NotificationHelper = {
   emitirNotificaciones,

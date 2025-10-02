@@ -1,5 +1,6 @@
 // services/NotificationService.js
 import { Notificacion } from '../models/Notificacion.js';
+import { Op } from 'sequelize';  
 
 export class NotificationService {
   /**
@@ -22,6 +23,30 @@ export class NotificationService {
       return notificacion;
     } catch (error) {
       throw new Error(`Error al crear notificación: ${error.message}`);
+    }
+  }
+
+  static async createMany(notificaciones) {
+    try {
+      const now = new Date();
+
+      // Guardamos todas de una sola vez
+      await Notificacion.bulkCreate(notificaciones);
+
+      // Traemos de vuelta las recién creadas
+      const userIds = notificaciones.map(n => n.user_id);
+
+      const nuevas = await Notificacion.findAll({
+        where: {
+          user_id: { [Op.in]: userIds },
+          createdAt: { [Op.gte]: now } // solo lo insertado en este batch
+        },
+        order: [['createdAt', 'ASC']]
+      });
+
+      return nuevas;
+    } catch (error) {
+      throw new Error(`Error al crear notificaciones masivas: ${error.message}`);
     }
   }
 
