@@ -78,7 +78,7 @@ async function enviarNotificacion(modulo, tipo) {
       const botConUsuarios = await Bot.findByPk(trazabilidad.bot_id, {
         include: [{ model: User, through: { attributes: [] } }] // trae users sin datos extra de UsuarioBot
       });
-      console.log('bot con usuarios para notificación historia clinica:', botConUsuarios);
+      //console.log('bot con usuarios para notificación historia clinica:', botConUsuarios);
       
       // Los destinatarios son todos los usuarios asociados a ese bot
       destinatarios = botConUsuarios?.Users?.map(u => u.id) || [];
