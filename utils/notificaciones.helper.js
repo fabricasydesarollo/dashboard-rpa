@@ -69,7 +69,7 @@ async function enviarNotificacion(modulo, tipo) {
       } else if (solicitud.estado === 'exito') {
         notificacionBase = {
           titulo: 'Solicitud procesada con éxito',
-          mensaje: `La solicitud del usuario <strong>${solicitud.User?.nombre.toLowerCase()}</strong> para el bot <strong>${solicitud.Bot?.nombre}</strong> ha sido completada.`,
+          mensaje: `La solicitud de retiro del usuario <strong>${solicitud.nombre.toLowerCase()}</strong> <strong> (ID) ${solicitud.identificacion}</strong> para el bot <strong>${solicitud.Bot?.nombre}</strong> ha sido completada.`,
           tipo: 'exito',
           destino: { modal: 'solicitud_usuario', solicitud_id: solicitud.id }
         };
