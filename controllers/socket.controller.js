@@ -9,6 +9,7 @@ import { Paciente } from '../models/Paciente.js';
 import { TrazabilidadEnvio } from '../models/TrazabilidadEnvio.js';
 import { NotificationService } from '../services/NotificationService.js';
 import { NotificationHelper } from '../utils/notificaciones.helper.js';
+import { now } from 'sequelize/lib/utils';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
 

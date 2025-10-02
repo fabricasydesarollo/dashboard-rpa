@@ -120,12 +120,22 @@ async function enviarNotificacion(modulo, tipo) {
   }
 
   // Creamos una notificación por cada usuario destinatario
-  const notificacionesCreadas = [];
-  for (const userId of destinatarios) {
-    if (!notificacionBase) continue; // nada que notificar
-    const creada = await NotificationService.create(userId, notificacionBase.titulo, notificacionBase.mensaje, notificacionBase.tipo, notificacionBase.destino);
-    notificacionesCreadas.push(creada);
-  }
+  // Creamos todas las promesas en paralelo
+  const notificacionesPromesas = destinatarios.map(userId => {
+    if (!notificacionBase) return null;
+    return NotificationService.create(
+      userId,
+      notificacionBase.titulo,
+      notificacionBase.mensaje,
+      notificacionBase.tipo,
+      notificacionBase.destino
+    );
+  });
+
+  // Filtramos nulls y ejecutamos en paralelo
+  const notificacionesCreadas = await Promise.all(
+    notificacionesPromesas.filter(Boolean)
+  );
 
   return notificacionesCreadas;
 }
