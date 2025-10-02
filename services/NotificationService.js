@@ -28,23 +28,15 @@ export class NotificationService {
 
   static async createMany(notificaciones) {
     try {
-      const now = new Date();
-
-      // Guardamos todas de una sola vez
-      await Notificacion.bulkCreate(notificaciones);
-
-      // Traemos de vuelta las recién creadas
-      const userIds = notificaciones.map(n => n.user_id);
-
-      const nuevas = await Notificacion.findAll({
-        where: {
-          user_id: { [Op.in]: userIds },
-          createdAt: { [Op.gte]: now } // solo lo insertado en este batch
-        },
-        order: [['createdAt', 'ASC']]
-      });
-
-      return nuevas;
+      if (!notificaciones || notificaciones.length === 0) return [];
+      
+      // bulkCreate devuelve un array con información sobre la inserción
+      const resultado = await Notificacion.bulkCreate(notificaciones);
+      
+      // En MySQL, después del bulkCreate, podemos obtener los IDs de las filas insertadas
+      // Sequelize asigna los IDs a las instancias retornadas
+      return resultado;
+      
     } catch (error) {
       throw new Error(`Error al crear notificaciones masivas: ${error.message}`);
     }

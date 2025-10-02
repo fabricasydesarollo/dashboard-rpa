@@ -7,6 +7,7 @@ import { Bot } from '../models/Bot.js';
 
 
 async function emitirNotificaciones(io, modulosConTipo = []) {
+  console.log("modulosConTipo", modulosConTipo)
   for (const { modulo, tipo } of modulosConTipo) {
     try {
       const notificacionesNuevas = await enviarNotificacion(modulo, tipo);
@@ -136,7 +137,7 @@ async function enviarNotificacion(modulo, tipo) {
 
   // Insertar en lote
   const notificacionesCreadas = await NotificationService.createMany(notificaciones);
-
+  console.log('Notificaciones creadas:', notificacionesCreadas.map(n => n.toJSON()));
   return notificacionesCreadas;
 
 }
