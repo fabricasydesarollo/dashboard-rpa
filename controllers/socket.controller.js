@@ -18,6 +18,8 @@ export const SocketController = {
     const t = await sequelize.transaction(); // crea la transacción
     try {
       const registro = req.body;
+      console.log('registro recibido en socket:', registro);
+      
       // 1. Crear el registro y actualizar bot en paralelo
       const [nuevoRegistro] = await Promise.all([
         Registro.create({
