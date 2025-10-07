@@ -1,4 +1,7 @@
-export const{
-  PORT = 3000,
-  SECRET_JWT_KEY = 'this-is-an-example-secret-key-fwev-wvw45v4w55vw-4525445'
-} = process.env;
+import 'dotenv/config';
+
+if (!process.env.SECRET_JWT_KEY) {
+  throw new Error('Falta la variable de entorno SECRET_JWT_KEY');
+}
+
+export const SECRET_JWT_KEY = process.env.SECRET_JWT_KEY;
