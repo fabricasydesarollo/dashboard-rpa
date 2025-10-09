@@ -23,7 +23,7 @@ HistoriaClinica.init({
     allowNull: false,
   },
   fecha_historia: {
-    type: DataTypes.DATEONLY,
+    type: DataTypes.DATE,
     allowNull: false
   },
   folio: {
