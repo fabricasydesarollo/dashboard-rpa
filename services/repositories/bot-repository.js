@@ -203,8 +203,8 @@ export class BotRepository {
       include: [
         {
           model: HistoriaClinica,
-          attributes: ['ingreso', 'fecha_historia', 'folio'],
-          include: [ { model: Paciente, attributes: ['nombre', 'numero_identificacion', 'correo_electronico', 'empresa'] } ]
+          attributes: ['ingreso', 'fecha_historia', 'folio', 'empresa', 'sede'],
+          include: [ { model: Paciente, attributes: ['nombre', 'numero_identificacion', 'correo_electronico'] } ]
         },
         {
           model: Bot,
@@ -227,11 +227,11 @@ export class BotRepository {
       include: [
         {
           model: HistoriaClinica,
-          attributes: ['ingreso', 'fecha_historia', 'folio'],
+          attributes: ['ingreso', 'fecha_historia', 'folio', 'empresa', 'sede'],
           include: [
             {
               model: Paciente,
-              attributes: ['nombre', 'numero_identificacion', 'correo_electronico', 'empresa']
+              attributes: ['nombre', 'numero_identificacion', 'correo_electronico']
             }
           ]
         },
@@ -252,7 +252,7 @@ export class BotRepository {
       const p = h?.Paciente;
 
       return {
-        empresa: p?.empresa || null,
+        empresa: h?.empresa || null,
         numero_identificacion: p?.numero_identificacion || null,
         nombre: p?.nombre || null,
         correo_electronico: p?.correo_electronico || null,

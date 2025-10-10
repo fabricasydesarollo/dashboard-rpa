@@ -21,10 +21,6 @@ Paciente.init({
   correo_electronico: {
     type: DataTypes.STRING(150),
     allowNull: true
-  },
-  empresa: {
-    type: DataTypes.STRING(150),
-    allowNull: false
   }
 }, {
   sequelize,

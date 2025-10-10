@@ -41,6 +41,14 @@ HistoriaClinica.init({
   folio: {
     type: DataTypes.STRING(50),
     allowNull: false
+  },
+  empresa: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  sede: {
+    type: DataTypes.STRING(100),
+    allowNull: true
   }
 }, {
   sequelize,

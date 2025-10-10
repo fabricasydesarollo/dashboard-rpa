@@ -97,7 +97,6 @@ export const SocketController = {
           numero_identificacion: data.numero_identificacion,
           nombre: data.nombre,
           correo_electronico: data.correo_electronico,
-          empresa: data.empresa
         }, { transaction: t });
       }
 
@@ -106,7 +105,9 @@ export const SocketController = {
         where: {
           paciente_id: paciente.id,
           ingreso: data.ingreso,
-          folio: data.folio
+          folio: data.folio,
+          empresa: data.empresa || null,
+          sede: data.sede || null
         },
         transaction: t
       });
@@ -121,7 +122,9 @@ export const SocketController = {
           paciente_id: paciente.id,
           ingreso: data.ingreso,
           fecha_historia: data.fecha_historia,
-          folio: data.folio
+          folio: data.folio,
+          empresa: data.empresa || null,
+          sede: data.sede || null
         }, { transaction: t });
       }
       //console.log('Historia clínica procesada:', historia);
@@ -168,9 +171,9 @@ export const SocketController = {
           { model: Bot, attributes: ['nombre'] },
           {
             model: HistoriaClinica,
-            attributes: ['ingreso', 'fecha_historia', 'folio'],
+            attributes: ['ingreso', 'fecha_historia', 'folio', 'empresa', 'sede'],
             include: [
-              { model: Paciente, attributes: ['nombre', 'numero_identificacion', 'correo_electronico', 'empresa'] }
+              { model: Paciente, attributes: ['nombre', 'numero_identificacion', 'correo_electronico'] }
             ]
           }
         ],
