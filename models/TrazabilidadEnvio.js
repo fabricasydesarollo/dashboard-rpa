@@ -37,7 +37,20 @@ TrazabilidadEnvio.init({
   },
   fecha_envio: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+    defaultValue: DataTypes.NOW,
+    get() {
+      const rawValue = this.getDataValue('fecha_envio');
+      if (!rawValue) return null;
+      
+      // Convierte la fecha UTC a Colombia (UTC-5)
+      const date = new Date(rawValue);
+      const colombiaOffset = -5 * 60; // -5 horas en minutos
+      const localDate = new Date(date.getTime() + (colombiaOffset * 60 * 1000));
+      
+      // Retorna en formato ISO de Colombia
+      return localDate.toISOString().slice(0, 19).replace('T', ' ');
+    }
+    
   }
 }, {
   sequelize,

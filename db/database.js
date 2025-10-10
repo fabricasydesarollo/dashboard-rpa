@@ -11,7 +11,8 @@ export const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'mysql',
-    logging: false // opcional: desactiva logs de SQL
+    logging: false, // desactiva logs de SQL
+    timezone: '-05:00', // Fuerza zona horaria de Colombia (UTC-5)
   }
 );
 

@@ -141,6 +141,7 @@ export const SocketController = {
           motivo_fallo: data.motivo_fallo || null,
           fecha_envio: data.fecha_envio || new Date()
         }, { transaction: t });
+        console.log('Trazabilidad actualizada:', new Date());
       } else {
         trazabilidad = await TrazabilidadEnvio.create({
           historia_id: historia.id,
