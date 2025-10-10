@@ -17,6 +17,6 @@ router.get('/descargar-formato',authenticateToken, BotController.descargarFormat
 router.post('/add/bots/user',authenticateToken, BotController.addBotsToUser);
 router.post('/update/user/rol',authenticateToken, BotController.updateUserRol);
 router.post('/create/solicitud',authenticateToken, BotController.createSolicitud);
-
+router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes);
 
 export default router;

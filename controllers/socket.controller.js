@@ -124,7 +124,7 @@ export const SocketController = {
           folio: data.folio
         }, { transaction: t });
       }
-      console.log('Historia clínica procesada:', historia);
+      //console.log('Historia clínica procesada:', historia);
       
       // 3. Buscar o crear trazabilidad
       let trazabilidad = await TrazabilidadEnvio.findOne({
@@ -141,7 +141,7 @@ export const SocketController = {
           motivo_fallo: data.motivo_fallo || null,
           fecha_envio: data.fecha_envio || new Date()
         }, { transaction: t });
-        console.log('Trazabilidad actualizada:', new Date());
+        //console.log('Trazabilidad actualizada:', new Date());
       } else {
         trazabilidad = await TrazabilidadEnvio.create({
           historia_id: historia.id,
@@ -159,7 +159,6 @@ export const SocketController = {
           total_registros: data.total_registros || bot.total_registros,
           procesados: data.procesados || bot.procesados,
           estado: data.estado_bot || 'ejecucion',
-          updatedAt: new Date()
         }, { transaction: t });
       }
 

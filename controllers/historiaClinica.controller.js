@@ -17,5 +17,15 @@ export const HistoriaClinicaController = {
       console.error(err);
       res.status(err.status || 400).json({ error: err.message || 'Error al obtener las historias_clínicas' });
     }
+  },
+  // se va a obtener todas las historias clinicas que en trazabilidad envios tengan estado pendiente
+  async getHistoriasClinicasPendientes(req, res){
+    try {
+      const historias_clinicas = await BotRepository.getHistoriasClinicasPendientes();
+      res.status(200).json(historias_clinicas);
+    } catch (err) {
+      console.error(err);
+      res.status(err.status || 400).json({ error: err.message || 'Error al obtener las historias_clínicas' });
+    }
   }
 };

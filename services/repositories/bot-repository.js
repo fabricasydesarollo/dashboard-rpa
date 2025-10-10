@@ -199,12 +199,6 @@ export class BotRepository {
       throw error;
     }
 
-    if (!(user.rol === 'admin' || user.rol === 'supervisor')) {
-      const error = new Error('Usuario sin autorización');
-      error.status = 403;
-      throw error;
-    }
-
     const trazabilidades = await TrazabilidadEnvio.findAll({
       include: [
         {
@@ -227,6 +221,48 @@ export class BotRepository {
     }
 
     return trazabilidades;
+  }
+ static async getHistoriasClinicasPendientes() {
+    const trazabilidades = await TrazabilidadEnvio.findAll({
+      include: [
+        {
+          model: HistoriaClinica,
+          attributes: ['ingreso', 'fecha_historia', 'folio'],
+          include: [
+            {
+              model: Paciente,
+              attributes: ['nombre', 'numero_identificacion', 'correo_electronico', 'empresa']
+            }
+          ]
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      where: { estado_envio: 'pendiente' }
+    });
+
+    if (!trazabilidades.length) {
+      const error = new Error('No se encontraron historias clínicas pendientes');
+      error.status = 404;
+      throw error;
+    }
+
+    // 🔹 Aplanar los datos
+    const historiasAplanadas = trazabilidades.map(t => {
+      const h = t.HistoriaClinica;
+      const p = h?.Paciente;
+
+      return {
+        empresa: p?.empresa || null,
+        numero_identificacion: p?.numero_identificacion || null,
+        nombre: p?.nombre || null,
+        correo_electronico: p?.correo_electronico || null,
+        ingreso: h?.ingreso || null,
+        fecha_historia: h?.fecha_historia || null,
+        folio: h?.folio || null
+      };
+    });
+
+    return historiasAplanadas;
   }
 
 }
