@@ -84,117 +84,123 @@ export const SocketController = {
   async createOrUpdateHistoriaClinica(req, res) {
     const t = await sequelize.transaction();
     try {
-      const data = req.body;
+      const payload = Array.isArray(req.body) ? req.body : [req.body]; //  Acepta array o un solo objeto
+      const resultados = [];
 
-      // 1. Buscar o crear paciente
-      let paciente = await Paciente.findOne({
-        where: { numero_identificacion: data.numero_identificacion },
-        transaction: t
-      });
+      for (const data of payload) {
+        // 1. Buscar o crear paciente
+        let paciente = await Paciente.findOne({
+          where: { numero_identificacion: data.numero_identificacion },
+          transaction: t
+        });
 
-      if (!paciente) {
-        paciente = await Paciente.create({
-          numero_identificacion: data.numero_identificacion,
-          nombre: data.nombre,
-          correo_electronico: data.correo_electronico,
-        }, { transaction: t });
+        if (!paciente) {
+          paciente = await Paciente.create({
+            numero_identificacion: data.numero_identificacion,
+            nombre: data.nombre,
+            correo_electronico: data.correo_electronico,
+          }, { transaction: t });
+        }
+
+        // 2. Buscar o crear historia clínica
+        let historia = await HistoriaClinica.findOne({
+          where: {
+            paciente_id: paciente.id,
+            ingreso: data.ingreso,
+            folio: data.folio,
+            empresa: data.empresa || null,
+            sede: data.sede || null
+          },
+          transaction: t
+        });
+
+        if (historia) {
+          await historia.update({
+            fecha_historia: data.fecha_historia
+          }, { transaction: t });
+        } else {
+          historia = await HistoriaClinica.create({
+            paciente_id: paciente.id,
+            ingreso: data.ingreso,
+            fecha_historia: data.fecha_historia,
+            folio: data.folio,
+            empresa: data.empresa || null,
+            sede: data.sede || null
+          }, { transaction: t });
+        }
+
+        // 3. Buscar o crear trazabilidad
+        let trazabilidad = await TrazabilidadEnvio.findOne({
+          where: {
+            historia_id: historia.id,
+            bot_id: data.bot_id
+          },
+          transaction: t
+        });
+
+        if (trazabilidad) {
+          await trazabilidad.update({
+            estado_envio: data.estado_envio || 'pendiente',
+            motivo_fallo: data.motivo_fallo || null,
+            fecha_envio: data.fecha_envio || new Date()
+          }, { transaction: t });
+        } else {
+          trazabilidad = await TrazabilidadEnvio.create({
+            historia_id: historia.id,
+            bot_id: data.bot_id,
+            estado_envio: data.estado_envio || 'pendiente',
+            motivo_fallo: data.motivo_fallo || null,
+            fecha_envio: data.fecha_envio || null
+          }, { transaction: t });
+        }
+
+        // 4. Actualizar bot en paralelo (solo si viene bot_id)
+        let bot = await Bot.findByPk(data.bot_id, { transaction: t });
+        if (bot) {
+            await bot.update({
+              total_registros: data.total_registros || bot.total_registros,
+              procesados: data.procesados || bot.procesados,
+              estado: data.estado_bot || 'ejecucion',
+            }, { transaction: t }); 
+        }
+
+        // 5. Consultar trazabilidad completa
+        const trazabilidadCompleta = await TrazabilidadEnvio.findByPk(trazabilidad.id, {
+          include: [
+            { model: Bot, attributes: ['nombre'] },
+            {
+              model: HistoriaClinica,
+              attributes: ['ingreso', 'fecha_historia', 'folio', 'empresa', 'sede'],
+              include: [
+                { model: Paciente, attributes: ['nombre', 'numero_identificacion', 'correo_electronico'] }
+              ]
+            }
+          ],
+          transaction: t
+        });
+
+        resultados.push({ historia: trazabilidadCompleta, bot });
       }
-
-      // 2. Buscar o crear historia clínica
-      let historia = await HistoriaClinica.findOne({
-        where: {
-          paciente_id: paciente.id,
-          ingreso: data.ingreso,
-          folio: data.folio,
-          empresa: data.empresa || null,
-          sede: data.sede || null
-        },
-        transaction: t
-      });
-
-      if (historia) {
-        // actualizar campos que puedan cambiar
-        await historia.update({
-          fecha_historia: data.fecha_historia
-        }, { transaction: t });
-      } else {
-        historia = await HistoriaClinica.create({
-          paciente_id: paciente.id,
-          ingreso: data.ingreso,
-          fecha_historia: data.fecha_historia,
-          folio: data.folio,
-          empresa: data.empresa || null,
-          sede: data.sede || null
-        }, { transaction: t });
-      }
-      //console.log('Historia clínica procesada:', historia);
-      
-      // 3. Buscar o crear trazabilidad
-      let trazabilidad = await TrazabilidadEnvio.findOne({
-        where: {
-          historia_id: historia.id,
-          bot_id: data.bot_id
-        },
-        transaction: t
-      });
-
-      if (trazabilidad) {
-        await trazabilidad.update({
-          estado_envio: data.estado_envio || 'pendiente',
-          motivo_fallo: data.motivo_fallo || null,
-          fecha_envio: data.fecha_envio || new Date()
-        }, { transaction: t });
-        //console.log('Trazabilidad actualizada:', new Date());
-      } else {
-        trazabilidad = await TrazabilidadEnvio.create({
-          historia_id: historia.id,
-          bot_id: data.bot_id,
-          estado_envio: data.estado_envio || 'pendiente',
-          motivo_fallo: data.motivo_fallo || null,
-          fecha_envio: data.fecha_envio || null
-        }, { transaction: t });
-      }
-
-      // 4. Actualizar bot en paralelo
-      const bot = await Bot.findByPk(data.bot_id, { transaction: t });
-      if (bot) {
-        await bot.update({
-          total_registros: data.total_registros || bot.total_registros,
-          procesados: data.procesados || bot.procesados,
-          estado: data.estado_bot || 'ejecucion',
-        }, { transaction: t });
-      }
-
-      // 5. Consultar trazabilidad completa
-      const trazabilidadCompleta = await TrazabilidadEnvio.findByPk(trazabilidad.id, {
-        include: [
-          { model: Bot, attributes: ['nombre'] },
-          {
-            model: HistoriaClinica,
-            attributes: ['ingreso', 'fecha_historia', 'folio', 'empresa', 'sede'],
-            include: [
-              { model: Paciente, attributes: ['nombre', 'numero_identificacion', 'correo_electronico'] }
-            ]
-          }
-        ],
-        transaction: t
-      });
 
       // 6. Confirmar transacción
       await t.commit();
-      
-      // 7. Emitir socket
-      const io = req.app.get('io');
-      io.emit('nueva_historia', trazabilidadCompleta, bot);
-      // Crear notificación 
-      NotificationHelper.emitirNotificaciones(io,[{ modulo: trazabilidadCompleta, tipo: 'historia_clinica' }]);
-      res.json({ ok: true, historia: trazabilidadCompleta, bot });
 
-    } catch (error) { 
-      await t.rollback(); 
-      console.error('Error en createOrUpdateHistoriaClinica (rollback ejecutado):', error); 
-      res.status(500).json({ ok: false, error: 'Error al crear/actualizar historia clínica' }); 
+      // 7. Emitir socket para cada historia creada
+      const io = req.app.get('io');
+      for (const { historia, bot } of resultados) {
+        io.emit('nueva_historia', historia, bot);
+        NotificationHelper.emitirNotificaciones(io, [
+          { modulo: historia, tipo: 'historia_clinica' }
+        ]);
+      }
+
+      res.json({ ok: true, cantidad: resultados.length, });
+    } catch (error) {
+      await t.rollback();
+      console.error('Error en createOrUpdateHistoriaClinica (rollback ejecutado):', error);
+      res.status(500).json({ ok: false, error: 'Error al crear/actualizar historia clínica' });
     }
-  },
+  }
+
 
 };
