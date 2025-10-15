@@ -7,5 +7,7 @@ import './Paciente.js'
 import './HistoriaClinica.js'
 import './TrazabilidadEnvio.js'
 import './Notificacion.js'
+import './RegistroGeneral.js'
+import './Log.js'
 import './asociations.js'
 console.log('Models imported successfully');

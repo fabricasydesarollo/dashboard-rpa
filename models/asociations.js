@@ -7,6 +7,8 @@ import { Paciente } from './Paciente.js';
 import { HistoriaClinica } from './HistoriaClinica.js';
 import { TrazabilidadEnvio } from './TrazabilidadEnvio.js';
 import { Notificacion } from './Notificacion.js';
+import { RegistroGeneral } from './RegistroGeneral.js';
+import { Log } from './Log.js';
 
 
 User.belongsToMany(Bot, {
@@ -31,7 +33,7 @@ Registro.belongsTo(Bot, {
   foreignKey: 'bot_id',
 });
 
-// 🔹 Un registro pertenece a una solicitud (opcional)
+//  Un registro pertenece a una solicitud (opcional)
 Registro.belongsTo(SolicitudUsuario, {
   foreignKey: 'solicitud_id',
   onDelete: 'CASCADE' // o CASCADE si quieres borrarlos en cadena
@@ -41,7 +43,7 @@ User.hasMany(SolicitudUsuario, {
   foreignKey: 'user_id',
   onDelete: 'CASCADE',
 });
-// 🔹 Una solicitud puede tener muchos registros
+//  Una solicitud puede tener muchos registros
 SolicitudUsuario.hasOne(Registro, {
   foreignKey: 'solicitud_id',
   onDelete: 'CASCADE',
@@ -82,13 +84,31 @@ TrazabilidadEnvio.belongsTo(Bot, {
 
 // asociaciones de las notificaciones
 
-// 🔹 Un usuario puede tener muchas notificaciones
+//  Un usuario puede tener muchas notificaciones
 User.hasMany(Notificacion, {
   foreignKey: 'user_id',
   onDelete: 'CASCADE'
 });
 
-// 🔹 Una notificación pertenece a un usuario
+//  Una notificación pertenece a un usuario
 Notificacion.belongsTo(User, {
   foreignKey: 'user_id'
+});
+
+// Bot -> RegistroGeneral
+Bot.hasMany(RegistroGeneral, {
+  foreignKey: 'bot_id',
+  onDelete: 'CASCADE'
+});
+RegistroGeneral.belongsTo(Bot, {
+  foreignKey: 'bot_id'
+});
+
+// Bot -> Log
+Bot.hasMany(Log, {
+  foreignKey: 'bot_id',
+  onDelete: 'CASCADE'
+});
+Log.belongsTo(Bot, {
+  foreignKey: 'bot_id'
 });

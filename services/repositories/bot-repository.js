@@ -7,6 +7,7 @@ import { SolicitudUsuario } from '../../models/SolicitudUsuario.js';
 import {  HistoriaClinica } from '../../models/HistoriaClinica.js';
 import { Paciente } from '../../models/Paciente.js';
 import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js';
+import { RegistroGeneral } from '../../models/RegistroGeneral.js';
 import axios from 'axios';
 
 export class BotRepository {
@@ -32,21 +33,39 @@ export class BotRepository {
   }
 
   static async getRegistros({ bot_id }) {
-    let registros = await Registro.findAll({
-      where: { bot_id },
-      order: [['fecha_ejecucion', 'DESC']], // Ordenar por fecha de ejecución MAS ACTUAL
-      limit: 100, // Limitar a los últimos 100 registros  
-      attributes: {
-        include: [[sequelize.col('Bot.nombre'), 'nombreBot']] // Incluye el nombre del bot que se trajo del modelo Bot
-      },
-      include: [
-        {
-          model: Bot,
-          attributes: [] // no lo incluimos como objeto, solo para el join
-        }
-      ]
-    });
+    let registros = [];
 
+    if ( Number(bot_id) !== 8) {
+        registros = await Registro.findAll({
+        where: { bot_id },
+        order: [['fecha_ejecucion', 'DESC']], // Ordenar por fecha de ejecución MAS ACTUAL
+        attributes: {
+          include: [[sequelize.col('Bot.nombre'), 'nombreBot']] // Incluye el nombre del bot que se trajo del modelo Bot
+        },
+        include: [
+          {
+            model: Bot,
+            attributes: [] // no lo incluimos como objeto, solo para el join
+          }
+        ]
+      });
+    }else {
+      registros = await RegistroGeneral.findAll({
+        where: { bot_id },
+        order: [['fecha_ejecucion', 'DESC']], // Ordenar por fecha de ejecución MAS ACTUAL
+        attributes: {
+          include: [[sequelize.col('Bot.nombre'), 'nombreBot']] // Incluye el nombre del bot que se trajo del modelo Bot
+        },
+        include: [
+          {
+            model: Bot,
+            attributes: [] // no lo incluimos como objeto, solo para el join
+          }
+        ]
+      });
+    }
+    console.log(' registros bot: ',bot_id, ': ',registros);
+   
     return registros;
   }
   static async getUsers() {

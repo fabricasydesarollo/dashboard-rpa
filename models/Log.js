@@ -1,32 +1,22 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../db/database.js';
 
-export class Registro extends Model {}
+export class Log extends Model {}
 
-Registro.init({
+Log.init({
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT.UNSIGNED,
     primaryKey: true,
     autoIncrement: true
   },
   bot_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT.UNSIGNED,
     allowNull: false,
     references: {
       model: 'bots',
       key: 'id'
     },
     onDelete: 'CASCADE'
-  },
-  solicitud_id: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: 'solicitudes_usuario',
-      key: 'id'
-    },
-    onDelete: 'CASCADE', // o CASCADE
-    unique: true
   },
   mensaje: {
     type: DataTypes.TEXT,
@@ -37,17 +27,14 @@ Registro.init({
     allowNull: false,
     defaultValue: 'proceso'
   },
-  fecha_ejecucion: {
+  fecha_log: {
     type: DataTypes.DATE,
+    allowNull: true,
     defaultValue: DataTypes.NOW
-  },
-  duracion: {
-    type: DataTypes.FLOAT,
-    allowNull: true
   }
 }, {
   sequelize,
-  modelName: 'Registro',
-  tableName: 'registros_avidanti',
+  modelName: 'Log',
+  tableName: 'logs',
   timestamps: true
 });
