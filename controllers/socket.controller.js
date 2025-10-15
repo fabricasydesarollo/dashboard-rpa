@@ -15,7 +15,7 @@ import { now } from 'sequelize/lib/utils';
 //import { UserRepository } from '../services/repositories/user-repository.js';
 
 export const SocketController = {
-   async createRegistroPatologia(req, res) {
+   async createRegistroGeneral(req, res) {
     try {
       const { nuevoRegistro, bot } = await RegistroGeneralController.create(req, res);
 
@@ -29,7 +29,7 @@ export const SocketController = {
       ]);
       res.json({ ok: true, nuevoRegistro, bot});
     } catch (error) {
-      console.error('Error en SocketController.createRegistroPatologia:', error);
+      console.error('Error en SocketController.createRegistroGeneral:', error);
     }
   },
   
