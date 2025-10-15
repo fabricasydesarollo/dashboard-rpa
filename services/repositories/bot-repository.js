@@ -64,7 +64,7 @@ export class BotRepository {
         ]
       });
     }
-    console.log(' registros bot: ',bot_id, ': ',registros);
+    //console.log(' registros bot: ',bot_id, ': ',registros);
    
     return registros;
   }
