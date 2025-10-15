@@ -35,7 +35,7 @@ export class BotRepository {
   static async getRegistros({ bot_id }) {
     let registros = [];
 
-    if ( Number(bot_id) !== 8) {
+    if ( Number(bot_id) === 1 ) {
         registros = await Registro.findAll({
         where: { bot_id },
         order: [['fecha_ejecucion', 'DESC']], // Ordenar por fecha de ejecución MAS ACTUAL
