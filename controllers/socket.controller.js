@@ -10,7 +10,7 @@ import { TrazabilidadEnvio } from '../models/TrazabilidadEnvio.js';
 import { NotificationService } from '../services/NotificationService.js';
 import { NotificationHelper } from '../utils/notificaciones.helper.js';
 import { RegistroGeneralController} from './registroGeneral.controller.js'
-import { LogController } from './LogController.js';
+import { LogController } from './logController.js';
 import { now } from 'sequelize/lib/utils';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
