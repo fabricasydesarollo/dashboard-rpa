@@ -21,6 +21,10 @@ User.init({
     type: DataTypes.ENUM('admin', 'usuario','supervisor'),
     allowNull: false,
     defaultValue: 'usuario'
+  },
+  foto_perfil: {
+    type: DataTypes.TEXT, // URL o base64
+    allowNull: true
   }
 }, {
   sequelize,

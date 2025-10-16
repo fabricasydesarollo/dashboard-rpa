@@ -46,6 +46,9 @@ export class UserRepository {
     console.log('Usuario creado:', newUser)
     return newUser.id
   }
+  static async getById(id) {
+    return await User.findByPk(id)
+  }
 
   static async login({ email, password }) {
     Validation.Email(email)

@@ -2,6 +2,7 @@ import passport from 'passport'
 import { Strategy as MicrosoftStrategy } from 'passport-microsoft'
 import { User } from '../models/User.js'
 import dotenv from 'dotenv';
+import axios from 'axios';
 
 dotenv.config();
 const BASE_URL = process.env.BASE_URL;
@@ -31,6 +32,21 @@ passport.use(new MicrosoftStrategy({
         return done(null, { invalidDomain: true });
       }
 
+      // 🚀 Intentar obtener la foto desde Microsoft Graph
+      let photoUrl = null;
+      try {
+        const response = await axios.get("https://graph.microsoft.com/v1.0/me/photo/$value", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          responseType: "arraybuffer",
+        });
+
+        // Convertir a base64
+        const base64Image = Buffer.from(response.data, "binary").toString("base64");
+        photoUrl = `data:image/jpeg;base64,${base64Image}`;
+      } catch (error) {
+        console.log("⚠️ No se pudo obtener la foto de perfil:", error.response?.status);
+      }
+
       user = await User.findOne({ where: { email } });
 
       if (!user) {
@@ -39,11 +55,16 @@ passport.use(new MicrosoftStrategy({
           email,
           nombre: nombreDesdeMicrosoft || null,
           password: null,
-          rol: 'usuario'
+          rol: 'usuario',
+          foto_perfil: photoUrl || null,
         });
-      } else if ((!user.nombre || user.nombre.trim() === '') && nombreDesdeMicrosoft) {
-        // Si ya existe pero no tiene nombre, lo actualizamos
-        user.nombre = nombreDesdeMicrosoft;
+      } else {
+        if ((!user.nombre || user.nombre.trim() === '') && nombreDesdeMicrosoft) {
+          user.nombre = nombreDesdeMicrosoft;
+        }
+        if (photoUrl) {
+          user.foto_perfil = photoUrl;
+        }
         await user.save();
       }
 

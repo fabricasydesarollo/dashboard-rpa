@@ -12,9 +12,7 @@ const router = Router();
 router.post('/login', AuthController.login);
 router.post('/register', AuthController.register);
 router.post('/logout', AuthController.logout);
-router.get('/getUser', authenticateToken, (req, res) => {
-  res.send({ user: req.user })
-}); // Añade esta ruta si necesitas obtener el usuario autenticado
+router.get('/getUser', authenticateToken, AuthController.getUser); // Añade esta ruta si necesitas obtener el usuario autenticado
 
 // Login con Microsoft
 router.get('/microsoft', passport.authenticate('microsoft', { prompt: 'select_account'}));

@@ -18,9 +18,22 @@ export const AuthController = {
       const token = generateToken(user, SECRET_JWT_KEY);
       setAuthCookie(res, token);
 
-      res.json({ user_id: user.id, nombre: user.nombre, email: user.email, rol: user.rol });
+      res.json({ user_id: user.id, nombre: user.nombre, email: user.email, rol: user.rol, foto_perfil: user.foto_perfil });
     } catch (error) {
       res.status(error.status || 500).json(error.error || { message: 'Error al iniciar sesión' });
+    }
+  },
+
+  async getUser(req, res) {
+    try {
+      const userId = req.user.user_id; // viene del middleware authenticateToken
+      const user = await UserRepository.getById(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+      res.json({ user_id: user.id, nombre: user.nombre, email: user.email, rol: user.rol, foto_perfil: user.foto_perfil });
+    } catch (error) {
+      res.status(500).json({ error: 'Error al obtener el usuario' });
     }
   },
 
