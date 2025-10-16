@@ -10,11 +10,30 @@ import { TrazabilidadEnvio } from '../models/TrazabilidadEnvio.js';
 import { NotificationService } from '../services/NotificationService.js';
 import { NotificationHelper } from '../utils/notificaciones.helper.js';
 import { RegistroGeneralController} from './registroGeneral.controller.js'
+import { LogController } from './LogController.js';
 import { now } from 'sequelize/lib/utils';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
 
 export const SocketController = {
+  async createLogBot(req, res) {
+    try {
+      const { log, bot } = await LogController.create(req, res);
+
+      // Emitir a todos los clientes conectados
+      /*const io = req.app.get('io');
+      io.emit('nuevo_registro', nuevoRegistro, bot, null);
+      // enviar las notificaciones correspondientes segun el estado de cada modulo
+      NotificationHelper.emitirNotificaciones(io, [
+        { modulo: nuevoRegistro, tipo: 'registro' },
+        { modulo: bot, tipo: 'bot' }
+      ]);*/
+      res.json({ ok: true, log, bot});
+    } catch (error) {
+      console.error('Error en SocketController.createRegistroGeneral:', error);
+    }
+  },
+
    async createRegistroGeneral(req, res) {
     try {
       const { nuevoRegistro, bot } = await RegistroGeneralController.create(req, res);

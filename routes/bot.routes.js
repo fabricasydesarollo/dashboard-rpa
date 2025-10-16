@@ -3,6 +3,7 @@ import { BotController } from '../controllers/bot.controller.js';
 import { authenticateToken } from '../middlewares/auth-middleware.js';
 import { UserController } from '../controllers/user.controller.js';
 import { HistoriaClinicaController } from '../controllers/historiaClinica.controller.js';
+import { LogController } from '../controllers/logController.js';
 
 
 const router = Router();
@@ -18,5 +19,8 @@ router.post('/add/bots/user',authenticateToken, BotController.addBotsToUser);
 router.post('/update/user/rol',authenticateToken, BotController.updateUserRol);
 router.post('/create/solicitud',authenticateToken, BotController.createSolicitud);
 router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes);
+router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes);
+router.get('/logs', authenticateToken, LogController.get);
+
 
 export default router;

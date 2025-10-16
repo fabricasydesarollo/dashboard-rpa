@@ -31,6 +31,11 @@ Log.init({
     type: DataTypes.DATE,
     allowNull: true,
     defaultValue: DataTypes.NOW
+  },
+  duracion: {
+    type: DataTypes.TIME,
+    allowNull: false,
+    defaultValue: '00:00:00'
   }
 }, {
   sequelize,
