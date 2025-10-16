@@ -54,7 +54,31 @@ async function enviarNotificacion(modulo, tipo) {
         };
       }
       break;
+    // caso para los logs generales del bot
+    case 'log':
+      const log = modulo; // instancia de Log (Sequelize)
 
+      // Asegurarse de tener el bot asociado
+      let botsRelacionados =  await Bot.findByPk(log.bot_id);
+      const usuariosLog = await botsRelacionados.getUsers();
+      destinatarios = usuariosLog.map(u => u.id);
+      if (log.estado === 'error') {
+        notificacionBase = {
+          titulo: 'Error en Log del Bot',
+          mensaje: `<em>"${log.mensaje}"</em>.`,
+          tipo: 'error',
+          destino: { modal: 'logs-bot', bot_id: log.bot_id }
+        };
+      }else if (log.estado === 'exito') {
+        notificacionBase = {
+          titulo: 'Log del Bot exitoso',
+          mensaje: `El log con mensaje: <em>"${log.mensaje}"</em> se ha finalizado exitosamente.`,
+          tipo: 'exito',
+          destino: { modal: 'logs-bot', bot_id: log.bot_id }
+        };
+      }
+      break;
+    
     case 'solicitud_usuario':
       const solicitud = modulo;
       destinatarios = [solicitud.user_id]; // solo el dueño de la solicitud

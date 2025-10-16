@@ -21,13 +21,13 @@ export const SocketController = {
       const { log, bot } = await LogController.create(req, res);
 
       // Emitir a todos los clientes conectados
-      /*const io = req.app.get('io');
-      io.emit('nuevo_registro', nuevoRegistro, bot, null);
+      const io = req.app.get('io');
+      io.emit('nuevo_log', log, bot);
       // enviar las notificaciones correspondientes segun el estado de cada modulo
       NotificationHelper.emitirNotificaciones(io, [
-        { modulo: nuevoRegistro, tipo: 'registro' },
+        { modulo: log, tipo: 'log' },
         { modulo: bot, tipo: 'bot' }
-      ]);*/
+      ]);
       res.json({ ok: true, log, bot});
     } catch (error) {
       console.error('Error en SocketController.createRegistroGeneral:', error);
