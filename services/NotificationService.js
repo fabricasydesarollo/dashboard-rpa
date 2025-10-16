@@ -49,7 +49,8 @@ export class NotificationService {
     try {
       return await Notificacion.findAll({
         where: { user_id },
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
+        limit: 100, // Limitar a las 100 notificaciones más recientes
       });
     } catch (error) {
       throw new Error(`Error al obtener notificaciones: ${error.message}`);
