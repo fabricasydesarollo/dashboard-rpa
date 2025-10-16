@@ -73,7 +73,7 @@ export const SocketController = {
           total_registros: registro.total_registros,
           updatedAt: new Date(),
           procesados: registro.procesados,
-          estado: registro.estado_bot || 'ejecucion'
+          estado: registro.estado_bot || 'activo'
         }, {
           where: { id: registro.bot_id },
           transaction: t
@@ -198,7 +198,7 @@ export const SocketController = {
             await bot.update({
               total_registros: data.total_registros || bot.total_registros,
               procesados: data.procesados || bot.procesados,
-              estado: data.estado_bot || 'ejecucion',
+              estado: data.estado_bot || 'activo',
             }, { transaction: t }); 
         }
 
