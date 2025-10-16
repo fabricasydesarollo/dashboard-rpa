@@ -18,7 +18,7 @@ Bot.init({
     allowNull: true
   },
   estado: {
-    type: DataTypes.ENUM('ejecucion', 'pausado','exito'),
+    type: DataTypes.ENUM('ejecucion', 'pausado','activo','error'),
     allowNull: false,
     defaultValue: 'ejecucion'
   },
