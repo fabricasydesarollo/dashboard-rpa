@@ -272,6 +272,7 @@ export class BotRepository {
 
       return {
         empresa: h?.empresa || null,
+        sede: h?.sede || null,
         numero_identificacion: p?.numero_identificacion || null,
         nombre: p?.nombre || null,
         correo_electronico: p?.correo_electronico || null,
