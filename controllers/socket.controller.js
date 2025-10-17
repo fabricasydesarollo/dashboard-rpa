@@ -228,7 +228,8 @@ export const SocketController = {
       for (const { historia, bot } of resultados) {
         io.emit('nueva_historia', historia, bot);
         NotificationHelper.emitirNotificaciones(io, [
-          { modulo: historia, tipo: 'historia_clinica' }
+          { modulo: historia, tipo: 'historia_clinica' },
+          { modulo: bot, tipo: 'bot' }
         ]);
       }
 
