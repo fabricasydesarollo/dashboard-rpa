@@ -13,7 +13,21 @@ export const UserController = {
       console.error(err);
       return res.status(err.status || 400).json({ error: err.error || 'Error al obtener las solicitudes' });
     }
+  },
+  // funcion para eliminar el usuario por id
+  async deleteUser(req, res) {
+    try {
+      const { userId } = req.query;
+      console.log('desde controller', userId);
+      
+      await UserRepository.deleteUser(userId);
+      res.status(200).json({ message: 'Usuario eliminado correctamente' });
+    } catch (err) {
+      console.error(err);
+      return res.status(err.status || 400).json({ error: err.error || 'Error al eliminar el usuario' });
+    }
   }
+
 
 };
 

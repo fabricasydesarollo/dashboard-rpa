@@ -21,6 +21,7 @@ router.post('/create/solicitud',authenticateToken, BotController.createSolicitud
 router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes);
 router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes);
 router.get('/logs', authenticateToken, LogController.get);
+router.delete('/delete/user', authenticateToken, UserController.deleteUser);
 
 
 export default router;

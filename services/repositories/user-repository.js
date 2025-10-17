@@ -108,6 +108,14 @@ export class UserRepository {
     }
   }
 
-
+  static async deleteUser(userId) {
+    console.log(userId);
+    
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw { status: 404, error: 'Usuario no encontrado' };
+    }
+    await user.destroy();
+  }
 
 }
