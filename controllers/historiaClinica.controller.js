@@ -9,9 +9,9 @@ import { BotRepository } from '../services/repositories/bot-repository.js';
 export const HistoriaClinicaController = {
   async get(req, res) {
     try {
-      const { user_id, rol } = req.query;
+      const { user_id } = req.query;
 
-      const historias_clinicas = await BotRepository.getHistoriasClinicas(user_id, rol);
+      const historias_clinicas = await BotRepository.getHistoriasClinicas(user_id);
       res.status(200).json(historias_clinicas);
     } catch (err) {
       console.error(err);

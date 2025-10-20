@@ -209,7 +209,7 @@ export class BotRepository {
     });
   }
 
-  static async getHistoriasClinicas(user_id, rol) {
+  static async getHistoriasClinicas(user_id) {
     const user = await User.findByPk(user_id);
 
     if (!user) {
@@ -230,7 +230,7 @@ export class BotRepository {
           attributes: ['nombre']
         }
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['fecha_envio', 'DESC']]
     });
 
     if (!trazabilidades.length) {
