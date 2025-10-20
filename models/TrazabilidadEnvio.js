@@ -55,6 +55,6 @@ TrazabilidadEnvio.init({
 }, {
   sequelize,
   modelName: 'TrazabilidadEnvio',
-  tableName: 'trazabilidad_envios',
+  tableName: 'trazabilidad_envios_hc',
   timestamps: true
 });
