@@ -255,7 +255,8 @@ export class BotRepository {
           ]
         },
       ],
-      order: [['createdAt', 'DESC']],
+      //Ordenar por fecha_historia (ascendente)
+      order: [[{ model: HistoriaClinica }, 'fecha_historia', 'ASC']],
       where: { estado_envio: 'pendiente' }
     });
 
