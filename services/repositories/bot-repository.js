@@ -195,7 +195,7 @@ export class BotRepository {
       //aqui va la api que se va a mandar las solicitudes al bot 
       // 🔹 Llamar al bot con try/catch
       try {
-        const response = await axios.post("http://191.89.40.37:8001/desactivar", solicitudesToBot, {
+        const response = await axios.post("http://172.22.121.14:443/desactivar", solicitudesToBot, {
           headers: { "Content-Type": "application/json" }
         });
         console.log("✅ Bot respondió:", response.data);
