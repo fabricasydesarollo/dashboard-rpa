@@ -20,8 +20,12 @@ router.post('/update/user/rol',authenticateToken, BotController.updateUserRol);
 router.post('/create/solicitud',authenticateToken, BotController.createSolicitud);
 router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes);
 router.get('/logs', authenticateToken, LogController.get);
+// ruta para traer las fechas de los logs con estado 'error' o 'listo'
+router.get('/logs/fechas', authenticateToken, LogController.getFechas);
 router.delete('/delete/user', authenticateToken, UserController.deleteUser);
 router.post('/create/user', authenticateToken, UserController.createUser);
+//activar bot patologia
+router.post('/activar-bot-patologia', authenticateToken, BotController.activateBotPatologia);
 
 
 export default router;

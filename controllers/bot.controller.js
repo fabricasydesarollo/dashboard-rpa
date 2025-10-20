@@ -99,5 +99,16 @@ export const BotController = {
       return res.status(500).json({ error: 'Error al crear la solicitud del usuario' });
     }
   },
+  async activateBotPatologia(req, res) {
+    try {
+      const { id, fecha } = req.body; 
+
+      const log = await BotRepository.activateBotPatologia(id,fecha);
+      return res.status(200).json(log);
+    } catch (error) {
+      console.error('Error en activateBotPatologia:', error);
+      return res.status(500).json({ error: 'Error al activar el bot de patología' });
+    }
+  }
 };
 

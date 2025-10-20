@@ -8,6 +8,7 @@ import {  HistoriaClinica } from '../../models/HistoriaClinica.js';
 import { Paciente } from '../../models/Paciente.js';
 import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js';
 import { RegistroGeneral } from '../../models/RegistroGeneral.js';
+import {Log } from '../../models/Log.js';
 import axios from 'axios';
 
 export class BotRepository {
@@ -284,6 +285,25 @@ export class BotRepository {
     });
 
     return historiasAplanadas;
+  }
+  static async activateBotPatologia(id, fecha) {
+    try {
+      console.log(`Activando bot de patología para la fecha: ${fecha}, log ID: ${id}`);
+      // Aquí  agregar la lógica específica para activar el bot con una API
+      await Log.update(
+        { estado: 'proceso' },
+        { where: { id } }
+      );
+      const log = await Log.findByPk(id);
+      // Simulación de llamada a API o proceso
+      // await axios.post('http://url-del-bot/activar-patologia', { fecha });
+      //una vez sea exitoso pasamos el log anterior a exito o se elimina y se deja el nuevo log
+
+      return { log: log}
+    } catch (error) {
+      console.error('Error en BotRepository.activateBotPatologia:', error);
+      throw new Error('Error al activar el bot de patología');
+    }
   }
 
 }

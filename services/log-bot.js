@@ -58,6 +58,28 @@ export const LogBotService = {
       console.error('Error en Log-botService.getAll:', error);
       throw { status: 500, error: 'Error al  obtener los logs'};
     }
+  },
+  async getFechas(estado) {
+    try {
+      const fechas = await Log.findAll({
+        where: { estado },
+        attributes: [
+          'id',
+          'fecha_log'
+        ],
+        order: [['fecha_log', 'DESC']]
+      });
+
+      // Formatear la fecha y devolver también el ID
+      return fechas.map(f => ({
+        id: f.id,
+        fecha: f.fecha_log.toISOString().split('T')[0]
+      }));
+    } catch (error) {
+      console.error('Error en Log-botService.getFechas:', error);
+      throw { status: 500, error: 'Error al obtener las fechas de los logs' };
+    }
   }
+
 
 };

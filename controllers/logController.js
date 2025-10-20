@@ -24,5 +24,15 @@ export const LogController = {
       console.error(err);
       return res.status(err.status || 400).json({ error: err.error || 'Error al obtener los logs' });
     }
+  },
+  async getFechas(req, res) {
+    try {
+      const { estado } = req.query;
+      const fechas = await LogBotService.getFechas(estado);
+      return res.status(200).json(fechas);
+    } catch (err) {
+      console.error(err);
+      return res.status(err.status || 400).json({ error: err.error || 'Error al obtener las fechas de los logs' });
+    }
   }
 };
