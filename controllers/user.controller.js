@@ -14,6 +14,18 @@ export const UserController = {
       return res.status(err.status || 400).json({ error: err.error || 'Error al obtener las solicitudes' });
     }
   },
+  // funcion para crear un nuevo usuario
+  async createUser(req, res) {
+    try {
+      const { email, nombre, rol } = req.body;
+      const newUser = await UserRepository.createUser(email, nombre, rol);
+      res.status(201).json({ message: 'Usuario creado correctamente', user: newUser });
+    }
+    catch (err) {
+      console.error(err);
+      return res.status(err.status || 400).json({ error: err.error || 'Error al crear el usuario' });
+    } 
+  },
   // funcion para eliminar el usuario por id
   async deleteUser(req, res) {
     try {

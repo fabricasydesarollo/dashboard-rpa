@@ -107,7 +107,22 @@ export class UserRepository {
       throw error;
     }
   }
-
+  // crear nuevo usuario
+  static async createUser(email, nombre, rol) {
+    // Validar que el email no exista ya  
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      throw { status: 400, error: 'El email ya está registrado' };
+    }
+    // Crear el usuario
+    const newUser = await User.create({
+      email,
+      nombre,
+      rol
+    });
+    return newUser;
+  }
+  
   static async deleteUser(userId) {
     console.log(userId);
     
