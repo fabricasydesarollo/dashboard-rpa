@@ -27,8 +27,8 @@ router.post('/create/user', authenticateToken, UserController.createUser);
 //activar bot patologia
 router.post('/activar-bot-patologia', authenticateToken, BotController.activateBotPatologia);
 // obtener las metricas de los bots asociados a un usuario
-router.get('/allmetricas', BotController.getAllBotMetrics);
-router.get('/metricas/bot', BotController.getBotMetrics);
+router.get('/allmetricas', authenticateToken, BotController.getAllBotMetrics);
+router.get('/metricas/bot', authenticateToken, BotController.getBotMetrics);
 
 
 export default router;
