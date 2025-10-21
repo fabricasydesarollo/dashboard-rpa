@@ -18,7 +18,7 @@ router.get('/descargar-formato',authenticateToken, BotController.descargarFormat
 router.post('/add/bots/user',authenticateToken, BotController.addBotsToUser);
 router.post('/update/user/rol',authenticateToken, BotController.updateUserRol);
 router.post('/create/solicitud',authenticateToken, BotController.createSolicitud);
-router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes);
+router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes); // recibe el parametro en req.query debe ser la maquinaId
 router.get('/logs', authenticateToken, LogController.get);
 // ruta para traer las fechas de los logs con estado 'error' o 'listo'
 router.get('/logs/fechas', authenticateToken, LogController.getFechas);
@@ -28,7 +28,7 @@ router.post('/create/user', authenticateToken, UserController.createUser);
 router.post('/activar-bot-patologia', authenticateToken, BotController.activateBotPatologia);
 // obtener las metricas de los bots asociados a un usuario
 router.get('/allmetricas', authenticateToken, BotController.getAllBotMetrics);
-router.get('/metricas/bot', authenticateToken, BotController.getBotMetrics);
+router.get('/metricas/bot', authenticateToken, BotController.getBotMetrics); // recibe el parametro botId en req.query
 //obtener solicitudes pendientes
 router.get('/solicitudes/pendientes', BotController.getPendingSolicitudes);
 
