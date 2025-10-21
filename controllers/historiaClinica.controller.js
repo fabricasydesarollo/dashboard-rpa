@@ -22,7 +22,7 @@ export const HistoriaClinicaController = {
   async getHistoriasClinicasPendientes(req, res){
     try {
       const { maquinaId } = req.query;
-      const historias_clinicas = await BotRepository.getHistoriasClinicasPendientes(maquinaId);
+      const historias_clinicas = await BotRepository.getHistoriasClinicasPendientes(Number(maquinaId));
       res.status(200).json(historias_clinicas);
     } catch (err) {
       console.error(err);
