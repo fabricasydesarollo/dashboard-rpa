@@ -26,6 +26,151 @@ export class BotRepository {
 
     return user.Bots; // Array de bots relacionados al usuario
   }
+  static async getAllBotMetrics(userId) {
+    try {
+      // 1️⃣ Buscar usuario con sus bots
+      const user = await User.findByPk(userId, {
+        include: {
+          model: Bot,
+          through: { attributes: [] }
+        }});
+
+      if (!user) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      // 2️ Definir qué modelos usar
+      const registrosNormalesIds = [1, 2, 3];
+      const botHistoriasClinicasId = 7;
+
+      const metricas = [];
+
+      // 3️ Iterar sobre los bots y consultar métricas con COUNT
+      for (const bot of user.Bots) {
+        let resultados = [];
+
+        if (registrosNormalesIds.includes(bot.id)) {
+          resultados = await Registro.findAll({
+            where: { bot_id: bot.id },
+            attributes: [
+              'estado',
+              [sequelize.fn('COUNT', sequelize.col('estado')), 'total']
+            ],
+            group: ['estado']
+          });
+
+        } else if (bot.id === botHistoriasClinicasId) {
+          resultados = await TrazabilidadEnvio.findAll({
+            where: { bot_id: bot.id },
+            attributes: [
+              ['estado_envio', 'estado'],
+              [sequelize.fn('COUNT', sequelize.col('estado_envio')), 'total']
+            ],
+            group: ['estado_envio']
+          });
+
+        } else {
+          resultados = await RegistroGeneral.findAll({
+            where: { bot_id: bot.id },
+            attributes: [
+              'estado',
+              [sequelize.fn('COUNT', sequelize.col('estado')), 'total']
+            ],
+            group: ['estado']
+          });
+        }
+
+        // 4️ Convertimos el resultado a un formato simple
+        const counts = {
+          exito: 0,
+          error: 0,
+          pendiente: 0,
+          proceso: 0
+        };
+
+        resultados.forEach(r => {
+          const estado = r.dataValues.estado;
+          const total = parseInt(r.dataValues.total, 10);
+          if (counts[estado] !== undefined) {
+            counts[estado] = total;
+          }
+        });
+
+        const total_registros = Object.values(counts).reduce((a, b) => a + b, 0);
+        const procesados = counts.exito + counts.error;
+
+        metricas.push({
+          bot_id: bot.id,
+          exito: counts.exito,
+          error: counts.error,
+          pendiente: counts.pendiente,
+          proceso: counts.proceso,
+          procesados,
+          total_registros
+        });
+      }
+
+      return metricas;
+
+    } catch (error) {
+      console.error('❌ Error obteniendo métricas:', error);
+      throw new Error('Error al obtener las métricas de los bots');
+    }
+  }
+  static async getBotMetrics(botId) {
+    try {
+      const registrosNormalesIds = [1, 2, 3];
+      const botHistoriasClinicasId = 7;
+
+      let Model;
+      let estadoCampo = 'estado';
+
+      if (registrosNormalesIds.includes(botId)) {
+        Model = Registro;
+      } else if (botId === botHistoriasClinicasId) {
+        Model = TrazabilidadEnvio;
+        estadoCampo = 'estado_envio';
+      } else {
+        Model = RegistroGeneral;
+      }
+
+      // Agrupar por estado y contar
+      const resultados = await Model.findAll({
+        where: { bot_id: botId },
+        attributes: [
+          [estadoCampo, 'estado'],
+          [sequelize.fn('COUNT', sequelize.col(estadoCampo)), 'cantidad']
+        ],
+        group: [estadoCampo],
+        raw: true
+      });
+
+      // Inicializamos contadores
+      const metricas = { exito: 0, error: 0, pendiente: 0, proceso: 0 };
+
+      // Llenamos los contadores según los resultados
+      for (const r of resultados) {
+        if (r.estado && metricas.hasOwnProperty(r.estado)) {
+          metricas[r.estado] = parseInt(r.cantidad, 10);
+        }
+      }
+
+      const total_registros = resultados.reduce((acc, r) => acc + parseInt(r.cantidad, 10), 0);
+      const procesados = metricas.exito + metricas.error;
+
+      return {
+        bot_id: botId,
+        ...metricas,
+        procesados,
+        total_registros
+      };
+
+    } catch (error) {
+      console.error('❌ Error obteniendo métricas del bot:', error);
+      throw new Error('Error al obtener las métricas del bot');
+    }
+  }
+
 
   static async getRegistros({ bot_id }) {
     let registros = [];
@@ -135,7 +280,7 @@ export class BotRepository {
   static async updateUserRol(userData) {
     const { id, rol} = userData;
 
-    // Actualizar usando Sequelize
+    // Actualizar usando sequelize
     const user = await User.findByPk(id, {
       //attributes: { exclude: ['password'] }, // 👈 excluye la contraseña
       include: [{ model: Bot, as: 'Bots' }]

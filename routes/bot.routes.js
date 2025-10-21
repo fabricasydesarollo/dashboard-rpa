@@ -26,6 +26,9 @@ router.delete('/delete/user', authenticateToken, UserController.deleteUser);
 router.post('/create/user', authenticateToken, UserController.createUser);
 //activar bot patologia
 router.post('/activar-bot-patologia', authenticateToken, BotController.activateBotPatologia);
+// obtener las metricas de los bots asociados a un usuario
+router.get('/allmetricas', BotController.getAllBotMetrics);
+router.get('/metricas/bot', BotController.getBotMetrics);
 
 
 export default router;

@@ -109,6 +109,26 @@ export const BotController = {
       console.error('Error en activateBotPatologia:', error);
       return res.status(500).json({ error: 'Error al activar el bot de patología' });
     }
+  },
+  async getAllBotMetrics(req, res) {
+    try {
+      const { userId } = req.query;
+      const metrics = await BotRepository.getAllBotMetrics(userId);
+      return res.status(200).json(metrics);
+    } catch (error) {
+      console.error('Error en getBotMetrics:', error);
+      return res.status(500).json({ error: 'Error al obtener las métricas de los bots' });
+    }
+  },
+  async getBotMetrics(req, res) {
+    try {
+      const { botId } = req.query;  
+      const metrics = await BotRepository.getBotMetrics(Number(botId));
+      return res.status(200).json(metrics);   
+    } catch (error) {
+      console.error('Error en getBotMetrics:', error);
+      return res.status(500).json({ error: 'Error al obtener las métricas del bot' });
+    }
   }
 };
 
