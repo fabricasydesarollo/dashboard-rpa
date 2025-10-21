@@ -13,24 +13,18 @@ import axios from 'axios';
 
 export class BotRepository {
   static async get({ user_id, rol }) {
-    if (rol === 'admin') {
-      // Devuelve todos los bots
-      return await Bot.findAll();
-    } else {
-      // Devuelve solo los bots asociados al usuario
-      const user = await User.findByPk(user_id, {
-        include: {
-          model: Bot,
-          through: { attributes: [] } // No incluir datos de la tabla intermedia
-        }
-      });
-
-      if (!user) {
-        throw new Error('Usuario no encontrado');
+    const user = await User.findByPk(user_id, {
+      include: {
+        model: Bot,
+        through: { attributes: [] } // No incluir datos de la tabla intermedia
       }
+    });
 
-      return user.Bots; // Array de bots relacionados al usuario
+    if (!user) {
+      throw new Error('Usuario no encontrado');
     }
+
+    return user.Bots; // Array de bots relacionados al usuario
   }
 
   static async getRegistros({ bot_id }) {
