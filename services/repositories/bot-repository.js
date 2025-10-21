@@ -326,27 +326,26 @@ export class BotRepository {
           ],
           transaction
         });
-        // se va a enviar al bot el arreglo solicitudes pero solo con la informacion de la solicitud creada
-        solicitudesToBot.push(solicitud);
-        // se va a enviar al cliente la solicitud con las relaciones
+
         solicitudes.push(solicitudConRelaciones);
       }
-      //aqui va la api que se va a mandar las solicitudes al bot 
-      // 🔹 Llamar al bot con try/catch
-      try {
-        const response = await axios.post("http://172.22.121.14:443/desactivar", solicitudesToBot, {
-          headers: { "Content-Type": "application/json" }
-        });
-        console.log("✅ Bot respondió:", response.data);
-
-      } catch (error) {
-        console.error("❌ Error al enviar solicitud al bot:", error.message);
-        // Lanzamos el error para que Sequelize haga rollback
-        throw error;
-      }
-
       return solicitudes;
     });
+  }
+  static async getPendingSolicitudes() {
+    const solicitudes = await SolicitudUsuario.findAll({
+      where: { estado: 'pendiente' },
+      order: [['createdAt', 'ASC']]
+    });
+    //console.log('solicitudes: ',solicitudes);
+    
+    //VALIDAR SI HAY SOLICITUDES
+    if (!solicitudes.length) {
+      const error = new Error('No se encontraron solicitudes pendientes');
+      error.status = 404;
+      throw error;
+    }
+    return solicitudes;
   }
 
   static async getHistoriasClinicas(user_id) {

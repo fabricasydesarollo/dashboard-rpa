@@ -129,6 +129,15 @@ export const BotController = {
       console.error('Error en getBotMetrics:', error);
       return res.status(500).json({ error: 'Error al obtener las métricas del bot' });
     }
+  },
+  async getPendingSolicitudes(req, res) {
+    try {
+      const solicitudes = await BotRepository.getPendingSolicitudes();
+      return res.status(200).json(solicitudes);
+    } catch (error) {
+      console.error('Error en getPendingSolicitudes:', error);
+      return res.status(500).json({ error: 'Error al obtener las solicitudes pendientes' });
+    }
   }
 };
 

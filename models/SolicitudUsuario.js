@@ -58,9 +58,9 @@ SolicitudUsuario.init({
     defaultValue: null, //  por defecto será NULL
   },
   estado: {
-    type: DataTypes.ENUM('exito', 'proceso', 'error'),
+    type: DataTypes.ENUM('exito', 'proceso', 'error','pendiente'),
     allowNull: false,
-    defaultValue: 'proceso'
+    defaultValue: 'pendiente'
   },
 }, {
   sequelize,

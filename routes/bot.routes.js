@@ -29,6 +29,8 @@ router.post('/activar-bot-patologia', authenticateToken, BotController.activateB
 // obtener las metricas de los bots asociados a un usuario
 router.get('/allmetricas', authenticateToken, BotController.getAllBotMetrics);
 router.get('/metricas/bot', authenticateToken, BotController.getBotMetrics);
+//obtener solicitudes pendientes
+router.get('/solicitudes/pendientes', BotController.getPendingSolicitudes);
 
 
 export default router;
