@@ -10,6 +10,7 @@ import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js';
 import { RegistroGeneral } from '../../models/RegistroGeneral.js';
 import {Log } from '../../models/Log.js';
 import axios from 'axios';
+import { Op } from 'sequelize';
 
 export class BotRepository {
   static async get({ user_id, rol }) {
@@ -333,18 +334,25 @@ export class BotRepository {
     });
   }
   static async getPendingSolicitudes() {
+    const hoy = new Date(); // fecha actual
+
     const solicitudes = await SolicitudUsuario.findAll({
-      where: { estado: 'pendiente' },
-      order: [['createdAt', 'ASC']]
+      where: {
+        estado: 'pendiente',
+        fecha_inactivacion: {
+          [Op.lte]: hoy // menor o igual a la fecha de hoy
+        }
+      },
+      order: [['fecha_inactivacion', 'ASC']]
     });
-    //console.log('solicitudes: ',solicitudes);
-    
-    //VALIDAR SI HAY SOLICITUDES
+
+    // ✅ Validar si hay solicitudes
     if (!solicitudes.length) {
-      const error = new Error('No se encontraron solicitudes pendientes');
+      const error = new Error('No se encontraron solicitudes pendientes con fecha anterior o de hoy');
       error.status = 404;
       throw error;
     }
+
     return solicitudes;
   }
 
