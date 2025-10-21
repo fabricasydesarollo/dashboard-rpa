@@ -21,7 +21,8 @@ export const HistoriaClinicaController = {
   // se va a obtener todas las historias clinicas que en trazabilidad envios tengan estado pendiente
   async getHistoriasClinicasPendientes(req, res){
     try {
-      const historias_clinicas = await BotRepository.getHistoriasClinicasPendientes();
+      const { maquinaId } = req.query;
+      const historias_clinicas = await BotRepository.getHistoriasClinicasPendientes(maquinaId);
       res.status(200).json(historias_clinicas);
     } catch (err) {
       console.error(err);

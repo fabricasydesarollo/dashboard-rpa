@@ -27,6 +27,10 @@ TrazabilidadEnvio.init({
     },
     onDelete: 'CASCADE'
   },
+  maquina_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
   estado_envio: {
     type: DataTypes.ENUM('exito', 'error', 'pendiente'),
     allowNull: false

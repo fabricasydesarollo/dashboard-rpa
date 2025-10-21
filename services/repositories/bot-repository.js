@@ -381,7 +381,7 @@ export class BotRepository {
 
     return trazabilidades;
   }
- static async getHistoriasClinicasPendientes() {
+ static async getHistoriasClinicasPendientes(maquinaId) {
     const trazabilidades = await TrazabilidadEnvio.findAll({
       include: [
         {
@@ -397,7 +397,7 @@ export class BotRepository {
       ],
       //Ordenar por fecha_historia (ascendente)
       order: [[{ model: HistoriaClinica }, 'fecha_historia', 'ASC']],
-      where: { estado_envio: 'pendiente' }
+      where: { estado_envio: 'pendiente', maquina_id: maquinaId }
     });
 
     if (!trazabilidades.length) {
@@ -414,6 +414,7 @@ export class BotRepository {
       return {
         empresa: h?.empresa || null,
         sede: h?.sede || null,
+        maquina_id: t?.maquina_id,
         numero_identificacion: p?.numero_identificacion || null,
         nombre: p?.nombre || null,
         correo_electronico: p?.correo_electronico || null,
