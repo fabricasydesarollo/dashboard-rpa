@@ -3,6 +3,7 @@ import { UserRepository } from '../services/repositories/user-repository.js';
 import { BotRepository } from '../services/repositories/bot-repository.js';
 import path from 'path';
 
+
 export const BotController = {
   async get(req, res) {
     try {
@@ -93,6 +94,8 @@ export const BotController = {
       const { formArray, user_id, bot_id } = req.body;
 
       const solicitud = await BotRepository.createSolicitud( formArray, user_id, bot_id);
+      const io = req.app.get('io');
+      io.emit('nueva_solicitud', solicitud, Number(user_id));  // se emite la solicitud creadaen tiempo real a los demas usuarios en este caso admin o supervisor 
       return res.status(200).json(solicitud);
     } catch (error) {
       console.error('Error en createSolicitud:', error);
