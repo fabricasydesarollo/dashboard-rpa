@@ -14,9 +14,18 @@ import { Op } from 'sequelize';
 
 export class BotRepository {
 
-  static async create(botData) {
+  static async create(botData, user_id) {
     const transaction = await Bot.sequelize.transaction();
     try {
+      // antes de crear el bot validemos si el usuario es administrador si no lo es no puede crear un bot
+      const user = await User.findByPk(user_id);
+      console.log('user: ',user_id);
+      
+      if (user.rol !== 'admin') {
+        const error = new Error('Usuario No Autorizado');
+        error.status = 401;
+        throw error; 
+      }
       // 1️ Crear el bot
       const newBot = await Bot.create(
         { nombre: botData.nombre,  descripcion: botData.descripcion,  estado: 'activo' },
@@ -54,8 +63,7 @@ export class BotRepository {
       }
     });
 
-    if (!user) {
-      throw new Error('Usuario no encontrado');
+    if (!user){('Usuario no encontrado');
     }
 
     return user.Bots; // Array de bots relacionados al usuario
