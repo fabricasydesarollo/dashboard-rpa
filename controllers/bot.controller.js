@@ -5,6 +5,16 @@ import path from 'path';
 
 
 export const BotController = {
+  async create(req, res) {
+    try {
+      const botData = req.body;
+      const newBot = await BotRepository.create(botData);
+      return res.status(201).json({ bot: newBot });
+    } catch (err) {
+      console.error('Error al crear el bot:', err);
+      return res.status(500).json({ error: 'Error al crear el bot' });
+    }
+  },
   async get(req, res) {
     try {
       const { user_id, rol } = req.query;

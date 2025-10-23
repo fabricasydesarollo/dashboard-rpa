@@ -4,6 +4,11 @@ import { sequelize } from '../db/database.js';
 export class User extends Model {}
 
 User.init({
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
   nombre: {
     type: DataTypes.STRING,
     allowNull: true // puede ser null por compatibilidad

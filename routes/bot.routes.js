@@ -7,6 +7,8 @@ import { LogController } from '../controllers/logController.js';
 
 
 const router = Router();
+// crea un nuevo bot
+router.post('/',authenticateToken, BotController.create);
 // obtiene todos los bots
 router.get('/get',authenticateToken, BotController.get);
 // obtiene los registros de un bot en especifico, recibe el parametro botId en req.query

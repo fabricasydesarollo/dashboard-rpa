@@ -13,6 +13,39 @@ import axios from 'axios';
 import { Op } from 'sequelize';
 
 export class BotRepository {
+
+  static async create(botData) {
+    const transaction = await Bot.sequelize.transaction();
+    try {
+      // 1️ Crear el bot
+      const newBot = await Bot.create(
+        { nombre: botData.nombre,  descripcion: botData.descripcion,  estado: 'activo' },
+        { transaction }
+      );
+      // 2️ Buscar todos los usuarios con rol 'admin'
+      const admins = await User.findAll({
+        where: { rol: 'admin' },
+        attributes: ['id'], // solo necesitamos el id
+        transaction
+      });
+      // 3️ Crear las relaciones en la tabla intermedia
+      const relaciones = admins.map(admin => ({
+        user_id: admin.id,
+        bot_id: newBot.id
+      }));
+
+      await UsuarioBot.bulkCreate(relaciones, { transaction });
+      // 4️ Confirmar la transacción
+      await transaction.commit();
+
+      return newBot;
+    } catch (error) {
+      await transaction.rollback();
+      console.error('Error en BotRepository.create:', error);
+      throw { status: 500, error: 'Error al crear el bot en la base de datos' };
+    }
+  }
+
   static async get({ user_id, rol }) {
     const user = await User.findByPk(user_id, {
       include: {
