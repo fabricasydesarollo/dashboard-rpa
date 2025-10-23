@@ -16,6 +16,30 @@ export const BotController = {
       return res.status(500).json({ error: 'Error al crear el bot' });
     }
   },
+  async update(req, res) {
+    try {
+      const botData = req.body;
+      const { user_id } = req.user;
+      const updatedBot = await BotRepository.update(botData, user_id);
+      return res.status(200).json({ bot: updatedBot });
+    } catch (err) {
+      console.error('Error al actualizar el bot')
+      return res.status(err.status || 400).json({ error: err.error || 'Error al actualizar el bot' });
+    }
+  },  
+
+  async delete(req, res) {
+    try {
+      const { botId } = req.query;
+      const { user_id } = req.user;
+      await BotRepository.delete(botId, user_id);
+      return res.status(200).json({ message: 'Bot eliminado correctamente' });
+    } catch (err) {
+      console.error('Error al eliminar el bot:', err);
+      return res.status(err.status || 400).json({ error: err.error || 'Error al Eliminar el bot' });
+    }
+  },
+  
   async get(req, res) {
     try {
       const { user_id, rol } = req.query;

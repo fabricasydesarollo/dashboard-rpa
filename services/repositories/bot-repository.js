@@ -54,6 +54,67 @@ export class BotRepository {
       throw { status: 500, error: 'Error al crear el bot en la base de datos' };
     }
   }
+  static async update(botData, user_id) {
+    const transaction = await Bot.sequelize.transaction();
+    try {
+      // Verificar usuario admin
+      const user = await User.findByPk(user_id);
+      if (!user || user.rol !== 'admin') {
+        throw { status: 401, error: 'Usuario No Autorizado' };
+      }
+      //  Buscar bot existente
+      const bot = await Bot.findByPk(botData.id);
+      if (!bot) {
+        throw { status: 404, error: 'Bot no encontrado' };
+      }
+      //  Actualizar bot dentro de la transacción
+      await bot.update(
+        { nombre: botData.nombre, descripcion: botData.descripcion }, 
+        { transaction }
+      );
+      //  Confirmar cambios
+      await transaction.commit();
+      //  Retornar el bot actualizado
+      return bot;
+    } catch (error) {
+      await transaction.rollback();
+      console.error('Error en BotRepository.update:', error);
+      // Si el error ya tiene un status (401, 404, etc.), lo propagamos igual
+      if (error.status) throw error;
+      // Sino, lanzamos un error genérico
+      throw { status: 500, error: 'Error al actualizar el bot' };
+    }
+  }
+
+  static async delete(botId, user_id) {
+    const transaction = await Bot.sequelize.transaction();
+    try {
+      // Verificar usuario admin
+      const user = await User.findByPk(user_id);
+      if (!user || user.rol !== 'admin') {
+        throw { status: 401, error: 'Usuario No Autorizado' };
+      }
+      //  Buscar bot existente
+      const bot = await Bot.findByPk(botId);
+      if (!bot) {
+        throw { status: 404, error: 'Bot no encontrado' };
+      }
+      //  Eliminar bot dentro de la transacción
+      await bot.destroy({ transaction });
+      //  Confirmar cambios
+      await transaction.commit();
+      //  Retornar el bot eliminado
+    }
+    catch (error) {
+      await transaction.rollback();
+      console.error('Error en BotRepository.delete:', error);
+      // Si el error ya tiene un status (401, 404, etc.), lo propagamos igual
+      if (error.status) throw error;
+      // Sino, lanzamos un error genérico
+      throw { status: 500, error: 'Error al eliminar el bot' };
+    }
+  }
+
 
   static async get({ user_id, rol }) {
     const user = await User.findByPk(user_id, {

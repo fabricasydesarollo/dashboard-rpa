@@ -7,8 +7,13 @@ import { LogController } from '../controllers/logController.js';
 
 
 const router = Router();
+
 // crea un nuevo bot
 router.post('/',authenticateToken, BotController.create);
+// actualizar bot
+router.put('/',authenticateToken, BotController.update);
+// elimina un bot
+router.delete('/',authenticateToken, BotController.delete);
 // obtiene todos los bots
 router.get('/get',authenticateToken, BotController.get);
 // obtiene los registros de un bot en especifico, recibe el parametro botId en req.query
