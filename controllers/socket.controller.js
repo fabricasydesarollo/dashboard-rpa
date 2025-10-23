@@ -124,6 +124,7 @@ export const SocketController = {
     try {
       const payload = Array.isArray(req.body) ? req.body : [req.body]; //  Acepta array o un solo objeto
       const resultados = [];
+      let omitir = false;
 
       for (const data of payload) {
         // 1. Buscar o crear paciente
@@ -177,11 +178,13 @@ export const SocketController = {
         });
 
         if (trazabilidad) {
-          await trazabilidad.update({
-            estado_envio: data.estado_envio || 'pendiente',
-            motivo_fallo: data.motivo_fallo || null,
-            fecha_envio: data.fecha_envio || new Date()
-          }, { transaction: t });
+          if (trazabilidad.estado_envio === 'pendiente'){
+            await trazabilidad.update({
+              estado_envio: data.estado_envio || 'pendiente',
+              motivo_fallo: data.motivo_fallo || null,
+              fecha_envio: data.fecha_envio || new Date()
+            }, { transaction: t });
+          }else{ omitir = true}
         } else {
           trazabilidad = await TrazabilidadEnvio.create({
             historia_id: historia.id,
@@ -226,12 +229,14 @@ export const SocketController = {
 
       // 7. Emitir socket para cada historia creada
       const io = req.app.get('io');
-      for (const { historia, bot } of resultados) {
-        io.emit('nueva_historia', historia, bot);
-        NotificationHelper.emitirNotificaciones(io, [
-          { modulo: historia, tipo: 'historia_clinica' },
-          { modulo: bot, tipo: 'bot' }
-        ]);
+      if (!omitir){
+        for (const { historia, bot } of resultados) {
+          io.emit('nueva_historia', historia, bot);
+          NotificationHelper.emitirNotificaciones(io, [
+            { modulo: historia, tipo: 'historia_clinica' },
+            { modulo: bot, tipo: 'bot' }
+          ]);
+        }
       }
 
       res.json({ ok: true, cantidad: resultados.length, });
