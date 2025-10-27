@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes.js'; // Ajusta el path si está en 
 import botRoutes from './routes/bot.routes.js'; // Asegúrate de que esta ruta es correcta
 import socketRoutes from './routes/socket.routes.js'; // Asegúrate de que esta ruta es correcta
 import notificacionRoutes from './routes/notificacion.routes.js'; // Asegúrate de que esta ruta es correcta
+import mailRoutes from './routes/mailRoutes.js'; // Asegúrate de que esta ruta es correcta
 import http from 'http';
 import https from 'https'
 import fs from 'fs'
@@ -89,6 +90,8 @@ app.use('/api/notificaciones', notificacionRoutes);
 app.use('/socket/api',socketRoutes);
 
 app.use('/api/bots',botRoutes);
+
+app.use('/api/mail', mailRoutes);
 
 app.use('/static', express.static('public'));
 

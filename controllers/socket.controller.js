@@ -90,7 +90,7 @@ export const SocketController = {
       const bot = await Bot.findByPk(registro.bot_id, { transaction: t });
       const solicitud = await SolicitudUsuario.findByPk(registro.solicitud_id, {
         include: [
-          { model: User, attributes: ['nombre'] },
+          { model: User, attributes: ['nombre', 'cargo'] },
           { model: Bot, attributes: ['nombre'] },
           { model: Registro, as: 'Registro', attributes: ['mensaje'] }
         ], 

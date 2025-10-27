@@ -1,16 +1,17 @@
 import { Notificacion } from '../models/Notificacion.js';
 import { NotificationService } from '../services/NotificationService.js';
+import { sendMail } from '../services/msgraphMailer.js';
+import {enviarCorreo} from './enviarCorreo.js'
 
-// Funciones para manejar notificaciones en tiempo real usando Socket.IO
 import { User } from '../models/User.js';
 import { Bot } from '../models/Bot.js';
 
-
+// Funciones para manejar notificaciones en tiempo real usando Socket.IO
 async function emitirNotificaciones(io, modulosConTipo = []) {
   console.log("modulosConTipo", modulosConTipo)
   for (const { modulo, tipo } of modulosConTipo) {
     try {
-      const notificacionesNuevas = await enviarNotificacion(modulo, tipo);
+      const notificacionesNuevas = await crearNotificacion(modulo, tipo);
 
       if (notificacionesNuevas && notificacionesNuevas.length > 0) {
         for (const notificacion of notificacionesNuevas) {
@@ -24,9 +25,8 @@ async function emitirNotificaciones(io, modulosConTipo = []) {
   }
 }
 
-
 // Lógica para crear notificaciones basadas en eventos específicos
-async function enviarNotificacion(modulo, tipo) {
+async function crearNotificacion(modulo, tipo) {
   let notificacionBase = null;
   let destinatarios = []; // Array de user_id
 
@@ -90,6 +90,8 @@ async function enviarNotificacion(modulo, tipo) {
           tipo: 'error',
           destino: { modal: 'solicitud_usuario', solicitud_id: solicitud.id }
         };
+        enviarCorreo(solicitud, 'solicitud_usuario')
+
       } else if (solicitud.estado === 'exito') {
         notificacionBase = {
           titulo: 'Solicitud procesada con éxito',
@@ -168,5 +170,5 @@ async function enviarNotificacion(modulo, tipo) {
 
 export const NotificationHelper = {
   emitirNotificaciones,
-  enviarNotificacion
+  crearNotificacion
 };
