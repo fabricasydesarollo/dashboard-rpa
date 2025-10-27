@@ -54,7 +54,7 @@ export async function enviarCorreo(modelo, tipoModulo) {
   try {
     const { subject, htmlBody } = crearEstructura(modelo, tipoModulo);
 
-    const to = ['maykol.plazac@zentria.com.co']; // dinámico o por defecto
+    const to = ['monitoreobotavidanti@zentria.com.co']; // dinámico o por defecto
 
     await sendMail({ to, subject, htmlBody });
 
