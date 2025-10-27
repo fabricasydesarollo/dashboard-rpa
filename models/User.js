@@ -27,6 +27,18 @@ User.init({
     allowNull: false,
     defaultValue: 'usuario'
   },
+  cargo: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  empresa: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  departamento: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   foto_perfil: {
     type: DataTypes.TEXT, // URL o base64
     allowNull: true

@@ -94,7 +94,7 @@ export class UserRepository {
       const solicitudes = await SolicitudUsuario.findAll({
         where: whereCondition,
         include: [
-          { model: User, attributes: ['nombre'] },
+          { model: User, attributes: ['nombre', 'cargo'] },
           { model: Bot, attributes: ['nombre'] },
           { model: Registro, as: 'Registro', attributes: ['mensaje'] }
         ],

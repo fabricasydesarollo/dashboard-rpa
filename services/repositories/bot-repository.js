@@ -423,7 +423,7 @@ export class BotRepository {
         // 🔹 Traer solicitud con relaciones
         const solicitudConRelaciones = await SolicitudUsuario.findByPk(solicitud.id, {
           include: [
-            { model: User, attributes: ['nombre'] },
+            { model: User, attributes: ['nombre','cargo'] },
             { model: Bot, attributes: ['nombre'] },
             { model: Registro, as: 'Registro', attributes: ['mensaje'] },
           ],
