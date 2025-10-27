@@ -31,7 +31,7 @@ export const AuthController = {
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
       }
-      res.json({ user_id: user.id, nombre: user.nombre, email: user.email, rol: user.rol, foto_perfil: user.foto_perfil });
+      res.json(user);
     } catch (error) {
       res.status(500).json({ error: 'Error al obtener el usuario' });
     }

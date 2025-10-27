@@ -47,7 +47,17 @@ export class UserRepository {
     return newUser.id
   }
   static async getById(id) {
-    return await User.findByPk(id)
+    let user = await User.findByPk(id)
+    return {
+      user_id: user.id, 
+      nombre: user.nombre, 
+      email: user.email,
+      rol: user.rol, 
+      foto_perfil: user.foto_perfil, 
+      cargo: user.cargo, 
+      departamento: user.departamento,
+      empresa: user.empresa
+    }
   }
 
   static async login({ email, password }) {
