@@ -41,12 +41,19 @@ passport.use(
           return done(null, { invalidDomain: true })
         }
 
+        //  Buscar el usuario
+        let user = await User.findOne({ where: { email } })
+        if (!user) {
+          // ❌ No crear usuario automáticamente
+          console.log(`Usuario no registrado: ${email}`)
+          return done(null, { notRegistered: true }) // respuesta personalizada
+        }
         //  Obtener datos adicionales (jobTitle, companyName, etc)
-        const microsoftProfile = await getMicrosoftProfile(accessToken)
+        /*const microsoftProfile = await getMicrosoftProfile(accessToken)
         const cargo = microsoftProfile.jobTitle || null
         const empresa = microsoftProfile.companyName || null
         const departamento = microsoftProfile.department || null
-        //console.log('profile: ',microsoftProfile);
+        //console.log('profile: ',microsoftProfile);*/
         
         //  Intentar obtener la foto desde Microsoft Graph
         let photoUrl = null
@@ -61,38 +68,13 @@ passport.use(
           console.log('⚠️ No se pudo obtener la foto de perfil:', error.response?.status)
         }
 
-        //  Buscar o crear el usuario
-        let user = await User.findOne({ where: { email } })
-
-        if (!user) {
-          user = await User.create({
-            email,
-            nombre: nombreDesdeMicrosoft || null,
-            password: null,
-            rol: 'usuario',
-            foto_perfil: photoUrl || null,
-            cargo: cargo || null, // 👈 Nuevo campo
-            empresa: empresa || null, // 👈 Opcional
-            departamento: departamento || null, // 👈 Opcional
-          })
-        } else {
+  
+        if (user) {
           //  Si el usuario ya existe, actualiza campos vacíos o nulos
           let updated = false
 
           if ((!user.nombre || user.nombre.trim() === '') && nombreDesdeMicrosoft) {
             user.nombre = nombreDesdeMicrosoft
-            updated = true
-          }
-          if (!user.cargo && cargo) {
-            user.cargo = cargo
-            updated = true
-          }
-          if (!user.empresa && empresa) {
-            user.empresa = empresa
-            updated = true
-          }
-          if (!user.departamento && departamento) {
-            user.departamento = departamento
             updated = true
           }
           if (photoUrl) {

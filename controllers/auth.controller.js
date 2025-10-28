@@ -44,6 +44,10 @@ export const AuthController = {
       if (user.invalidDomain) {
         return res.redirect(`${FRONTEND_REDIRECT_URL}/?error=dominio`);
       }
+      if (user.notRegistered) {
+        return res.redirect(`${FRONTEND_REDIRECT_URL}/?error=no_registrado`);
+      }
+
       const token = generateToken(user, SECRET_JWT_KEY);
       setAuthCookie(res, token);
 
