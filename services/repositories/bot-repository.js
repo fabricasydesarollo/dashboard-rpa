@@ -535,6 +535,19 @@ export class BotRepository {
 
     return historiasAplanadas;
   }
+
+  static async reprocesarHistoriaClinica(id){
+    const trazabilidad = await TrazabilidadEnvio.findByPk(id);
+    // verificar si existe la trazabilidad
+    if (!trazabilidad) {
+      const error = new Error('Trazabilidad no encontrada');
+      error.status = 404;
+      throw error;
+    }
+    // actualizar la trazabilidad
+    await trazabilidad.update({ estado_envio: 'pendiente', motivo_fallo: null, fecha_envio: null });  
+  }
+
   static async activateBotPatologia(id, fecha) {
     try {
       console.log(`Activando bot de patología para la fecha: ${fecha}, log ID: ${id}`);

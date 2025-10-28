@@ -52,6 +52,8 @@ router.get('/allmetricas', authenticateToken, BotController.getAllBotMetrics);
 router.get('/metricas/bot', authenticateToken, BotController.getBotMetrics); 
 //obtener solicitudes pendientes
 router.get('/solicitudes/pendientes', BotController.getPendingSolicitudes);
+// reprocesar historia clinica
+router.put('/reprocesar/historia-clinica/:id', authenticateToken, HistoriaClinicaController.reprocesarHistoriaClinica);
 
 
 export default router;

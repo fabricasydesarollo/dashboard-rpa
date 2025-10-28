@@ -28,5 +28,17 @@ export const HistoriaClinicaController = {
       console.error(err);
       res.status(err.status || 400).json({ error: err.message || 'Error al obtener las historias_clínicas' });
     }
+  },
+  async reprocesarHistoriaClinica(req, res) {
+    try {
+      const { id } = req.params; // se usa para rutas tipo: /reprocesar/historia-clinica/:id y en el axios del front va asi: `reprocesar/historia-clinica/${id}`
+      //console.log('id recibida: ',id);
+      await BotRepository.reprocesarHistoriaClinica(Number(id));
+      res.status(200).json({ message: 'Trazabilidad reprocesada correctamente' });
+    }
+    catch (err) {
+      console.error(err);
+      return res.status(err.status || 400).json({ error: err.error || 'Error al reprocesar la trazabilidad' });
+    }
   }
 };
