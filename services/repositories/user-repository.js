@@ -118,7 +118,7 @@ export class UserRepository {
     }
   }
   // crear nuevo usuario
-  static async createUser(email, nombre, rol) {
+  static async createUser(email, nombre, rol, cargo) {
     // Validar que el email no exista ya  
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
@@ -128,7 +128,8 @@ export class UserRepository {
     const newUser = await User.create({
       email,
       nombre,
-      rol
+      rol,
+      cargo
     });
     return newUser;
   }

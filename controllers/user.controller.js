@@ -17,8 +17,8 @@ export const UserController = {
   // funcion para crear un nuevo usuario
   async createUser(req, res) {
     try {
-      const { email, nombre, rol } = req.body;
-      const newUser = await UserRepository.createUser(email, nombre, rol);
+      const { email, nombre, rol, cargo } = req.body;
+      const newUser = await UserRepository.createUser(email, nombre, rol, cargo);
       res.status(201).json({ message: 'Usuario creado correctamente', user: newUser });
     }
     catch (err) {
