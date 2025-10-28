@@ -22,8 +22,8 @@ async function getMicrosoftProfile(accessToken) {
 passport.use(
   new MicrosoftStrategy(
     {
-      clientID: clientId,
-      clientSecret: clientSecret,
+      clientID: `${clientId}`,
+      clientSecret: `${clientSecret}`,
       callbackURL: `${BASE_URL}${portPart}/api/auth/microsoft/callback`,
       scope: ['openid', 'profile', 'email', 'User.Read'],
     },
