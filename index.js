@@ -3,10 +3,11 @@ import cors from 'cors'
 import coockieParser from 'cookie-parser' // Importar cookie-parser para manejar cookies
 import { testConnection } from './db/database.js';
 import authRoutes from './routes/auth.routes.js'; // Ajusta el path si está en otra carpeta
-import botRoutes from './routes/bot.routes.js'; // Asegúrate de que esta ruta es correcta
-import socketRoutes from './routes/socket.routes.js'; // Asegúrate de que esta ruta es correcta
-import notificacionRoutes from './routes/notificacion.routes.js'; // Asegúrate de que esta ruta es correcta
-import mailRoutes from './routes/mailRoutes.js'; // Asegúrate de que esta ruta es correcta
+import botRoutes from './routes/bot.routes.js'; // 
+import socketRoutes from './routes/socket.routes.js'; // 
+import notificacionRoutes from './routes/notificacion.routes.js'; // 
+import mailRoutes from './routes/mailRoutes.js'; // 
+import userRoutes from './routes/user.routes.js'; // 
 import http from 'http';
 import https from 'https'
 import fs from 'fs'
@@ -84,6 +85,8 @@ io.on('connection', (socket) => {
 });
 // para validar que el usuario esta autentificado para ingresar a las rutas se usa authenticateToken
 app.use('/api/auth', authRoutes);
+
+app.use('/api/user', userRoutes);
 
 app.use('/api/notificaciones', notificacionRoutes);
 

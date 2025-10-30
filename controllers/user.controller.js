@@ -38,8 +38,20 @@ export const UserController = {
       console.error(err);
       return res.status(err.status || 400).json({ error: err.error || 'Error al eliminar el usuario' });
     }
+  },
+
+  async updateProfileUser(req, res) {
+    try { // Obtener el id de los parámetros de la ruta
+      const userData = req.body; // Obtener los datos a actualizar del cuerpo de la solicitud
+      //console.log('usuario recibido: ',userData);
+      
+      await UserRepository.updateProfileUser(userData);
+
+      res.status(200).json({ message: 'Usuario Actualizado correctamente' });;
+    } catch (err) {
+      console.error(err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al actualizar el perfil del usuario' });
+    }
   }
-
-
 };
 

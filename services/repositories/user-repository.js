@@ -144,4 +144,17 @@ export class UserRepository {
     await user.destroy();
   }
 
+  static async updateProfileUser(userData) {
+    const user = await User.findByPk(userData.id);
+
+    if (!user) {
+      throw { status: 404, error: 'Usuario no encontrado' };
+    }
+    // Actualizar los campos permitidos
+    user.cargo = userData.cargo || user.cargo;
+    user.departamento = userData.departamento || user.departamento;
+    user.empresa = userData.empresa || user.empresa;
+    await user.save();
+    //console.log('usuario actualizado: ', user.toJSON());
+  }
 }
