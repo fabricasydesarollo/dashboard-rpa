@@ -23,9 +23,9 @@ Log.init({
     allowNull: true
   },
   estado: {
-    type: DataTypes.ENUM('exito', 'proceso', 'error'),
+    type: DataTypes.ENUM('exito', 'proceso', 'error','pendiente'),
     allowNull: false,
-    defaultValue: 'proceso'
+    defaultValue: 'pendiente'
   },
   fecha_log: {
     type: DataTypes.DATE,

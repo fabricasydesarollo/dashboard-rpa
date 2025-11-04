@@ -33,9 +33,9 @@ Registro.init({
     allowNull: true
   },
   estado: {
-    type: DataTypes.ENUM('exito', 'proceso', 'error'),
+    type: DataTypes.ENUM('exito', 'proceso', 'error','pendiente'),
     allowNull: false,
-    defaultValue: 'proceso'
+    defaultValue: 'pendiente'
   },
   fecha_ejecucion: {
     type: DataTypes.DATE,
