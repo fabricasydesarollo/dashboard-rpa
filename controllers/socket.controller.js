@@ -182,7 +182,8 @@ export const SocketController = {
             await trazabilidad.update({
               estado_envio: data.estado_envio || 'pendiente',
               motivo_fallo: data.motivo_fallo || null,
-              fecha_envio: data.fecha_envio || new Date()
+              fecha_envio: data.fecha_envio || new Date(),
+              duracion: data.duracion || null
             }, { transaction: t });
           }else{ omitir = true}
         } else {
@@ -192,7 +193,8 @@ export const SocketController = {
             maquina_id: data.maquina_id || 1,
             estado_envio: data.estado_envio || 'pendiente',
             motivo_fallo: data.motivo_fallo || null,
-            fecha_envio: data.fecha_envio || null
+            fecha_envio: data.fecha_envio || null,
+            duracion: data.duracion || null
           }, { transaction: t });
         }
 
