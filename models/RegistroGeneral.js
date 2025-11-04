@@ -31,6 +31,10 @@ RegistroGeneral.init({
     type: DataTypes.DATE,
     allowNull: true,
     defaultValue: DataTypes.NOW
+  },
+  duracion: {
+    type: DataTypes.FLOAT,
+    allowNull: true
   }
 }, {
   sequelize,

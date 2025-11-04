@@ -55,6 +55,10 @@ TrazabilidadEnvio.init({
       return localDate.toISOString().slice(0, 19).replace('T', ' ');
     }
     
+  },
+  duracion: {
+    type: DataTypes.FLOAT,
+    allowNull: true
   }
 }, {
   sequelize,
