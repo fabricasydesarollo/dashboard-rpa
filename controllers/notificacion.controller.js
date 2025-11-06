@@ -7,8 +7,9 @@ export class NotificacionController {
       const userId = req.user.user_id; // viene del middleware authenticateToken
       const notificaciones = await NotificationService.getByUser(userId);
       res.json({ status: 'ok', data: notificaciones });
-    } catch (error) {
-      res.status(500).json({ status: 'error', message: error.message });
+    } catch (err) {
+      console.log(err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al obtener las notificaciones' });
     }
   }
 
@@ -28,8 +29,9 @@ export class NotificacionController {
       const { id } = req.params;
       await NotificationService.markAsRead(id);
       res.json({ status: 'ok', message: 'Notificación marcada como leída' });
-    } catch (error) {
-      res.status(500).json({ status: 'error', message: error.message });
+    } catch (err) {
+      console.log(err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al Actualizar notificacion' });
     }
   }
 
@@ -38,8 +40,9 @@ export class NotificacionController {
       const { id } = req.params;
       await NotificationService.delete(id);
       res.json({ status: 'ok', message: 'Notificación eliminada' });
-    } catch (error) {
-      res.status(500).json({ status: 'error', message: error.message });
+    } catch (err) {
+      console.log(err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al Eliminar notificacion' });
     }
   }
 
@@ -48,8 +51,9 @@ export class NotificacionController {
       const userId = req.user.user_id;
       await NotificationService.markAllAsRead(userId);
       res.json({ status: 'ok', message: 'Todas las notificaciones fueron marcadas como leídas' });
-    } catch (error) {
-      res.status(500).json({ status: 'error', message: error.message });
+    } catch (err) {
+      console.log(err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al marcar todas las notificaciones como leídas' });
     }
   }
 
@@ -60,8 +64,9 @@ export class NotificacionController {
       console.log(`Todas las notificaciones del usuario ${userId} fueron eliminadas`);
       
       res.json({ status: 'ok', message: 'Todas las notificaciones fueron eliminadas' });
-    } catch (error) {
-      res.status(500).json({ status: 'error', message: error.message });
+    } catch (err) {
+      console.log(err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al eliminar todas las notificaciones' });
     }
   }
 
