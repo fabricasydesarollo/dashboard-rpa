@@ -29,6 +29,7 @@ async function emitirNotificaciones(io, modulosConTipo = []) {
 async function crearNotificacion(modulo, tipo) {
   let notificacionBase = null;
   let destinatarios = []; // Array de user_id
+  let botsRelacionados = null;
 
   switch(tipo) {
     case 'bot':
@@ -59,7 +60,7 @@ async function crearNotificacion(modulo, tipo) {
       const log = modulo; // instancia de Log (Sequelize)
 
       // Asegurarse de tener el bot asociado
-      let botsRelacionados =  await Bot.findByPk(log.bot_id);
+      botsRelacionados =  await Bot.findByPk(log.bot_id);
       const usuariosLog = await botsRelacionados.getUsers();
       destinatarios = usuariosLog.map(u => u.id);
       if (log.estado === 'error') {
@@ -81,7 +82,13 @@ async function crearNotificacion(modulo, tipo) {
     
     case 'solicitud_usuario':
       const solicitud = modulo;
-      destinatarios = [solicitud.user_id]; // solo el dueño de la solicitud
+      botsRelacionados = await Bot.findByPk(solicitud.bot_id);
+
+      let usuarios = await botsRelacionados.getUsers();
+
+      destinatarios = usuarios.filter(u => u.id === solicitud.user_id ||  u.rol === 'admin' || u.rol === 'supervisor' ).map(u => u.id);
+      
+      //destinatarios = [solicitud.user_id]; // solo el dueño de la solicitud
 
       if (solicitud.estado === 'error') {
         notificacionBase = {
@@ -100,6 +107,7 @@ async function crearNotificacion(modulo, tipo) {
           destino: { modal: 'solicitud_usuario', solicitud_id: solicitud.id }
         };
       }
+      console.log('destinatarios solicitud usuario:', destinatarios);
       break;
 
     case 'historia_clinica': 
