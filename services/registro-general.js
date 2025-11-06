@@ -12,6 +12,7 @@ export const RegistroGeneralService = {
           bot_id: data.bot_id,
           mensaje: data.mensaje,
           estado: data.estado,
+          duracion: data.duracion,
           fecha_ejecucion: data.fecha_ejecucion || new Date(),
         }, { transaction: t }),
 

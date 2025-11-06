@@ -13,7 +13,7 @@ export const BotController = {
       return res.status(201).json({ bot: newBot });
     } catch (err) {
       console.error('Error al crear el bot:', err);
-      return res.status(500).json({ error: 'Error al crear el bot' });
+      return res.status(err.status || 500).json({ error: err.error || 'Error al crear el bot' });
     }
   },
   async update(req, res) {
@@ -92,9 +92,9 @@ export const BotController = {
       const usuario = await BotRepository.addBotsToUser(userId, botsId);
 
       return res.status(200).json(usuario);
-    } catch (error) {
-      console.error('Error en addBotsToUser:', error);
-      return res.status(500).json({ error: 'Error al actualizar bots del usuario' });
+    } catch (err) {
+      console.error('Error en addBotsToUser:', err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al actualizar bots del usuario' });
     }
   },
 
@@ -110,7 +110,7 @@ export const BotController = {
       return res.status(200).json(updatedUser);
     } catch (err) {
       console.error('Error al actualizar rol:', err);
-      return res.status(500).json({ error: 'Error interno al actualizar el rol del usuario' });
+      return res.status(err.status || 500).json({ error: err.error || 'Error al actualizar el rol del usuario' });
     }
   },
 
@@ -132,9 +132,9 @@ export const BotController = {
       const io = req.app.get('io');
       io.emit('nueva_solicitud', solicitud, Number(user_id));  // se emite la solicitud creadaen tiempo real a los demas usuarios en este caso admin o supervisor 
       return res.status(200).json(solicitud);
-    } catch (error) {
-      console.error('Error en createSolicitud:', error);
-      return res.status(500).json({ error: 'Error al crear la solicitud del usuario' });
+    } catch (err) {
+      console.error('Error en createSolicitud:', err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al crear la solicitud del usuario' });
     }
   },
   async activateBotPatologia(req, res) {
@@ -143,9 +143,9 @@ export const BotController = {
 
       const log = await BotRepository.activateBotPatologia(id,fecha);
       return res.status(200).json(log);
-    } catch (error) {
-      console.error('Error en activateBotPatologia:', error);
-      return res.status(500).json({ error: 'Error al activar el bot de patología' });
+    } catch (err) {
+      console.error('Error en activateBotPatologia:', err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al activar el bot de patología' });
     }
   },
   async getAllBotMetrics(req, res) {
@@ -153,9 +153,9 @@ export const BotController = {
       const { userId } = req.query;
       const metrics = await BotRepository.getAllBotMetrics(userId);
       return res.status(200).json(metrics);
-    } catch (error) {
-      console.error('Error en getBotMetrics:', error);
-      return res.status(500).json({ error: 'Error al obtener las métricas de los bots' });
+    } catch (err) {
+      console.error('Error en getBotMetrics:', err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al obtener las métricas de los bots' });
     }
   },
   async getBotMetrics(req, res) {
@@ -163,18 +163,18 @@ export const BotController = {
       const { botId } = req.query;  
       const metrics = await BotRepository.getBotMetrics(Number(botId));
       return res.status(200).json(metrics);   
-    } catch (error) {
-      console.error('Error en getBotMetrics:', error);
-      return res.status(500).json({ error: 'Error al obtener las métricas del bot' });
+    } catch (err) {
+      console.error('Error en getBotMetrics:', err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al obtener las métricas del bot' });
     }
   },
   async getPendingSolicitudes(req, res) {
     try {
       const solicitudes = await BotRepository.getPendingSolicitudes();
       return res.status(200).json(solicitudes);
-    } catch (error) {
-      console.error('Error en getPendingSolicitudes:', error);
-      return res.status(500).json({ error: 'Error al obtener las solicitudes pendientes' });
+    } catch (err) {
+      console.error('Error en getPendingSolicitudes:', err);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al obtener las solicitudes pendientes' });
     }
   }
 };

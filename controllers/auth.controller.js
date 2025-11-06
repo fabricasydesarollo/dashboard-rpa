@@ -32,8 +32,8 @@ export const AuthController = {
         return res.status(404).json({ error: 'Usuario no encontrado' });
       }
       res.json(user);
-    } catch (error) {
-      res.status(500).json({ error: 'Error al obtener el usuario' });
+    } catch (err) {
+      return res.status(err.status || 400).json({ error: err.error || 'Error al obtener el usuario' });
     }
   },
 

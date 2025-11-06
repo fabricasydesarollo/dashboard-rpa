@@ -19,7 +19,7 @@ export class BotRepository {
     try {
       // antes de crear el bot validemos si el usuario es administrador si no lo es no puede crear un bot
       const user = await User.findByPk(user_id);
-      console.log('user: ',user_id);
+      //console.log('user: ',user_id);
       
       if (user.rol !== 'admin') {
         const error = new Error('Usuario No Autorizado');
@@ -51,7 +51,7 @@ export class BotRepository {
     } catch (error) {
       await transaction.rollback();
       console.error('Error en BotRepository.create:', error);
-      throw { status: 500, error: 'Error al crear el bot en la base de datos' };
+      throw { status: 500, error: 'Error al crear el bot' };
     }
   }
   static async update(botData, user_id) {
@@ -389,7 +389,9 @@ export class BotRepository {
       include: [{ model: Bot, as: 'Bots' }]
     });
     if (!user) {
-      throw new Error('Usuario no encontrado');
+      const error = new Error('No se encontro el usuario');
+      error.status = 404;
+      throw error;
     }
 
     user.rol = rol;
