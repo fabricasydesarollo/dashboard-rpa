@@ -11,7 +11,7 @@ export const LogBotService = {
       const log = await Log.create({
         bot_id: data.bot_id,
         mensaje: data.mensaje,
-        estado: data.estado || 'proceso',
+        estado: data.estado || 'pendiente',
         fecha_log: data.fecha_log || new Date(),
         duracion: data.duracion || '00:00:00' ,
       }, { transaction: t });
@@ -19,8 +19,6 @@ export const LogBotService = {
       // Actualizar estado del bot
       await Bot.update({
         estado: data.estado_bot || 'ejecucion',
-        total_registros: data.total_registros,
-        procesados: data.procesados || 0
       }, {
         where: { id: data.bot_id },
         transaction: t
