@@ -123,3 +123,14 @@ Paciente.hasMany(AutorizacionBot, {
 AutorizacionBot.belongsTo(Paciente, {
   foreignKey: 'paciente_id'
 });
+
+// Bot -> Autorizaciones
+Bot.hasMany(AutorizacionBot, {
+  foreignKey: 'bot_id',
+  onDelete: 'CASCADE', // o SET NULL si quieres conservar historial aunque el bot se elimine
+});
+
+// Autorización -> Bot
+AutorizacionBot.belongsTo(Bot, {
+  foreignKey: 'bot_id'
+});

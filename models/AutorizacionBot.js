@@ -18,6 +18,15 @@ AutorizacionBot.init({
     },
     onDelete: 'SET NULL'
   },
+  bot_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'bots',
+      key: 'id'
+    },
+    onDelete: 'SET NULL'
+  },
   idOrden: {
     type: DataTypes.BIGINT,
     allowNull: true
