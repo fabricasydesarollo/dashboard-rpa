@@ -551,7 +551,8 @@ export class BotRepository {
           model: Bot,
           attributes: ['nombre']
         }
-      ]
+      ],
+      order: [['fechaAutorizacion', 'DESC']]
     });
 
     if (!autorizaciones.length) {
