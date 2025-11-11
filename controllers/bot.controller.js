@@ -4,6 +4,7 @@ import { BotRepository } from '../services/repositories/bot-repository.js';
 import { sequelize } from '../db/database.js';
 import { AutorizacionBot } from '../models/AutorizacionBot.js';
 import { Paciente } from '../models/Paciente.js';
+import { Bot } from '../models/Bot.js';
 import path from 'path';
 
 
@@ -191,11 +192,10 @@ export const BotController = {
   },
   async createAutorizacion(req, res) {
     const data = req.body;
-
     const t = await sequelize.transaction();
 
     try {
-      // Verificar si el paciente ya existe
+      // 1. Buscar o crear Paciente
       let paciente = await Paciente.findOne({
         where: { numero_identificacion: data.identificacion },
         transaction: t
@@ -204,12 +204,26 @@ export const BotController = {
       if (!paciente) {
         paciente = await Paciente.create({
           numero_identificacion: data.identificacion,
-          nombre: data.nombre, // nombre del paciente
-          correo_electronico: data.correo_electronico // opcional
+          nombre: data.nombre,
+          correo_electronico: data.correo_electronico
         }, { transaction: t });
       }
 
-      // Crear la autorización
+      // 2. Determinar estado del proceso
+      let estado_proceso = 'pendiente';
+
+      if (data.anulada == 1) {
+        estado_proceso = 'error';
+      } else if (data.ordenDuplicada == 1) {
+        estado_proceso = 'pendiente';
+      } else if (data.activoEPS == 0) {
+        estado_proceso = 'pendiente';
+      } else if (data.contratado == 1 && data.activoEPS == 1 && data.nroAutorizacionRadicado) {
+        estado_proceso = 'exito';
+      }
+      // Si no cumple, queda pendiente por defecto.
+
+      // 3. Crear autorización
       let autorizacion = await AutorizacionBot.create({
         paciente_id: paciente.id,
         bot_id: data.bot_id,
@@ -224,6 +238,7 @@ export const BotController = {
         cantidad: data.cantidad || null,
         numIngreso: data.numIngreso,
         numFolio: data.numFolio,
+        // Campos administrativos
         contratado: data.contratado || 0,
         ordenDuplicada: data.ordenDuplicada || 0,
         anulada: data.anulada || 0,
@@ -234,10 +249,11 @@ export const BotController = {
         fechaAutorizacion: data.fechaAutorizacion,
         fechaVencimiento: data.fechaVencimiento,
         inicio_proceso: data.inicio_proceso,
-        fin_proceso: data.fin_proceso
+        fin_proceso: data.fin_proceso,
+        estado: estado_proceso
       }, { transaction: t });
 
-      // Recargar la autorización incluyendo el paciente
+      // 4. Recargar con relaciones
       autorizacion = await AutorizacionBot.findByPk(autorizacion.id, {
         include: [
           {
@@ -251,16 +267,21 @@ export const BotController = {
         ],
         transaction: t
       });
-      // Confirmar la transacción
+
+      // 5. Confirmar transacción
       await t.commit();
 
       return res.status(201).json({ message: 'Autorización creada correctamente', autorizacion });
+
     } catch (error) {
       await t.rollback();
       console.error(error);
-      return res.status(500).json({ message: 'Error al crear la autorización', error: error.message });
+      return res.status(500).json({
+        message: 'Error al crear la autorización',
+        error: error.message
+      });
     }
-  },
-  
+  }
+
 };
 

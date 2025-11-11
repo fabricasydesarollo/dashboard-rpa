@@ -114,6 +114,11 @@ AutorizacionBot.init({
   fin_proceso: {
     type: DataTypes.DATE,
     allowNull: true
+  },
+  estado: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    defaultValue: 'pendiente'
   }
 }, {
   sequelize,
