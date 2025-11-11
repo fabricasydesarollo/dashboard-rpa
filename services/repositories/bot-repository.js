@@ -8,6 +8,7 @@ import {  HistoriaClinica } from '../../models/HistoriaClinica.js';
 import { Paciente } from '../../models/Paciente.js';
 import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js';
 import { RegistroGeneral } from '../../models/RegistroGeneral.js';
+import { AutorizacionBot } from '../../models/AutorizacionBot.js';
 import {Log } from '../../models/Log.js';
 import axios from 'axios';
 import { Op } from 'sequelize';
@@ -536,6 +537,30 @@ export class BotRepository {
     });
 
     return historiasAplanadas;
+  }
+
+  static async getAutorizaciones() {
+    //cargar todas las autorizaciones
+    const autorizaciones = await AutorizacionBot.findAll({
+      include: [
+        {
+          model: Paciente,
+          attributes: ['numero_identificacion', 'nombre', 'correo_electronico']
+        },
+        {
+          model: Bot,
+          attributes: ['nombre']
+        }
+      ]
+    });
+
+    if (!autorizaciones.length) {
+      const error = new Error('No se encontraron autorizaciones');
+      error.status = 404;
+      throw error;
+    }
+
+    return autorizaciones;
   }
 
   static async reprocesarHistoriaClinica(id){

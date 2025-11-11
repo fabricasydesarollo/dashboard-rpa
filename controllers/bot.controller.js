@@ -180,6 +180,15 @@ export const BotController = {
       return res.status(err.status || 500).json({ error: err.error || 'Error al obtener las solicitudes pendientes' });
     }
   },
+  async getAutorizaciones(req, res) {
+    try {
+      const autorizaciones = await BotRepository.getAutorizaciones();
+      return res.status(200).json(autorizaciones);
+    } catch (error) {
+      console.error(error);
+      return res.status(err.status || 500).json({ error: err.error || 'Error al obtener las autorizaciones' });
+    }
+  },
   async createAutorizacion(req, res) {
     const data = req.body;
 
@@ -201,7 +210,7 @@ export const BotController = {
       }
 
       // Crear la autorización
-      const autorizacion = await AutorizacionBot.create({
+      let autorizacion = await AutorizacionBot.create({
         paciente_id: paciente.id,
         bot_id: data.bot_id,
         idOrden: data.idOrden || null,
@@ -228,13 +237,30 @@ export const BotController = {
         fin_proceso: data.fin_proceso
       }, { transaction: t });
 
+      // Recargar la autorización incluyendo el paciente
+      autorizacion = await AutorizacionBot.findByPk(autorizacion.id, {
+        include: [
+          {
+            model: Paciente,
+            attributes: ['numero_identificacion', 'nombre', 'correo_electronico']
+          },
+          {
+            model: Bot,
+            attributes: ['nombre']
+          }
+        ],
+        transaction: t
+      });
+      // Confirmar la transacción
       await t.commit();
+
       return res.status(201).json({ message: 'Autorización creada correctamente', autorizacion });
     } catch (error) {
       await t.rollback();
       console.error(error);
       return res.status(500).json({ message: 'Error al crear la autorización', error: error.message });
     }
-  }
+  },
+  
 };
 

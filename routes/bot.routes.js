@@ -57,5 +57,7 @@ router.put('/reprocesar/historia-clinica/:id', authenticateToken, HistoriaClinic
 
 // Crear una nueva autorización
 router.post('/autorizacion', BotController.createAutorizacion);
+// obtener todas las autorizaciones
+router.get('/autorizaciones', BotController.getAutorizaciones);
 
 export default router;
