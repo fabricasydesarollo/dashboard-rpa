@@ -55,5 +55,7 @@ router.get('/solicitudes/pendientes', BotController.getPendingSolicitudes);
 // reprocesar historia clinica
 router.put('/reprocesar/historia-clinica/:id', authenticateToken, HistoriaClinicaController.reprocesarHistoriaClinica);
 
+// Crear una nueva autorización
+router.post('/autorizacion', BotController.createAutorizacion);
 
 export default router;

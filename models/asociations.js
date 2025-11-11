@@ -8,6 +8,7 @@ import { HistoriaClinica } from './HistoriaClinica.js';
 import { TrazabilidadEnvio } from './TrazabilidadEnvio.js';
 import { Notificacion } from './Notificacion.js';
 import { RegistroGeneral } from './RegistroGeneral.js';
+import { AutorizacionBot } from './AutorizacionBot.js';
 import { Log } from './Log.js';
 
 

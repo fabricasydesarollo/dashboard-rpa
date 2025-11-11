@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { UserRepository } from '../services/repositories/user-repository.js';
 import { BotRepository } from '../services/repositories/bot-repository.js';
+import { sequelize } from '../db/database.js';
+import { AutorizacionBot } from '../models/AutorizacionBot.js';
+import { Paciente } from '../models/Paciente.js';
 import path from 'path';
 
 
@@ -175,6 +178,62 @@ export const BotController = {
     } catch (err) {
       console.error('Error en getPendingSolicitudes:', err);
       return res.status(err.status || 500).json({ error: err.error || 'Error al obtener las solicitudes pendientes' });
+    }
+  },
+  async createAutorizacion(req, res) {
+    const data = req.body;
+
+    const t = await sequelize.transaction();
+
+    try {
+      // Verificar si el paciente ya existe
+      let paciente = await Paciente.findOne({
+        where: { numero_identificacion: data.identificacion },
+        transaction: t
+      });
+
+      if (!paciente) {
+        paciente = await Paciente.create({
+          numero_identificacion: data.identificacion,
+          nombre: data.nombre, // nombre del paciente
+          correo_electronico: data.correo_electronico // opcional
+        }, { transaction: t });
+      }
+
+      // Crear la autorización
+      const autorizacion = await AutorizacionBot.create({
+        paciente_id: paciente.id,
+        bot_id: data.bot_id,
+        idOrden: data.idOrden || null,
+        grupoAtencion: data.grupoAtencion || null,
+        empresa: data.empresa,
+        sede: data.sede || null,
+        fechaSolicitud: data.fechaSolicitud,
+        CUPS: data.CUPS,
+        desRelacionada: data.desRelacionada || null,
+        diagnostico: data.diagnostico || null,
+        cantidad: data.cantidad || null,
+        numIngreso: data.numIngreso,
+        numFolio: data.numFolio,
+        contratado: data.contratado || 0,
+        ordenDuplicada: data.ordenDuplicada || 0,
+        anulada: data.anulada || 0,
+        activoEPS: data.activoEPS || 1,
+        gestionadoTramita: data.gestionadoTramita || 0,
+        metodoRadicacion: data.metodoRadicacion,
+        nroAutorizacionRadicado: data.nroAutorizacionRadicado || null,
+        fechaAutorizacion: data.fechaAutorizacion,
+        fechaVencimiento: data.fechaVencimiento,
+        inicio_proceso: data.inicio_proceso,
+        fin_proceso: data.fin_proceso
+      }, { transaction: t });
+
+      await t.commit();
+      return res.status(201).json({ message: 'Autorización creada correctamente', autorizacion });
+    } catch (error) {
+      await t.rollback();
+      console.error(error);
+      return res.status(500).json({ message: 'Error al crear la autorización', error: error.message });
     }
   }
 };

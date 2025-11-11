@@ -31,10 +31,6 @@ AutorizacionBot.init({
     type: DataTypes.BIGINT,
     allowNull: true
   },
-  identificacion: {
-    type: DataTypes.STRING(20),
-    allowNull: false
-  },
   grupoAtencion: {
     type: DataTypes.STRING(100),
     allowNull: true
@@ -123,5 +119,11 @@ AutorizacionBot.init({
   sequelize,
   modelName: 'AutorizacionBot',
   tableName: 'autorizaciones_bot',
-  timestamps: true
+  timestamps: true,
+  indexes: [
+    { unique: true, fields: ['bot_id', 'idOrden'] }, // unique_bot_orden
+    { unique: true, fields: ['nroAutorizacionRadicado'] }, // unique_radicado
+    { unique: true, fields: ['paciente_id', 'idOrden'] }, // unique_paciente_orden
+    { unique: true, fields: ['numIngreso', 'numFolio'] } // unique_ingreso_folio
+  ]
 });
