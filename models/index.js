@@ -9,5 +9,6 @@ import './TrazabilidadEnvio.js'
 import './Notificacion.js'
 import './RegistroGeneral.js'
 import './Log.js'
+import './AutorizacionBot.js'
 import './asociations.js'
 console.log('Models imported successfully');

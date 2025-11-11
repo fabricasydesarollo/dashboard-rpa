@@ -112,3 +112,14 @@ Bot.hasMany(Log, {
 Log.belongsTo(Bot, {
   foreignKey: 'bot_id'
 });
+
+// Paciente -> Autorizaciones
+Paciente.hasMany(AutorizacionBot, {
+  foreignKey: 'paciente_id',
+  onDelete: 'SET NULL'  // si se elimina un paciente, las autorizaciones no se borran, solo se setea null
+});
+
+// Autorización -> Paciente
+AutorizacionBot.belongsTo(Paciente, {
+  foreignKey: 'paciente_id'
+});
