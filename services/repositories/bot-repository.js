@@ -144,8 +144,9 @@ export class BotRepository {
       }
 
       // 2️ Definir qué modelos usar
-      const registrosNormalesIds = [1, 2, 3];
+      const botRetiroUsuarios = [1, 2, 3];
       const botHistoriasClinicasId = 7;
+      const botAutorizacionesId = 10;
 
       const metricas = [];
 
@@ -153,7 +154,7 @@ export class BotRepository {
       for (const bot of user.Bots) {
         let resultados = [];
 
-        if (registrosNormalesIds.includes(bot.id)) {
+        if (botRetiroUsuarios.includes(bot.id)) {
           resultados = await Registro.findAll({
             where: { bot_id: bot.id },
             attributes: [
@@ -172,7 +173,16 @@ export class BotRepository {
             ],
             group: ['estado_envio']
           });
-
+        }
+          else if (bot.id === botAutorizacionesId) {
+          resultados = await AutorizacionBot.findAll({
+            where: { bot_id: bot.id },
+            attributes: [
+              'estado',
+              [sequelize.fn('COUNT', sequelize.col('estado')), 'total']
+            ],
+            group: ['estado']
+          });
         } else {
           resultados = await RegistroGeneral.findAll({
             where: { bot_id: bot.id },
@@ -223,13 +233,13 @@ export class BotRepository {
   }
   static async getBotMetrics(botId) {
     try {
-      const registrosNormalesIds = [1, 2, 3];
+      const botRetiroUsuarios = [1, 2, 3];
       const botHistoriasClinicasId = 7;
 
       let Model;
       let estadoCampo = 'estado';
 
-      if (registrosNormalesIds.includes(botId)) {
+      if (botRetiroUsuarios.includes(botId)) {
         Model = Registro;
       } else if (botId === botHistoriasClinicasId) {
         Model = TrazabilidadEnvio;
