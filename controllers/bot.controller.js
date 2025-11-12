@@ -186,8 +186,8 @@ export const BotController = {
       const autorizaciones = await BotRepository.getAutorizaciones();
       return res.status(200).json(autorizaciones);
     } catch (err) {
-      console.error(err);
-      return res.status(err.status || 500).json({ error: err.error || 'Error al obtener las autorizaciones' });
+      console.log(err);
+      return res.status(err.status || 500).json({ error: err.message || 'Error al obtener las autorizaciones' });
     }
   },
   async createAutorizacion(req, res) {

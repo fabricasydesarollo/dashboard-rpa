@@ -540,28 +540,37 @@ export class BotRepository {
   }
 
   static async getAutorizaciones() {
-    //cargar todas las autorizaciones
-    const autorizaciones = await AutorizacionBot.findAll({
-      include: [
-        {
-          model: Paciente,
-          attributes: ['numero_identificacion', 'nombre', 'correo_electronico']
-        },
-        {
-          model: Bot,
-          attributes: ['nombre']
-        }
-      ],
-      order: [['fechaAutorizacion', 'DESC']]
-    });
+    try {
+      //cargar todas las autorizaciones
+      const autorizaciones = await AutorizacionBot.findAll({
+        include: [
+          {
+            model: Paciente,
+            attributes: ['numero_identificacion', 'nombre', 'correo_electronico']
+          },
+          {
+            model: Bot,
+            attributes: ['nombre']
+          }
+        ],
+        order: [['fechaAutorizacion', 'DESC']]
+      });
+      
+      
+      if (!autorizaciones.length) {
+        console.log('autorizacion: ',autorizaciones);
+        const error = new Error('No se encontraron autorizaciones');
+        error.status = 404;
+        throw error;
+      }
 
-    if (!autorizaciones.length) {
-      const error = new Error('No se encontraron autorizaciones');
-      error.status = 404;
+      return autorizaciones;
+    } catch (error) {
+      //console.error('Error en BotRepository.getAutorizaciones:', error);
       throw error;
+    
     }
 
-    return autorizaciones;
   }
 
   static async reprocesarHistoriaClinica(id){
