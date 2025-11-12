@@ -11,11 +11,32 @@ import { NotificationService } from '../services/NotificationService.js';
 import { NotificationHelper } from '../utils/notificaciones.helper.js';
 import { RegistroGeneralController} from './registroGeneral.controller.js'
 import { LogController } from './logController.js';
+import { AutorizacionService } from '../services/autorizaciones.js'
 import { now } from 'sequelize/lib/utils';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
 
 export const SocketController = {
+
+  async createAutorizacion(req, res) {
+    try {
+      const resultados =  await AutorizacionService.createAutorizacionesMasivo(req.body);
+      console.log('autorizaciones: ', resultados);
+      //Emitir socket para cada AUTORIZACION creada
+      const io = req.app.get('io');
+      for (const { autorizacion, bot } of resultados) {
+        //console.log(' autorizacion; ', autorizacion, 'bot: ', bot);
+        io.emit('nueva_autorizacion', autorizacion, bot);
+        NotificationHelper.emitirNotificaciones(io, [
+          { modulo: bot, tipo: 'bot' }
+        ]);
+      }
+      res.json({ ok: true, resultados });
+    } catch (error) {
+      console.error('Error en SocketController.createAutorizacion:', error);
+    }
+  },
+
   async createLogBot(req, res) {
     try {
       const { log, bot } = await LogController.create(req, res);
