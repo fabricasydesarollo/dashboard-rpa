@@ -563,7 +563,7 @@ export class BotRepository {
             attributes: ['nombre']
           }
         ],
-        order: [['fechaAutorizacion', 'DESC']]
+        order: [['createdAt', 'DESC']]
       });
       
       
