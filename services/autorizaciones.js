@@ -33,13 +33,24 @@ export const AutorizacionService = {
           }, { transaction: t });
         }
 
-        // 2. Determinar estado del proceso
-        let estado_proceso = 'pendiente';
-        if (item.anulada == 1) estado_proceso = 'error';
-        else if (item.ordenDuplicada == 1) estado_proceso = 'pendiente';
-        else if (item.activoEPS == 0) estado_proceso = 'pendiente';
-        else if (item.contratado == 1 && item.activoEPS == 1 && item.nroAutorizacionRadicado)
-          estado_proceso = 'exito';
+        // 2. Determinar estado de la autorizacion
+        let estado_autoriza = null;
+
+        if (item.nroAutorizacionRadicado) {
+          // Normalizar: quitar espacios al inicio/final y convertir a mayúsculas para comparación segura
+          const radicado = String(item.nroAutorizacionRadicado).trim().toUpperCase();
+
+          // Verificar si comienza con "RPA-"
+          if (radicado.startsWith('RPA-')) {
+            estado_autoriza = 'radicado';
+          } else {
+            // Cualquier otro valor no vacío (números, otros prefijos, etc.) → autorizado
+            estado_autoriza = 'autorizado';
+          }
+        } else {
+          // Si es null, undefined, vacío, etc. → sin estado (o podrías usar 'pendiente' si aplica)
+          estado_autoriza = null; // o 'pendiente', según tu modelo
+        }
 
         // 3. Crear autorización
         let autorizacion = await AutorizacionBot.create({
@@ -67,7 +78,8 @@ export const AutorizacionService = {
           fechaVencimiento: item.fechaVencimiento,
           inicio_proceso: item.inicio_proceso,
           fin_proceso: item.fin_proceso,
-          estado: estado_proceso
+          estado: item.estado_proceso || 'exito',
+          estado_autorizacion: estado_autoriza || null
         }, { transaction: t });
 
         // 4. Recargar con relaciones

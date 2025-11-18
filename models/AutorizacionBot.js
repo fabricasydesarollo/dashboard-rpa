@@ -116,9 +116,12 @@ AutorizacionBot.init({
     allowNull: true
   },
   estado: {
-    type: DataTypes.STRING(20),
-    allowNull: true,
-    defaultValue: 'pendiente'
+    type: DataTypes.ENUM('exito', 'error', 'pendiente','proceso'),
+    allowNull: false
+  },
+  estado_autorizacion:{
+    type: DataTypes.ENUM('autorizado','radicado','rechazado','vencido','pendiente'),
+    allowNull: true
   }
 }, {
   sequelize,
@@ -126,9 +129,6 @@ AutorizacionBot.init({
   tableName: 'autorizaciones_bot',
   timestamps: true,
   indexes: [
-    { unique: true, fields: ['bot_id', 'idOrden'] }, // unique_bot_orden
-    { unique: true, fields: ['nroAutorizacionRadicado'] }, // unique_radicado
-    { unique: true, fields: ['paciente_id', 'idOrden'] }, // unique_paciente_orden
-    { unique: true, fields: ['numIngreso', 'numFolio'] } // unique_ingreso_folio
+    { unique: true, fields: ['idOrden'] } // único actual
   ]
 });

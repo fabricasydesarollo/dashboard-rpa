@@ -31,7 +31,11 @@ export const SocketController = {
           { modulo: bot, tipo: 'bot' }
         ]);
       }
-      res.json({ ok: true, resultados });
+      if (resultados.length > 0) {
+        res.json({ ok: true, resultados });
+      } else {
+        res.status(400).json({ ok: false, error: 'Hubo un error al crear la autorizacion' });
+      }
     } catch (error) {
       console.error('Error en SocketController.createAutorizacion:', error);
     }
