@@ -10,6 +10,7 @@ export const LogBotService = {
       // Crear el log general
       const log = await Log.create({
         bot_id: data.bot_id,
+        maquina_id: data.maquina_id || null,
         mensaje: data.mensaje,
         estado: data.estado || 'pendiente',
         fecha_log: data.fecha_log || new Date(),

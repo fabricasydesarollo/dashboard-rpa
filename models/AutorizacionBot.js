@@ -27,6 +27,11 @@ AutorizacionBot.init({
     },
     onDelete: 'SET NULL'
   },
+  maquina_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: null
+  },
   idOrden: {
     type: DataTypes.BIGINT,
     allowNull: true

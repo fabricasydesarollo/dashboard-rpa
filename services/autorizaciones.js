@@ -56,6 +56,7 @@ export const AutorizacionService = {
         let autorizacion = await AutorizacionBot.create({
           paciente_id: paciente.id,
           bot_id: item.bot_id,
+          maquina_id: item.maquina_id || null,
           idOrden: item.idOrden || null,
           grupoAtencion: item.grupoAtencion || null,
           empresa: item.empresa,
