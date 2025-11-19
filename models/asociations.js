@@ -9,6 +9,7 @@ import { TrazabilidadEnvio } from './TrazabilidadEnvio.js';
 import { Notificacion } from './Notificacion.js';
 import { RegistroGeneral } from './RegistroGeneral.js';
 import { AutorizacionBot } from './AutorizacionBot.js';
+import { Maquina } from './Maquina.js';
 import { Log } from './Log.js';
 
 
@@ -135,3 +136,75 @@ Bot.hasMany(AutorizacionBot, {
 AutorizacionBot.belongsTo(Bot, {
   foreignKey: 'bot_id'
 });
+
+
+// relaciones de Maquina
+// Bot -> Maquinas
+Bot.hasMany(Maquina, {
+  foreignKey: 'bot_id',
+  onDelete: 'CASCADE'
+});
+
+// Maquina -> Bot
+Maquina.belongsTo(Bot, {
+  foreignKey: 'bot_id'
+});
+
+// esto sera para cuando necesite cargar los registros asociados a una maquina -----------------------------------------
+
+/*// Maquina -> Registros 
+Maquina.hasMany(Registro, {
+  foreignKey: 'maquina_id',
+  onDelete: 'SET NULL'  //para conservar histórico
+});
+
+// Registro -> Maquina
+Registro.belongsTo(Maquina, {
+  foreignKey: 'maquina_id'
+});
+
+Maquina.hasMany(Registro, {
+  foreignKey: 'maquina_id',
+  onDelete: 'SET NULL'  //para conservar histórico
+});
+
+// RegistroGeneral -> Maquina
+RegistroGeneral.belongsTo(Maquina, {
+  foreignKey: 'maquina_id'
+});
+
+Maquina.hasMany(RegistroGeneral, {
+  foreignKey: 'maquina_id',
+  onDelete: 'SET NULL'  //para conservar histórico
+});
+
+// RegistroGeneral -> Maquina
+RegistroGeneral.belongsTo(Maquina, {
+  foreignKey: 'maquina_id'
+});
+
+// Maquina -> Trazabilidad de envíos
+Maquina.hasMany(TrazabilidadEnvio, {
+  foreignKey: 'maquina_id',
+  onDelete: 'SET NULL'
+});
+
+// TrazabilidadEnvio -> Maquina
+TrazabilidadEnvio.belongsTo(Maquina, {
+  foreignKey: 'maquina_id'
+});*/
+//---------------------------------------------------------------------------------------------------------------------------
+// Maquina -> Logs
+Maquina.hasMany(Log, {
+  foreignKey: 'maquina_id',
+  onDelete: 'SET NULL'
+});
+
+// Log -> Maquina
+Log.belongsTo(Maquina, {
+  foreignKey: 'maquina_id'
+});
+
+
+
+
