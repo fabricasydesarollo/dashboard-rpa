@@ -18,6 +18,11 @@ RegistroGeneral.init({
     },
     onDelete: 'CASCADE'
   },
+  maquina_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: null
+  },
   mensaje: {
     type: DataTypes.TEXT,
     allowNull: true

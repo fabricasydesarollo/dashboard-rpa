@@ -12,6 +12,7 @@ import { NotificationHelper } from '../utils/notificaciones.helper.js';
 import { RegistroGeneralController} from './registroGeneral.controller.js'
 import { LogController } from './logController.js';
 import { AutorizacionService } from '../services/autorizaciones.js'
+import { Maquina } from '../models/Maquina.js';
 import { now } from 'sequelize/lib/utils';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
@@ -79,70 +80,114 @@ export const SocketController = {
   
   async createRegistroAvidanti(req, res) {
     const t = await sequelize.transaction(); // crea la transacción
+
     try {
       const registro = req.body;
-      //console.log('registro recibido en socket:', registro);
-      
-      // 1. Crear el registro y actualizar bot en paralelo
+
+      // 1. Crear registro y actualizar bot en paralelo
       const [nuevoRegistro] = await Promise.all([
         Registro.create({
           bot_id: registro.bot_id,
           solicitud_id: registro.solicitud_id,
+          maquina_id: registro.maquina_id || null,
           mensaje: registro.mensaje,
           estado: registro.estado,
           fecha_ejecucion: registro.fecha_ejecucion || new Date(),
           duracion: registro.duracion
         }, { transaction: t }),
-
-        Bot.update({
-          total_registros: registro.total_registros,
-          updatedAt: new Date(),
-          procesados: registro.procesados,
-          estado: registro.estado_bot || 'activo'
-        }, {
-          where: { id: registro.bot_id },
-          transaction: t
-        })
       ]);
 
-      
+      // 2. Actualizar estado de máquinas
+      if (registro.maquina_id) {
+        // Buscar si la máquina existe
+        let maquina = await Maquina.findOne({
+          where: {
+            id: registro.maquina_id,
+            bot_id: registro.bot_id
+          },
+          transaction: t
+        });
+
+        if (maquina) {
+          // Si existe → actualizar
+          await maquina.update({
+            estado: registro.estado_bot || 'activo',
+            total_registros: registro.total_registros ?? maquina.total_registros,
+            procesados: registro.procesados ?? maquina.procesados
+          }, { transaction: t });
+
+        } else {
+          // Si NO existe → crear nueva máquina
+          await Maquina.create({
+            id: registro.maquina_id,    // respetar ID recibido
+            bot_id: registro.bot_id,
+            estado: registro.estado_bot || 'activo',
+            total_registros: registro.total_registros || 0,
+            procesados: registro.procesados || 0
+          }, { transaction: t });
+        }
+
+      } else {
+
+        // Actualizar TODAS las máquinas del bot
+        await Maquina.update({
+          estado: registro.estado_bot || 'activo',
+          procesados: registro.procesados || 0,
+          total_registros: registro.total_registros || 0
+        }, {
+          where: { id:1, bot_id: registro.bot_id },
+          transaction: t
+        });
+
+      }
+      // 3. Actualizar solicitud
       await SolicitudUsuario.update(
         { estado: nuevoRegistro.estado },
-        { where: { id: registro.solicitud_id },
-        transaction: t 
+        { 
+          where: { id: registro.solicitud_id },
+          transaction: t 
+        }
+      );
+
+      // 4. Cargar bot con máquinas incluidas
+      const bot = await Bot.findByPk(registro.bot_id, { 
+        include: [
+          { model: Maquina, } ],
+        transaction: t
       });
 
-      const bot = await Bot.findByPk(registro.bot_id, { transaction: t });
+      // 5. Cargar la solicitud completa
       const solicitud = await SolicitudUsuario.findByPk(registro.solicitud_id, {
         include: [
           { model: User, attributes: ['nombre', 'cargo'] },
           { model: Bot, attributes: ['nombre'] },
           { model: Registro, as: 'Registro', attributes: ['mensaje'] }
-        ], 
-        transaction: t 
-        });
-      //console.log('solicitud actualizada', solicitud);
-      // 3. Confirmar (commit)
+        ],
+        transaction: t
+      });
+
+      // 6. Confirmar transacción
       await t.commit();
 
-      // Emitir a todos los clientes conectados
+      // Emitir data en tiempo real
       const io = req.app.get('io');
       io.emit('nuevo_registro', nuevoRegistro, bot, solicitud);
-      // enviar las notificaciones correspondientes segun el estado de cada modulo
+
       NotificationHelper.emitirNotificaciones(io, [
         { modulo: bot, tipo: 'bot' },
         { modulo: nuevoRegistro, tipo: 'registro' },
         { modulo: solicitud, tipo: 'solicitud_usuario' }
       ]);
+
       res.json({ ok: true, nuevoRegistro, bot, solicitud });
 
     } catch (error) {
-      // ❌ Revertir si algo falla
       await t.rollback();
       console.error('Error al crear registro (rollback ejecutado):', error);
       res.status(500).json({ ok: false, error: 'Error al crear registro' });
     }
   },
+
 
   async createOrUpdateHistoriaClinica(req, res) {
     const t = await sequelize.transaction();
@@ -222,16 +267,36 @@ export const SocketController = {
             duracion: data.duracion || null
           }, { transaction: t });
         }
+        // Ahora actualizar las máquinas de ese bot
+        if (data.maquina_id && omitir === false) {
+            // Actualizar solo una
+            await Maquina.update({
+                estado: data.estado_bot || 'activo',
+                procesados: data.procesados || 0 ,
+                total_registros: data.total_registros || 0
+            }, {
+                where: {
+                    id: data.maquina_id,
+                    bot_id: data.bot_id
+                },
+                transaction: t
+            });
 
-        // 4. Actualizar bot en paralelo (solo si viene bot_id)
-        let bot = await Bot.findByPk(data.bot_id, { transaction: t });
-        if (bot) {
-            await bot.update({
-              total_registros: data.total_registros || bot.total_registros,
-              procesados: data.procesados || bot.procesados,
-              estado: data.estado_bot || 'activo',
-            }, { transaction: t }); 
+        } else if (omitir === false) {
+            // Actualizar todas las máquinas del bot
+            await Maquina.update({
+                estado: data.estado_bot || 'activo',
+                procesados: data.procesados || 0 ,
+                total_registros: data.total_registros || 0
+            }, {
+                where: { bot_id: data.bot_id },
+                transaction: t
+            });
         }
+        let bot = await Bot.findByPk(data.bot_id, { 
+          include: { model: Maquina },     // <-- aquí cargas las máquinas
+          transaction: t 
+        });
 
         // 5. Consultar trazabilidad completa
         const trazabilidadCompleta = await TrazabilidadEnvio.findByPk(trazabilidad.id, {
@@ -266,7 +331,7 @@ export const SocketController = {
         }
       }
 
-      res.json({ ok: true, cantidad: resultados.length, });
+      res.json({ ok: true, cantidad: resultados.length, resultados });
     } catch (error) {
       await t.rollback();
       console.error('Error en createOrUpdateHistoriaClinica (rollback ejecutado):', error);

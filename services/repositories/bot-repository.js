@@ -9,6 +9,7 @@ import { Paciente } from '../../models/Paciente.js';
 import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js';
 import { RegistroGeneral } from '../../models/RegistroGeneral.js';
 import { AutorizacionBot } from '../../models/AutorizacionBot.js';
+import { Maquina } from '../../models/Maquina.js';
 import {Log } from '../../models/Log.js';
 import axios from 'axios';
 import { Op } from 'sequelize';
@@ -28,10 +29,19 @@ export class BotRepository {
         throw error; 
       }
       // 1️ Crear el bot
-      const newBot = await Bot.create(
+      let newBot = await Bot.create(
         { nombre: botData.nombre,  descripcion: botData.descripcion,  estado: 'activo' },
         { transaction }
       );
+      // crear la maquina inicial para el bot
+      await Maquina.create({
+        id: 1,
+        bot_id: newBot.id,
+        estado: 'activo',
+        procesados: 0,
+        total_registros: 0
+      }, { transaction });
+
       // 2️ Buscar todos los usuarios con rol 'admin'
       const admins = await User.findAll({
         where: { rol: 'admin' },
@@ -45,6 +55,11 @@ export class BotRepository {
       }));
 
       await UsuarioBot.bulkCreate(relaciones, { transaction });
+      newBot = await Bot.findByPk(newBot.id, {
+        include: { model: Maquina },
+        transaction
+      });
+
       // 4️ Confirmar la transacción
       await transaction.commit();
 
@@ -121,22 +136,26 @@ export class BotRepository {
     const user = await User.findByPk(user_id, {
       include: {
         model: Bot,
-        through: { attributes: [] } // No incluir datos de la tabla intermedia
+        through: { attributes: [] },
+        include: [ { model: Maquina,}]//  incluir máquinas asociadas al bot
       }
     });
 
-    if (!user){('Usuario no encontrado');
+    if (!user) {
+      throw new Error('Usuario no encontrado');
     }
 
-    return user.Bots; // Array de bots relacionados al usuario
+    return user.Bots; // Los bots vienen ya con maquinas incluidas
   }
+
   static async getAllBotMetrics(userId) {
     try {
       // 1️⃣ Buscar usuario con sus bots
       const user = await User.findByPk(userId, {
         include: {
           model: Bot,
-          through: { attributes: [] }
+          through: { attributes: [] },
+          include: [ { model: Maquina,}]//  incluir máquinas asociadas al bot
         }});
 
       if (!user) {

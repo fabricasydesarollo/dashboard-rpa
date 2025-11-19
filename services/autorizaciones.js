@@ -2,6 +2,7 @@ import { sequelize } from '../db/database.js';
 import { AutorizacionBot } from '../models/AutorizacionBot.js';
 import { Bot } from '../models/Bot.js';
 import { Paciente } from '../models/Paciente.js';
+import { Maquina } from '../models/Maquina.js';
 
 export const AutorizacionService = {
   async createAutorizacionesMasivo(data) {
@@ -92,15 +93,52 @@ export const AutorizacionService = {
           transaction: t
         });
         
+        if (item.maquina_id) {
+          // Buscar si la máquina existe
+          let maquina = await Maquina.findOne({
+            where: {
+              id: item.maquina_id,
+              bot_id: item.bot_id
+            },
+            transaction: t
+          });
 
-        let bot = await Bot.findByPk(item.bot_id, { transaction: t });
-        if (bot) {
-          await bot.update({
-            total_registros: item.total_registros || bot.total_registros,
-            procesados: item.procesados || bot.procesados,
+          if (maquina) {
+            // Si existe → actualizar
+            await maquina.update({
+              estado: item.estado_bot || 'activo',
+              total_registros: item.total_registros ?? maquina.total_registros,
+              procesados: item.procesados ?? maquina.procesados
+            }, { transaction: t });
+
+          } else {
+            // Si NO existe → crear nueva máquina con ese ID
+            await Maquina.create({
+              id: item.maquina_id,        // IMPORTANTE: respetas el id que viene
+              bot_id: item.bot_id,
+              estado: item.estado_bot || 'activo',
+              total_registros: item.total_registros || 0,
+              procesados: item.procesados || 0
+            }, { transaction: t });
+          }
+
+        } else {
+          // Si no mandan maquina_id → actualizar todas las del bot
+          await Maquina.update({
             estado: item.estado_bot || 'activo',
-          }, { transaction: t }); 
+            total_registros: item.total_registros || 0,
+            procesados: item.procesados || 0
+          }, {
+            where: { id: 1, bot_id: item.bot_id },
+            transaction: t
+          });
         }
+
+        let bot = await Bot.findByPk(item.bot_id, { 
+          include: { model: Maquina },     
+          transaction: t 
+        });
+
         // 5. Confirmar transacción
         await t.commit();
         resultados.push({ autorizacion: autorizacion, bot});

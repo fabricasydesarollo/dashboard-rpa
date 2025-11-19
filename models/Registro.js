@@ -18,6 +18,11 @@ Registro.init({
     },
     onDelete: 'CASCADE'
   },
+  maquina_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: null
+  },
   solicitud_id: {
     type: DataTypes.INTEGER,
     allowNull: true,

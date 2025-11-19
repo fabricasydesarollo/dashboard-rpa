@@ -2,6 +2,7 @@ import { sequelize } from '../db/database.js';
 import { RegistroGeneral } from '../models/RegistroGeneral.js'
 import { Bot } from '../models/Bot.js';
 import { Log } from '../models/Log.js';
+import { Maquina } from '../models/Maquina.js';
 
 export const LogBotService = {
   async create(data) {
@@ -10,23 +11,62 @@ export const LogBotService = {
       // Crear el log general
       const log = await Log.create({
         bot_id: data.bot_id,
-        maquina_id: data.maquina_id || null,
+        maquina_id: data.maquina_id || 1,
         mensaje: data.mensaje,
         estado: data.estado || 'pendiente',
         fecha_log: data.fecha_log || new Date(),
         duracion: data.duracion || '00:00:00' ,
       }, { transaction: t });
 
-      // Actualizar estado del bot
-      await Bot.update({
-        estado: data.estado_bot || 'ejecucion',
-      }, {
-        where: { id: data.bot_id },
-        transaction: t
+      // 2. Actualizar estado de máquinas
+      if (data.maquina_id) {
+        // Buscar si la máquina existe
+        let maquina = await Maquina.findOne({
+          where: {
+            id: data.maquina_id,
+            bot_id: data.bot_id
+          },
+          transaction: t
+        });
+
+        if (maquina) {
+          // Si existe → actualizar
+          await maquina.update({
+            estado: data.estado_bot || 'activo',
+            total_registros: data.total_registros ?? maquina.total_registros,
+            procesados: data.procesados ?? maquina.procesados
+          }, { transaction: t });
+
+        } else {
+          // Si NO existe → crear nueva máquina
+          await Maquina.create({
+            id: data.maquina_id,
+            bot_id: data.bot_id,
+            estado: data.estado_bot || 'activo',
+            total_registros: data.total_registros || 0,
+            procesados: data.procesados || 0
+          }, { transaction: t });
+        }
+
+      } else {
+        // Si no viene maquina_id → actualizar SOLO la máquina 1 del bot
+        await Maquina.update({
+          estado: data.estado_bot || 'activo',
+          total_registros: data.total_registros || 0,
+          procesados: data.procesados || 0
+        }, {
+          where: { id: 1, bot_id: data.bot_id },
+          transaction: t
+        });
+      }
+
+      const bot = await Bot.findByPk(data.bot_id, { 
+        include: { model: Maquina },     
+        transaction: t 
       });
 
       await t.commit();
-      const bot = await Bot.findByPk(data.bot_id);
+      
       return { log, bot };
 
     } catch (error) {
