@@ -6,12 +6,13 @@ export class Maquina extends Model {}
 Maquina.init({
   id: {
     type: DataTypes.BIGINT,
-    primaryKey: true,
-    autoIncrement: true
+    primaryKey: true,       // Parte de la PK compuesta
+    autoIncrement: false    // YA NO autoincrementa
   },
 
   bot_id: {
     type: DataTypes.BIGINT.UNSIGNED,
+    primaryKey: true,        // Parte de la PK compuesta
     allowNull: false,
     references: {
       model: 'bots',
