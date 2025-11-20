@@ -7,8 +7,7 @@ import { Maquina } from '../models/Maquina.js';
 export const AutorizacionService = {
   async createAutorizacionesMasivo(data) {
     // Asegurar consistencia: si no es array, convertirlo
-    console.log('data: ',data);
-    
+    //console.log('data: ',data);
     if (!Array.isArray(data)) {
       data = [data];
     }
