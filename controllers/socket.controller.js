@@ -269,29 +269,46 @@ export const SocketController = {
         }
         // Ahora actualizar las máquinas de ese bot
         if (data.maquina_id) {
-            // Actualizar solo una
-            await Maquina.update({
-                estado: data.estado_bot || 'activo',
-                procesados: data.procesados || 0 ,
-                total_registros: data.total_registros || 0
-            }, {
-                where: {
-                    id: data.maquina_id,
-                    bot_id: data.bot_id
-                },
-                transaction: t
-            });
+          // Buscar si la máquina existe
+          let maquina = await Maquina.findOne({
+            where: {
+              id: data.maquina_id,
+              bot_id: data.bot_id
+            },
+            transaction: t
+          });
+
+          if (maquina) {
+            // Si existe → actualizar
+            await maquina.update({
+              estado: data.estado_bot || 'activo',
+              total_datas: data.total_registros ?? maquina.total_registros,
+              procesados: data.procesados ?? maquina.procesados
+            }, { transaction: t });
+
+          } else {
+            // Si NO existe → crear nueva máquina
+            await Maquina.create({
+              id: data.maquina_id,    // respetar ID recibido
+              bot_id: data.bot_id,
+              estado: data.estado_bot || 'activo',
+              total_registros: data.total_registros || 0,
+              procesados: data.procesados || 0
+            }, { transaction: t });
+          }
 
         } else {
-            // Actualizar todas las máquinas del bot
-            await Maquina.update({
-                estado: data.estado_bot || 'activo',
-                procesados: data.procesados || 0 ,
-                total_registros: data.total_registros || 0
-            }, {
-                where: { bot_id: data.bot_id },
-                transaction: t
-            });
+
+          // Actualizar TODAS las máquinas del bot
+          await Maquina.update({
+            estado: data.estado_bot || 'activo',
+            procesados: data.procesados || 0,
+            total_registros: data.total_registros || 0
+          }, {
+            where: { id:1, bot_id: data.bot_id },
+            transaction: t
+          });
+
         }
         let bot = await Bot.findByPk(data.bot_id, { 
           include: { model: Maquina },     // <-- aquí cargas las máquinas
