@@ -314,7 +314,8 @@ export const SocketController = {
           include: { model: Maquina },     // <-- aquí cargas las máquinas
           transaction: t 
         });
-
+        console.log('data recibida: ','maquina_id: ',data.maquina_id, 'estado_bot: ',data.estado_bot,'total_registros: ',data.total_registros,'procesados: ',data.procesados);
+        
         console.log('bot actualizado: ',bot.toJSON());
         
         // 5. Consultar trazabilidad completa
