@@ -192,6 +192,8 @@ export const SocketController = {
   async createOrUpdateHistoriaClinica(req, res) {
     const t = await sequelize.transaction();
     try {
+      console.log('data recibida: ',req.body);
+      
       const payload = Array.isArray(req.body) ? req.body : [req.body]; //  Acepta array o un solo objeto
       const resultados = [];
       let omitir = false;
