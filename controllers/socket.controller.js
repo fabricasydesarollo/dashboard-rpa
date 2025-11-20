@@ -268,7 +268,7 @@ export const SocketController = {
           }, { transaction: t });
         }
         // Ahora actualizar las máquinas de ese bot
-        if (data.maquina_id && omitir === false) {
+        if (data.maquina_id) {
             // Actualizar solo una
             await Maquina.update({
                 estado: data.estado_bot || 'activo',
@@ -282,7 +282,7 @@ export const SocketController = {
                 transaction: t
             });
 
-        } else if (omitir === false) {
+        } else {
             // Actualizar todas las máquinas del bot
             await Maquina.update({
                 estado: data.estado_bot || 'activo',
