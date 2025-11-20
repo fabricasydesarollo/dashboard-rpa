@@ -8,14 +8,14 @@ import { Bot } from '../models/Bot.js';
 
 // Funciones para manejar notificaciones en tiempo real usando Socket.IO
 async function emitirNotificaciones(io, modulosConTipo = []) {
-  console.log("modulosConTipo", modulosConTipo)
+  //console.log("modulosConTipo", modulosConTipo)
   for (const { modulo, tipo } of modulosConTipo) {
     try {
       const notificacionesNuevas = await crearNotificacion(modulo, tipo);
 
       if (notificacionesNuevas && notificacionesNuevas.length > 0) {
         for (const notificacion of notificacionesNuevas) {
-          console.log('Emitiendo notificación via Socket.IO:', notificacion.toJSON());
+          //console.log('Emitiendo notificación via Socket.IO:', notificacion.toJSON());
           io.emit('nueva_notificacion', notificacion.toJSON());
         }
       }
@@ -107,7 +107,7 @@ async function crearNotificacion(modulo, tipo) {
           destino: { modal: 'solicitud_usuario', solicitud_id: solicitud.id }
         };
       }
-      console.log('destinatarios solicitud usuario:', destinatarios);
+      //console.log('destinatarios solicitud usuario:', destinatarios);
       break;
 
     case 'historia_clinica': 
@@ -130,7 +130,7 @@ async function crearNotificacion(modulo, tipo) {
           destino: { modal: 'HistoriaClinica', bot_id: trazabilidad.bot_id }
         };
       }
-      console.log('destinatarios historia clinica:', destinatarios);
+      //console.log('destinatarios historia clinica:', destinatarios);
       
       break;
 
@@ -171,7 +171,7 @@ async function crearNotificacion(modulo, tipo) {
 
   // Insertar en lote
   const notificacionesCreadas = await NotificationService.createMany(notificaciones);
-  console.log('Notificaciones creadas:', notificacionesCreadas.map(n => n.toJSON()));
+  //console.log('Notificaciones creadas:', notificacionesCreadas.map(n => n.toJSON()));
   return notificacionesCreadas;
 
 }

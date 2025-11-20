@@ -315,6 +315,8 @@ export const SocketController = {
           transaction: t 
         });
 
+        console.log('bot actualizado: ',bot.toJSON());
+        
         // 5. Consultar trazabilidad completa
         const trazabilidadCompleta = await TrazabilidadEnvio.findByPk(trazabilidad.id, {
           include: [
