@@ -25,11 +25,11 @@ export const SocketController = {
       console.log('autorizaciones: ', resultados);
       //Emitir socket para cada AUTORIZACION creada
       const io = req.app.get('io');
-      for (const { autorizacion, bot } of resultados) {
+      for (const { autorizacion, bot, maquina } of resultados) {
         //console.log(' autorizacion; ', autorizacion, 'bot: ', bot);
         io.emit('nueva_autorizacion', autorizacion, bot);
         NotificationHelper.emitirNotificaciones(io, [
-          { modulo: bot, tipo: 'bot' }
+          { modulo: maquina, tipo: 'maquina' }
         ]);
       }
       if (resultados.length > 0) {
@@ -62,7 +62,7 @@ export const SocketController = {
 
    async createRegistroGeneral(req, res) {
     try {
-      const { nuevoRegistro, bot } = await RegistroGeneralController.create(req, res);
+      const { nuevoRegistro, bot, maquina } = await RegistroGeneralController.create(req, res);
 
       // Emitir a todos los clientes conectados
       const io = req.app.get('io');
@@ -70,7 +70,8 @@ export const SocketController = {
       // enviar las notificaciones correspondientes segun el estado de cada modulo
       NotificationHelper.emitirNotificaciones(io, [
         { modulo: nuevoRegistro, tipo: 'registro' },
-        { modulo: bot, tipo: 'bot' }
+        { modulo: maquina, tipo: 'maquina' },
+        //{ modulo: bot, tipo: 'bot' }
       ]);
       res.json({ ok: true, nuevoRegistro, bot});
     } catch (error) {
@@ -89,36 +90,40 @@ export const SocketController = {
         Registro.create({
           bot_id: registro.bot_id,
           solicitud_id: registro.solicitud_id,
-          maquina_id: registro.maquina_id || null,
+          maquina_id: registro.maquina_id || 1,
           mensaje: registro.mensaje,
           estado: registro.estado,
           fecha_ejecucion: registro.fecha_ejecucion || new Date(),
           duracion: registro.duracion
         }, { transaction: t }),
       ]);
+      let maquina = null;
 
       // 2. Actualizar estado de máquinas
       if (registro.maquina_id) {
         // Buscar si la máquina existe
-        let maquina = await Maquina.findOne({
-          where: {
-            id: registro.maquina_id,
-            bot_id: registro.bot_id
-          },
+        maquina = await Maquina.findOne({
+          where: { id: registro.maquina_id, bot_id: registro.bot_id },
           transaction: t
         });
 
         if (maquina) {
           // Si existe → actualizar
-          await maquina.update({
+          await Maquina.update({
             estado: registro.estado_bot || 'activo',
-            total_registros: registro.total_registros ?? maquina.total_registros,
-            procesados: registro.procesados ?? maquina.procesados
-          }, { transaction: t });
+            procesados: registro.procesados ?? maquina.procesados,
+            total_registros: registro.total_registros ?? maquina.total_registros
+          }, {
+            where: { id: registro.maquina_id, bot_id: registro.bot_id },
+            transaction: t
+          });
+
+          // recargar la máquina actualizada
+          await maquina.reload({ transaction: t });
 
         } else {
           // Si NO existe → crear nueva máquina
-          await Maquina.create({
+          maquina = await Maquina.create({
             id: registro.maquina_id,    // respetar ID recibido
             bot_id: registro.bot_id,
             estado: registro.estado_bot || 'activo',
@@ -128,18 +133,22 @@ export const SocketController = {
         }
 
       } else {
-
-        // Actualizar TODAS las máquinas del bot
+        // Actualizar TODAS las máquinas del bot (solo la #1 )
         await Maquina.update({
           estado: registro.estado_bot || 'activo',
           procesados: registro.procesados || 0,
           total_registros: registro.total_registros || 0
         }, {
-          where: { id:1, bot_id: registro.bot_id },
+          where: { id: 1, bot_id: registro.bot_id },
           transaction: t
         });
 
+        maquina = await Maquina.findOne({
+          where: { id: 1, bot_id: registro.bot_id },
+          transaction: t
+        });
       }
+
       // 3. Actualizar solicitud
       await SolicitudUsuario.update(
         { estado: nuevoRegistro.estado },
@@ -174,7 +183,8 @@ export const SocketController = {
       io.emit('nuevo_registro', nuevoRegistro, bot, solicitud);
 
       NotificationHelper.emitirNotificaciones(io, [
-        { modulo: bot, tipo: 'bot' },
+        //{ modulo: bot, tipo: 'bot' },
+        {modulo: maquina, tipo: 'maquina' },
         { modulo: nuevoRegistro, tipo: 'registro' },
         { modulo: solicitud, tipo: 'solicitud_usuario' }
       ]);
@@ -269,10 +279,11 @@ export const SocketController = {
             duracion: data.duracion || null
           }, { transaction: t });
         }
+        let maquina = null;
         // Ahora actualizar las máquinas de ese bot
         if (data.maquina_id) {
           // Buscar si la máquina existe
-          let maquina = await Maquina.findOne({
+           maquina = await Maquina.findOne({
             where: {
               id: data.maquina_id,
               bot_id: data.bot_id
@@ -282,15 +293,18 @@ export const SocketController = {
 
           if (maquina) {
             // Si existe → actualizar
-            await maquina.update({
+            await Maquina.update({
               estado: data.estado_bot || 'activo',
-              total_datas: data.total_registros ?? maquina.total_registros,
-              procesados: data.procesados ?? maquina.procesados
-            }, { transaction: t });
-
+              procesados: data.procesados || 0,
+              total_registros: data.total_registros || 0
+            }, {
+              where: { id: data.maquina_id, bot_id: data.bot_id },
+              transaction: t
+            });
+            await maquina.reload();
           } else {
             // Si NO existe → crear nueva máquina
-            await Maquina.create({
+            maquina = await Maquina.create({
               id: data.maquina_id,    // respetar ID recibido
               bot_id: data.bot_id,
               estado: data.estado_bot || 'activo',
@@ -298,9 +312,7 @@ export const SocketController = {
               procesados: data.procesados || 0
             }, { transaction: t });
           }
-
         } else {
-
           // Actualizar TODAS las máquinas del bot
           await Maquina.update({
             estado: data.estado_bot || 'activo',
@@ -310,8 +322,10 @@ export const SocketController = {
             where: { id:1, bot_id: data.bot_id },
             transaction: t
           });
-
+          maquina = await Maquina.findOne({
+            where: { id: 1, bot_id: data.bot_id }, transaction: t });
         }
+
         let bot = await Bot.findByPk(data.bot_id, { 
           include: { model: Maquina },     // <-- aquí cargas las máquinas
           transaction: t 
@@ -335,7 +349,7 @@ export const SocketController = {
           transaction: t
         });
 
-        resultados.push({ historia: trazabilidadCompleta, bot });
+        resultados.push({ historia: trazabilidadCompleta, bot, maquina });
       }
 
       // 6. Confirmar transacción
@@ -344,10 +358,11 @@ export const SocketController = {
       // 7. Emitir socket para cada historia creada
       const io = req.app.get('io');
       if (!omitir){
-        for (const { historia, bot } of resultados) {
+        for (const { historia, bot, maquina } of resultados) {
           io.emit('nueva_historia', historia, bot);
           NotificationHelper.emitirNotificaciones(io, [
             { modulo: historia, tipo: 'historia_clinica' },
+            { modulo: maquina, tipo: 'maquina' },
             { modulo: bot, tipo: 'bot' }
           ]);
         }
@@ -362,6 +377,4 @@ export const SocketController = {
   },
 
  
-
-
 };

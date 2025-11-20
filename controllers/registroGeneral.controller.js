@@ -9,8 +9,8 @@ import { sequelize } from '../db/database.js';
 export const RegistroGeneralController = {
   async create(req, res) {
     try {
-      const { nuevoRegistro, bot } = await RegistroGeneralService.create(req.body);
-      return { nuevoRegistro, bot};
+      const { nuevoRegistro, bot, maquina } = await RegistroGeneralService.create(req.body);
+      return { nuevoRegistro, bot, maquina };
     } catch (error) {
       console.error(error);
       return res.status(400).json({ error: error.message || 'Error al crear el registro' });

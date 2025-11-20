@@ -18,28 +18,27 @@ export const RegistroGeneralService = {
           fecha_ejecucion: data.fecha_ejecucion || new Date(),
         }, { transaction: t }),
       ]);
-     // 2. Actualizar estado de máquina(s)
+      // 2. Actualizar estado de máquina(s)
+      let maquina = null;
       if (data.maquina_id) {
         // Buscar si la máquina existe
-        let maquina = await Maquina.findOne({
-          where: {
-            id: data.maquina_id,
-            bot_id: data.bot_id
-          },
+        maquina = await Maquina.findOne({
+          where: { id: data.maquina_id, bot_id: data.bot_id },
           transaction: t
         });
 
         if (maquina) {
           // Si existe → actualizar
-          await maquina.update({
+          await Maquina.update({
             estado: data.estado_bot || 'activo',
             total_registros: data.total_registros ?? maquina.total_registros,
             procesados: data.procesados ?? maquina.procesados
           }, { transaction: t });
-
+          // recargar la máquina actualizada
+          await maquina.reload({ transaction: t });
         } else {
           // Si NO existe → crear nueva máquina
-          await Maquina.create({
+          maquina = await Maquina.create({
             id: data.maquina_id,
             bot_id: data.bot_id,
             estado: data.estado_bot || 'activo',
@@ -58,15 +57,20 @@ export const RegistroGeneralService = {
           where: { id: 1, bot_id: data.bot_id },
           transaction: t
         });
+
+        maquina = await Maquina.findOne({
+          where: { id: 1, bot_id: data.bot_id },
+          transaction: t
+        });
       }
 
       const bot = await Bot.findByPk(data.bot_id, { 
         include: { model: Maquina },     
         transaction: t 
       });
-      await t.commit(); // ✅ commit antes de seguir
+      await t.commit(); //  commit antes de seguir
 
-      return { nuevoRegistro, bot };
+      return { nuevoRegistro, bot, maquina };
     } catch (error) {
       await t.rollback(); // rollback sólo si algo falla antes del commit
       console.error('Error en RegistroGeneralService.create:', error);

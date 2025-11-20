@@ -32,6 +32,34 @@ async function crearNotificacion(modulo, tipo) {
   let botsRelacionados = null;
 
   switch(tipo) {
+    // caso para las máquinas
+    case 'maquina':
+      const maquina = modulo;
+
+      // Cargar bot
+      const botconMaquinas = await Bot.findByPk(maquina.bot_id);
+
+      // Buscar usuarios del bot
+      const usuariosBotMaquinas = await botconMaquinas.getUsers();
+      destinatarios = usuariosBotMaquinas.map(u => u.id);
+
+      if (maquina.estado === 'error') {
+        notificacionBase = {
+          titulo: 'Error en ejecución de Máquina',
+          mensaje: `La máquina #${maquina.id} del bot <strong>${botconMaquinas.nombre}</strong> ha fallado.`,
+          tipo: 'error',
+          destino: { modal: 'tablero-bot', bot_id: botconMaquinas.id, maquina_id: maquina.id }
+        };
+      } else if (maquina.estado === 'pausado') {
+        notificacionBase = {
+          titulo: 'Máquina pausada',
+          mensaje: `La máquina #${maquina.id} del bot <strong>${botconMaquinas.nombre}</strong> ha sido pausada.`,
+          tipo: 'advertencia',
+          destino: { modal: 'tablero-bot', bot_id: botconMaquinas.id, maquina_id: maquina.id }
+        };
+      }
+
+      break;
     case 'bot':
       const bot = modulo; // instancia de Bot (Sequelize)
 
