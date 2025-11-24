@@ -16,6 +16,7 @@ import { Server } from 'socket.io';
 dotenv.config();
 
 import './models/index.js' // se carga el archivo index.js de models para que se carguen los modelos
+import './cron/limpiarNotificaciones.js'; // se carga el archivo de cron para limpiar notificaciones viejas
 
 //configuracion de los puertos y dominio
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
