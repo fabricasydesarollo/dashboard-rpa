@@ -20,6 +20,7 @@ export const RegistroGeneralService = {
       ]);
       // 2. Actualizar estado de máquina(s)
       let maquina = null;
+
       if (data.maquina_id) {
         // Buscar si la máquina existe
         maquina = await Maquina.findOne({
@@ -33,7 +34,10 @@ export const RegistroGeneralService = {
             estado: data.estado_bot || 'activo',
             total_registros: data.total_registros ?? maquina.total_registros,
             procesados: data.procesados ?? maquina.procesados
-          }, { transaction: t });
+          }, {
+            where: { id: data.maquina_id, bot_id: data.bot_id },
+            transaction: t
+          });
           // recargar la máquina actualizada
           await maquina.reload({ transaction: t });
         } else {

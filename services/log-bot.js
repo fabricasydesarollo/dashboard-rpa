@@ -35,7 +35,10 @@ export const LogBotService = {
             estado: data.estado_bot || 'activo',
             total_registros: data.total_registros ?? maquina.total_registros,
             procesados: data.procesados ?? maquina.procesados
-          }, { transaction: t });
+          },  {
+            where: { id: data.maquina_id, bot_id: data.bot_id },
+            transaction: t
+          });
 
         } else {
           // Si NO existe → crear nueva máquina
