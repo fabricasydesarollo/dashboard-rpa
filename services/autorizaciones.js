@@ -7,7 +7,7 @@ import { Maquina } from '../models/Maquina.js';
 export const AutorizacionService = {
   async createAutorizacionesMasivo(data) {
     // Asegurar consistencia: si no es array, convertirlo
-    //console.log('data: ',data);
+    console.log('data: ',data);
     if (!Array.isArray(data)) {
       data = [data];
     }
@@ -148,6 +148,8 @@ export const AutorizacionService = {
 
         // 5. Confirmar transacción
         await t.commit();
+        console.log('autorizacion Creada: ',autorizacion.toJSON());
+        
         resultados.push({ autorizacion: autorizacion, bot, maquina });
 
       } catch (err) {

@@ -105,11 +105,11 @@ AutorizacionBot.init({
     allowNull: true
   },
   fechaAutorizacion: {
-    type: DataTypes.DATE,
+    type: DataTypes.DATEONLY,
     allowNull: true
   },
   fechaVencimiento: {
-    type: DataTypes.DATE,
+    type: DataTypes.DATEONLY,
     allowNull: true
   },
   inicio_proceso: {
