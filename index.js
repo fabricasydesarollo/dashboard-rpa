@@ -107,7 +107,7 @@ app.set('io', io); // Para usar io desde cualquier ruta con req.app.get('io')
 app.get('/', (req, res) => {
   res.json({ mensaje: '¡Servidor funcionando correctamente!' })
 })
-
+// cambio prueba git maykol
 
 // Si el BASE_URL comienza con "https", arrancar HTTPS
 server.listen(PORT, async () => {
