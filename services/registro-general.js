@@ -28,6 +28,7 @@ export const RegistroGeneralService = {
           transaction: t
         });
 
+        //
         if (maquina) {
           // Si existe → actualizar
           await Maquina.update({
