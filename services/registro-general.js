@@ -30,17 +30,11 @@ export const RegistroGeneralService = {
 
         //
         if (maquina) {
-          // Si existe → actualizar
-          await Maquina.update({
-            estado: data.estado_bot || 'activo',
+          await maquina.update({
+            estado: data.estado_bot || maquina.estado,
+            procesados: data.procesados ?? maquina.procesados,
             total_registros: data.total_registros ?? maquina.total_registros,
-            procesados: data.procesados ?? maquina.procesados
-          }, {
-            where: { id: data.maquina_id, bot_id: data.bot_id },
-            transaction: t
-          });
-          // recargar la máquina actualizada
-          await maquina.reload({ transaction: t });
+          }, { transaction: t });
         } else {
           // Si NO existe → crear nueva máquina
           maquina = await Maquina.create({
@@ -86,7 +80,7 @@ export const RegistroGeneralService = {
   async getAll() {
     try {
       return await RegistroGeneral.findAll({
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'ASC']]
       });
     } catch (error) {
       console.error('Error en RegistroGeneralService.getAll:', error);

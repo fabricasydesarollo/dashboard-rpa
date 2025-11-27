@@ -108,19 +108,11 @@ export const SocketController = {
         });
 
         if (maquina) {
-          // Si existe → actualizar
-          await Maquina.update({
-            estado: registro.estado_bot || 'activo',
+          await maquina.update({
+            estado: registro.estado_bot || maquina.estado,
             procesados: registro.procesados ?? maquina.procesados,
-            total_registros: registro.total_registros ?? maquina.total_registros
-          }, {
-            where: { id: registro.maquina_id, bot_id: registro.bot_id },
-            transaction: t
-          });
-
-          // recargar la máquina actualizada
-          await maquina.reload({ transaction: t });
-
+            total_registros: registro.total_registros ?? maquina.total_registros,
+          }, { transaction: t });
         } else {
           // Si NO existe → crear nueva máquina
           maquina = await Maquina.create({
@@ -284,24 +276,16 @@ export const SocketController = {
         if (data.maquina_id) {
           // Buscar si la máquina existe
            maquina = await Maquina.findOne({
-            where: {
-              id: data.maquina_id,
-              bot_id: data.bot_id
-            },
+            where: { id: data.maquina_id, bot_id: data.bot_id },
             transaction: t
           });
 
           if (maquina) {
-            // Si existe → actualizar
-            await Maquina.update({
-              estado: data.estado_bot || 'activo',
-              procesados: data.procesados || 0,
-              total_registros: data.total_registros || 0
-            }, {
-              where: { id: data.maquina_id, bot_id: data.bot_id },
-              transaction: t
-            });
-            await maquina.reload();
+            await maquina.update({
+                estado: data.estado_bot || maquina.estado,
+                procesados: data.procesados ?? maquina.procesados,
+                total_registros: data.total_registros ?? maquina.total_registros,
+            }, { transaction: t });
           } else {
             // Si NO existe → crear nueva máquina
             maquina = await Maquina.create({
@@ -357,13 +341,18 @@ export const SocketController = {
 
       // 7. Emitir socket para cada historia creada
       const io = req.app.get('io');
-      if (!omitir){
-        for (const { historia, bot, maquina } of resultados) {
-          io.emit('nueva_historia', historia, bot);
+      for (const { historia, bot, maquina } of resultados) {
+        // 1. Emitir SIEMPRE evento de máquina y bot
+        NotificationHelper.emitirNotificaciones(io, [
+          { modulo: maquina, tipo: 'maquina' },
+          { modulo: bot, tipo: 'bot' }
+        ]);
+        // 2. Emitir SIEMPRE nueva_historia (según tu lógica actual)
+        io.emit('nueva_historia', historia, bot);
+        // 3. Emitir historia_clinica SOLO si no hay omitir
+        if (!omitir) {
           NotificationHelper.emitirNotificaciones(io, [
             { modulo: historia, tipo: 'historia_clinica' },
-            { modulo: maquina, tipo: 'maquina' },
-            { modulo: bot, tipo: 'bot' }
           ]);
         }
       }
@@ -376,6 +365,4 @@ export const SocketController = {
     }
   },
 
-  
- 
 };

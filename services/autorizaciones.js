@@ -103,16 +103,11 @@ export const AutorizacionService = {
           });
 
           if (maquina) {
-            await Maquina.update({
-              estado: item.estado_bot || 'activo',
+            await maquina.update({
+              estado: item.estado_bot || maquina.estado,
+              procesados: item.procesados ?? maquina.procesados,
               total_registros: item.total_registros ?? maquina.total_registros,
-              procesados: item.procesados ?? maquina.procesados
-            }, {
-              where: { id: item.maquina_id, bot_id: item.bot_id },
-              transaction: t
-            });
-
-            await maquina.reload({ transaction: t });
+            }, { transaction: t });
           }
           else {
             // Si NO existe → crear nueva máquina con ese ID

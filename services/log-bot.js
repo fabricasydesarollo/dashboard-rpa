@@ -22,10 +22,7 @@ export const LogBotService = {
       if (data.maquina_id) {
         // Buscar si la máquina existe
         let maquina = await Maquina.findOne({
-          where: {
-            id: data.maquina_id,
-            bot_id: data.bot_id
-          },
+          where: { id: data.maquina_id, bot_id: data.bot_id },
           transaction: t
         });
 
@@ -35,7 +32,7 @@ export const LogBotService = {
             estado: data.estado_bot || 'activo',
             total_registros: data.total_registros ?? maquina.total_registros,
             procesados: data.procesados ?? maquina.procesados
-          },  {
+          }, {
             where: { id: data.maquina_id, bot_id: data.bot_id },
             transaction: t
           });
