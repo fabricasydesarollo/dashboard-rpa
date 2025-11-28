@@ -6,5 +6,7 @@ const router = Router();
 
 // actualizar datos del usuario
 router.get('/kpis', AnalyticsController.getKpis);
+router.get('/registros-bots', AnalyticsController.getRegistrosPorBotHoy);
+router.get('/procesados-por-maquina', AnalyticsController.getProcesadosPorMaquina);
 
 export default router;
