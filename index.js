@@ -8,6 +8,7 @@ import socketRoutes from './routes/socket.routes.js'; //
 import notificacionRoutes from './routes/notificacion.routes.js'; // 
 import mailRoutes from './routes/mailRoutes.js'; // 
 import userRoutes from './routes/user.routes.js'; // 
+import analyticsRoutes from './routes/analytics.routes.js'; //
 import http from 'http';
 import https from 'https'
 import fs from 'fs'
@@ -96,6 +97,8 @@ app.use('/socket/api',socketRoutes);
 app.use('/api/bots',botRoutes);
 
 app.use('/api/mail', mailRoutes);
+
+app.use('/api/analytics', analyticsRoutes);
 
 app.use('/static', express.static('public'));
 

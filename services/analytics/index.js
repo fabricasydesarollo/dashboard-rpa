@@ -1,0 +1,5 @@
+export { getBotsStats } from './getBotsStats.js'
+export { getProcesosHoy } from './getProcesosHoy.js'
+export { getProcesosAyer } from './getProcesosAyer.js'
+export { calculateTrendProcesosHoy } from './calculateTrend.js'
+export { getTasasHoy } from './getTasasHoy.js'
