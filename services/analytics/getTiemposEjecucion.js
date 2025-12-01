@@ -62,7 +62,7 @@ export const getTiemposEjecucion = async (modo = "semanal", bot_id, maquina_id) 
       [campoDuracion]: { [Op.ne]: null },
       ...whereRange
     },
-    attributes: [campoDuracion, "createdAt"]
+    attributes: [campoDuracion, "updatedAt"]
   });
   
   //SEMANAL → LUN, MAR, MIÉ, JUE, VIE, SÁB, DOM
@@ -71,9 +71,10 @@ export const getTiemposEjecucion = async (modo = "semanal", bot_id, maquina_id) 
     const dias = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
     const totales = Array(7).fill(0);
     const conteos = Array(7).fill(0);
-
+    console.log('regs: ',regs);
+    
     regs.forEach(r => {
-      const f = new Date(r.createdAt);
+      const f = new Date(r.updatedAt);
       if (f.getMonth() !== mesActual) return;
 
       let d = f.getDay();  
@@ -95,7 +96,7 @@ export const getTiemposEjecucion = async (modo = "semanal", bot_id, maquina_id) 
     const semanas = [[], [], [], []];
 
     regs.forEach(r => {
-      const f = new Date(r.createdAt);
+      const f = new Date(r.updatedAt);
       if (f.getMonth() !== mesActual) return;
 
       const dia = f.getDate();
@@ -121,7 +122,7 @@ export const getTiemposEjecucion = async (modo = "semanal", bot_id, maquina_id) 
     const meses = Array.from({ length: 12 }, () => []);
 
     regs.forEach(r => {
-      const f = new Date(r.createdAt);
+      const f = new Date(r.updatedAt);
       const mes = f.getMonth();
       meses[mes].push(Number(r[campoDuracion]) || 0);
     });
