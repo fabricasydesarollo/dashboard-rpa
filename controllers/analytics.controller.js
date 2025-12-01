@@ -47,11 +47,12 @@ export const AnalyticsController = {
 
    async getEnviosHistoriasClinicas(req, res) {
     try {
-      const data = await getEnviosHistoriasClinicas()
-      return res.json(data)
+      const { modo } = req.query;
+      const data = await getEnviosHistoriasClinicas(modo);
+      return res.json(data);
     } catch (err) {
-      console.error("Error en AnalyticsController.getEnviosHistoriasClinicas:", err)
-      return res.status(500).json({ error: 'Error al obtener los envíos de historias clínicas' })
+      console.error("Error en AnalyticsController.getEnviosHistoriasClinicas:", err);
+      return res.status(500).json({ error: 'Error al obtener los envíos de historias clínicas' });
     }
   },
 
