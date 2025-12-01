@@ -1,4 +1,6 @@
-import { getBotsStats, getProcesosHoy, getProcesosAyer, calculateTrendProcesosHoy, getTasasHoy, getRegistrosPorBotHoy, getProcesadosPorMaquina } from '../services/analytics/index.js'
+import { getBotsStats, getProcesosHoy, getProcesosAyer, 
+  calculateTrendProcesosHoy, getTasasHoy, getRegistrosPorBotHoy, 
+  getProcesadosPorMaquina, getEnviosHistoriasClinicas } from '../services/analytics/index.js'
 
 export const AnalyticsController = {
   async getKpis(req, res) {
@@ -40,6 +42,16 @@ export const AnalyticsController = {
     } catch (err) {
       console.error('Error en AnalyticsController.getProcesadosPorMaquina:', err)
       return res.status(500).json({ error: 'Error al obtener los procesados por máquina' })
+    }
+  },
+
+   async getEnviosHistoriasClinicas(req, res) {
+    try {
+      const data = await getEnviosHistoriasClinicas()
+      return res.json(data)
+    } catch (err) {
+      console.error("Error en AnalyticsController.getEnviosHistoriasClinicas:", err)
+      return res.status(500).json({ error: 'Error al obtener los envíos de historias clínicas' })
     }
   }
 }
