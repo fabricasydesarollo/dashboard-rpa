@@ -71,7 +71,7 @@ export const getTiemposEjecucion = async (modo = "semanal", bot_id, maquina_id) 
     const dias = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
     const totales = Array(7).fill(0);
     const conteos = Array(7).fill(0);
-    console.log('regs: ',regs);
+    //console.log('regs: ',regs);
     
     regs.forEach(r => {
       const f = new Date(r.updatedAt);
