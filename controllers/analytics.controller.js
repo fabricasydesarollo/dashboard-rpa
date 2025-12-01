@@ -1,6 +1,6 @@
 import { getBotsStats, getProcesosHoy, getProcesosAyer, 
   calculateTrendProcesosHoy, getTasasHoy, getRegistrosPorBotHoy, 
-  getProcesadosPorMaquina, getEnviosHistoriasClinicas } from '../services/analytics/index.js'
+  getProcesadosPorMaquina, getEnviosHistoriasClinicas, getTiemposEjecucion } from '../services/analytics/index.js'
 
 export const AnalyticsController = {
   async getKpis(req, res) {
@@ -52,6 +52,20 @@ export const AnalyticsController = {
     } catch (err) {
       console.error("Error en AnalyticsController.getEnviosHistoriasClinicas:", err)
       return res.status(500).json({ error: 'Error al obtener los envíos de historias clínicas' })
+    }
+  },
+
+  async getTiemposEjecucion(req, res) {
+    try {
+      const { modo = 'semanal', bot_id, maquina_id } = req.query
+
+      const data = await getTiemposEjecucion(modo, bot_id, maquina_id)
+
+      return res.json(data)
+
+    } catch (err) {
+      console.error('Error en AnalyticsController.getTiemposEjecucion:', err)
+      return res.status(500).json({ error: 'Error al obtener tiempos de ejecución' })
     }
   }
 }

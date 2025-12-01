@@ -362,9 +362,9 @@ export class BotRepository {
 
    static async getBots() {
     try {
-      console.log('Buscando bots...');
       const bots = await Bot.findAll({
         attributes: { exclude: ['total_registros','procesados'] }, // 👈 excluye la contraseña
+        include: { model: Maquina, attributes: ['id'] },
         order: [['id','ASC']]
       });
       return bots;

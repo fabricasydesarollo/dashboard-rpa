@@ -8,6 +8,7 @@ const router = Router();
 router.get('/kpis', AnalyticsController.getKpis);
 router.get('/registros-bots', AnalyticsController.getRegistrosPorBotHoy);
 router.get('/procesados-por-maquina', AnalyticsController.getProcesadosPorMaquina);
-router.get('/envios-historias', AnalyticsController.getEnviosHistoriasClinicas)
+router.get('/envios-historias', AnalyticsController.getEnviosHistoriasClinicas);
+router.get('/tiempos-ejecucion', AnalyticsController.getTiemposEjecucion)
 
 export default router;
