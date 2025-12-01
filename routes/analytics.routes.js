@@ -9,6 +9,7 @@ router.get('/kpis', AnalyticsController.getKpis);
 router.get('/registros-bots', AnalyticsController.getRegistrosPorBotHoy);
 router.get('/procesados-por-maquina', AnalyticsController.getProcesadosPorMaquina);
 router.get('/envios-historias', AnalyticsController.getEnviosHistoriasClinicas);
-router.get('/tiempos-ejecucion', AnalyticsController.getTiemposEjecucion)
+router.get('/tiempos-ejecucion', AnalyticsController.getTiemposEjecucion);
+router.get('/distribucion-estados', AnalyticsController.getDistribucionEstados);
 
 export default router;

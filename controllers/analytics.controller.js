@@ -1,6 +1,6 @@
 import { getBotsStats, getProcesosHoy, getProcesosAyer, 
   calculateTrendProcesosHoy, getTasasHoy, getRegistrosPorBotHoy, 
-  getProcesadosPorMaquina, getEnviosHistoriasClinicas, getTiemposEjecucion } from '../services/analytics/index.js'
+  getProcesadosPorMaquina, getEnviosHistoriasClinicas, getTiemposEjecucion, getDistribucionEstados } from '../services/analytics/index.js'
 
 export const AnalyticsController = {
   async getKpis(req, res) {
@@ -66,6 +66,19 @@ export const AnalyticsController = {
     } catch (err) {
       console.error('Error en AnalyticsController.getTiemposEjecucion:', err)
       return res.status(500).json({ error: 'Error al obtener tiempos de ejecución' })
+    }
+  },
+  async getDistribucionEstados(req, res) {
+    try {
+      const { bot_id } = req.query
+
+      const data = await getDistribucionEstados(bot_id)
+
+      return res.json(data)
+
+    } catch (err) {
+      console.error("Error en getDistribucionEstados:", err)
+      return res.status(500).json({ error: "Error al obtener distribución de estados" })
     }
   }
 }
