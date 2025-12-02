@@ -132,7 +132,7 @@ export class BotRepository {
   }
 
 
-  static async get({ user_id, rol }) {
+  static async get({ user_id }) {
     const user = await User.findByPk(user_id, {
       include: {
         model: Bot,

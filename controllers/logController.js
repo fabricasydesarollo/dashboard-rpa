@@ -27,8 +27,8 @@ export const LogController = {
   },
   async getFechas(req, res) {
     try {
-      const { estado } = req.query;
-      const fechas = await LogBotService.getFechas(estado);
+      const { estado, bot_id } = req.query;
+      const fechas = await LogBotService.getFechas(estado, bot_id);
       return res.status(200).json(fechas);
     } catch (err) {
       console.error(err);

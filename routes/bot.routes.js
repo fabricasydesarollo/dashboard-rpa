@@ -39,7 +39,7 @@ router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistor
 // obtiene todos los logs del bot, recibe parametro en req.query botId
 router.get('/logs', authenticateToken, LogController.get); 
 // ruta para traer las fechas de los logs con estado 'error' o 'listo'
-router.get('/logs/fechas', authenticateToken, LogController.getFechas);
+router.get('/logs/fechas', LogController.getFechas);
 // elimina un usuario
 router.delete('/delete/user', authenticateToken, UserController.deleteUser); 
 // crea un usuario

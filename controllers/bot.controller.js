@@ -46,9 +46,9 @@ export const BotController = {
   
   async get(req, res) {
     try {
-      const { user_id, rol } = req.query;
+      const { user_id } = req.user;
 
-      const bots = await BotRepository.get({ user_id, rol });
+      const bots = await BotRepository.get({ user_id });
       res.status(200).json(bots);
     } catch (err) {
       console.error(err);

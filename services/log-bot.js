@@ -98,10 +98,10 @@ export const LogBotService = {
       throw { status: 500, error: 'Error al  obtener los logs'};
     }
   },
-  async getFechas(estado) {
+  async getFechas(estado, bot_id) {
     try {
       const fechas = await Log.findAll({
-        where: { estado },
+        where: { estado, bot_id },
         attributes: [
           'id',
           'fecha_log'
