@@ -11,5 +11,6 @@ router.get('/procesados-por-maquina', AnalyticsController.getProcesadosPorMaquin
 router.get('/envios-historias', AnalyticsController.getEnviosHistoriasClinicas);
 router.get('/tiempos-ejecucion', AnalyticsController.getTiemposEjecucion);
 router.get('/distribucion-estados', AnalyticsController.getDistribucionEstados);
+router.get('/solicitudes-inactivacion', AnalyticsController.getSolicitudesInactivacion);
 
 export default router;

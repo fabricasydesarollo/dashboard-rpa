@@ -1,6 +1,6 @@
 import { getBotsStats, getProcesosHoy, getProcesosAyer, 
   calculateTrendProcesosHoy, getTasasHoy, getRegistrosPorBotHoy, 
-  getProcesadosPorMaquina, getEnviosHistoriasClinicas, getTiemposEjecucion, getDistribucionEstados } from '../services/analytics/index.js'
+  getProcesadosPorMaquina, getEnviosHistoriasClinicas, getTiemposEjecucion, getDistribucionEstados, getSolicitudesInactivacion } from '../services/analytics/index.js'
 
 export const AnalyticsController = {
   async getKpis(req, res) {
@@ -81,5 +81,17 @@ export const AnalyticsController = {
       console.error("Error en getDistribucionEstados:", err)
       return res.status(500).json({ error: "Error al obtener distribución de estados" })
     }
+  },
+  async getSolicitudesInactivacion(req, res) {
+    try {
+      const { modo } = req.query;
+      // Aquí deberías llamar a la función del servicio correspondiente
+      const data = await getSolicitudesInactivacion(modo);
+      return res.json(data);
+    } catch (err) {
+      console.error("Error en AnalyticsController.getSolicitudesInactivacion:", err);
+      return res.status(500).json({ error: 'Error al obtener las solicitudes de inactivación' });
+    }
   }
+
 }
