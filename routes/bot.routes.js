@@ -4,7 +4,9 @@ import { authenticateToken } from '../middlewares/auth-middleware.js';
 import { UserController } from '../controllers/user.controller.js';
 import { HistoriaClinicaController } from '../controllers/historiaClinica.controller.js';
 import { LogController } from '../controllers/logController.js';
-
+import { NotaCreditoController } from '../controllers/notaCreditoController.js';
+import multer from 'multer';
+const upload = multer({ storage: multer.memoryStorage() }); // guardamos en memoria (buffer)
 
 const router = Router();
 
@@ -58,5 +60,7 @@ router.put('/reprocesar/historia-clinica/:id', authenticateToken, HistoriaClinic
 router.post('/autorizacion', BotController.createAutorizacion);
 // obtener todas las autorizaciones
 router.get('/autorizaciones', authenticateToken, BotController.getAutorizaciones);
+// cargar las notas credito masivas
+router.post('/cargar/notas-credito', authenticateToken, upload.single('archivo'), NotaCreditoController.cargarNotasCredito);
 
 export default router;

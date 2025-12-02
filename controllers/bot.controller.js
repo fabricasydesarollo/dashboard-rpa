@@ -119,8 +119,8 @@ export const BotController = {
   },
 
   async descargarFormato(req, res){
-    const filePath = path.resolve('public/formatos/plantilla.xlsx');
-    res.download(filePath, 'plantilla.xlsx', (err) => {
+    const filePath = path.resolve('public/formatos/Formato_Notas_Credito.xlsx');
+    res.download(filePath, 'Formato_Notas_Credito.xlsx', (err) => {
       if (err) {
         console.error('Error al descargar archivo:', err);
         res.status(500).json({ error: 'No se pudo descargar el archivo' });
@@ -281,7 +281,7 @@ export const BotController = {
         error: error.message
       });
     }
-  }
-
+  },
+  
 };
 
