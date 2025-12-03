@@ -23,7 +23,7 @@ NotaCreditoMasiva.init({
   maquina_id: {
     type: DataTypes.INTEGER,
     allowNull: true,
-    defaultValue: null
+    defaultValue: 1,
   },
 
   sede: {

@@ -10,14 +10,9 @@ import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js';
 import { RegistroGeneral } from '../../models/RegistroGeneral.js';
 import { AutorizacionBot } from '../../models/AutorizacionBot.js';
 import { Maquina } from '../../models/Maquina.js';
-import { NotaCreditoMasiva } from '../../models/NotaCreditoMasiva.js';
 import {Log } from '../../models/Log.js';
 import axios from 'axios';
 import { Op } from 'sequelize';
-import xlsx from 'xlsx';
-import fs from 'fs';
-import path from 'path';
-import { log } from 'console';
 
 export class BotRepository {
 
@@ -637,80 +632,5 @@ export class BotRepository {
       console.error('Error en BotRepository.activateBotPatologia:', error);
       throw new Error('Error al activar el bot de patología');
     }
-  }
-
-  static async getNotasCredito(bot_id) {
-    try {
-      //cargar todas las autorizaciones
-      const notasCredito = await NotaCreditoMasiva.findAll({
-        where: { bot_id },
-        include: [
-          {
-            model: Paciente,
-            attributes: ['numero_identificacion', 'nombre', 'correo_electronico']
-          },
-          {
-            model: Bot,
-            attributes: ['nombre']
-          }
-        ],
-        order: [['createdAt', 'DESC']]
-      });
-      
-      if (!notasCredito.length) {
-        console.log('nota credito: ',notasCredito);
-        const error = new Error('No se encontraron notas credito para este bot');
-        error.status = 404;
-        throw error;
-      }
-
-      return notasCredito;
-    } catch (error) {
-      //console.error('Error en BotRepository.getAutorizaciones:', error);
-      throw error;
-    }
-  }
-
-  static async cargarNotasCredito(bot_id, archivo) {
-    try {
-      //console.log('bot: ',bot_id, ' notasfile: ',archivo);
-      const workbook = xlsx.read(archivo.buffer, { type: 'buffer' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-      const rows = xlsx.utils.sheet_to_json(sheet, { defval: '' });
-      //console.log(Object.keys(rows[0])); para saber cuales son los nombres de las columnas
-      const datosProcesados = rows.map((row) => ({
-        tipo: row['TIPO'] || '',
-        prefijo: row['PREFIJO'] || '',
-        numero_factura1: row['NUMERO FACTURA'] || '',
-        numero_factura2: row['__EMPTY'] || '',
-        numero_factura3: row['__EMPTY_1'] || '',
-        valor: row['VALOR'],
-        nit: row['NIT ASEGURADORA'] || '',
-        descripcion: row['DESCRIPCION'] || '',
-      }));
-      //crear validacion si el archivo adjunto es el correcto 
-      const expectedColumns = ['TIPO', 'PREFIJO', 'NUMERO FACTURA', '__EMPTY', '__EMPTY_1', 'VALOR', 'NIT ASEGURADORA', 'DESCRIPCION'];
-      const fileColumns = Object.keys(rows[0] || {});
-      const columnsMatch = expectedColumns.every(col => fileColumns.includes(col));
-
-      if (!columnsMatch) {
-        const error = new Error('El archivo de notas de crédito no tiene el formato esperado');
-        error.status = 400;
-        throw error;
-      }
-
-      // validar si datosProcesados tiene datos
-      if (datosProcesados.length === 0) {
-        const error = new Error('No se encontraron datos en el archivo de notas de crédito');
-        error.status = 404;
-        throw error;
-      }
-      console.log('datosProcesados: ', datosProcesados);
-    } catch (error) {
-      //console.error('Error en BotRepository.cargarNotasCredito:', error);
-      throw error;
-    }
-    
   }
 }
