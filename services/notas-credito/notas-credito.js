@@ -110,7 +110,7 @@ export const NotasCreditoService = {
       
       if (!notasCredito.length) {
         console.log('nota credito: ',notasCredito);
-        const error = new Error('No se encontraron notas credito para este bot');
+        const error = new Error('No se encontraron notas credito');
         error.status = 404;
         throw error;
       }
