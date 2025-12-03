@@ -148,7 +148,7 @@ export const BotController = {
       const { bot_id } = req.query;
       const archivo = req.file;
       const user_id = req.user.user_id;
-      console.log('usuario: ',user_id);
+      //console.log('usuario: ',user_id);
       const formArray = extraerDatosSolicitudInactivacion(archivo);
       //console.log('formArray: ',formArray);
       const solicitudes = await BotRepository.createSolicitud( formArray, user_id, bot_id );
