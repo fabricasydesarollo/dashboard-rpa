@@ -63,6 +63,8 @@ router.get('/autorizaciones', authenticateToken, BotController.getAutorizaciones
 // cargar las notas credito masivas
 router.post('/cargar/notas-credito', authenticateToken, upload.single('archivo'), NotaCreditoController.cargarNotasCredito);
 // obtener las notas credito masivas del bot avidanti
-router.get('/notas-credito-avidanti', NotaCreditoController.get);
+router.get('/notas-credito-avidanti', authenticateToken, NotaCreditoController.get);
+// obtener las notas credito pendientes para que el bot las procese
+router.get('/notas-credito-pendientes', NotaCreditoController.getNotasCreditotoBotPendientes);
 
 export default router;

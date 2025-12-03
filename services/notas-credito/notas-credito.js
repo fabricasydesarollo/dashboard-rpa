@@ -139,6 +139,31 @@ export const NotasCreditoService = {
       throw error;
     }
     
+  },
+  async getNotasCreditoPendientes(bot_id) {
+    try {
+      //cargar todas las Notas credito masivas para el bot avidanti id: 4
+      const notasCredito = await NotaCreditoMasiva.findAll({
+        where: { bot_id, estado: 'pendiente'},
+        attributes: {
+          exclude: ['estado', 'fecha_ejecucion', 'duracion', 'cufe', 'cude', 'pdf']
+        },
+        order: [['createdAt', 'ASC']]
+      });
+
+      if (!notasCredito.length) {
+        console.log('nota credito: ',notasCredito);
+        const error = new Error('No se encontraron notas credito para este bot');
+        error.status = 404;
+        throw error;
+      }
+
+      return notasCredito;
+    } catch (error) {
+      console.error('Error en NotasCreditoService.getNotasAvidanti:', error);
+      throw error;
+    }
   }
+
 
 };

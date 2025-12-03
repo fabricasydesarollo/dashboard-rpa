@@ -29,4 +29,16 @@ export const NotaCreditoController = {
       return res.status(err.status || 500).json({ error: err.message || 'Error al cargar las notas crédito' });
     }
   },
+
+  async getNotasCreditotoBotPendientes(req, res) {
+    try {
+      const { bot_id } = req.query;
+      const notasCredito = await NotasCreditoService.getNotasCreditoPendientes(Number(bot_id));
+      res.status(200).json(notasCredito);
+    } catch (err) {
+      console.error('Error en cargarNotasCredito:', err);
+      return res.status(err.status || 500).json({ error: err.message || 'Error al obtener las notas crédito' });
+    }
+  },
+
 }
