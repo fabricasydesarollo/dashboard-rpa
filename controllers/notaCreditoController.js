@@ -22,8 +22,8 @@ export const NotaCreditoController = {
       const { sede } = req.body;
       const archivo = req.file;
 
-      await NotasCreditoService.cargarNotasCredito(Number(bot_id), archivo, sede);
-      return res.status(200).json({ message: 'Notas crédito cargadas correctamente'});
+      const notasCredito = await NotasCreditoService.cargarNotasCredito(Number(bot_id), archivo, sede);
+      return res.status(200).json({ message: 'Notas crédito cargadas correctamente', data: notasCredito});
     } catch (err) {
       console.error('Error en cargarNotasCredito:', err);
       return res.status(err.status || 500).json({ error: err.message || 'Error al cargar las notas crédito' });

@@ -132,8 +132,8 @@ export const NotasCreditoService = {
         throw error;
       }
       //console.log('datosProcesados: ', datos, 'sede: ', sede);
-      await NotaCreditoMasiva.bulkCreate(datos);
-      
+      const notasCredito = await NotaCreditoMasiva.bulkCreate(datos);
+      return notasCredito
     } catch (error) {
       console.error('Error en NotasCreditoService.cargarNotasCredito:', error);
       throw error;
