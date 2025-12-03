@@ -11,6 +11,7 @@ import { RegistroGeneral } from './RegistroGeneral.js';
 import { AutorizacionBot } from './AutorizacionBot.js';
 import { Maquina } from './Maquina.js';
 import { Log } from './Log.js';
+import { NotaCreditoMasiva } from './NotaCreditoMasiva.js';
 
 
 User.belongsToMany(Bot, {
@@ -205,6 +206,24 @@ Log.belongsTo(Maquina, {
   foreignKey: 'maquina_id'
 });
 
+// asociaciones de NotaCreditoMasiva---------------------------------------------------------------------------------
+Bot.hasMany(NotaCreditoMasiva, {
+  foreignKey: 'bot_id',
+  onDelete: 'CASCADE'
+});
+
+NotaCreditoMasiva.belongsTo(Bot, {
+  foreignKey: 'bot_id'
+});
+
+Maquina.hasMany(NotaCreditoMasiva, {
+  foreignKey: 'maquina_id',
+  onDelete: 'SET NULL'
+});
+
+NotaCreditoMasiva.belongsTo(Maquina, {
+  foreignKey: 'maquina_id'
+});
 
 
 

@@ -11,5 +11,6 @@ import './RegistroGeneral.js'
 import './Log.js'
 import './AutorizacionBot.js'
 import './Maquina.js'
+import './NotaCreditoMasiva.js'
 import './asociations.js'
 console.log('Models imported successfully');

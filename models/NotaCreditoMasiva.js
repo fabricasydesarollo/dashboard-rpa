@@ -81,7 +81,11 @@ NotaCreditoMasiva.init({
     type: DataTypes.DATE,
     allowNull: true
   },
-
+  duracion: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: null
+  },
   cufe: {
     type: DataTypes.STRING(255),
     allowNull: true

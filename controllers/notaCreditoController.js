@@ -8,7 +8,7 @@ import { NotasCreditoService } from '../services/notas-credito/notas-credito.js'
 export const NotaCreditoController = {
   async get(req, res) {
     try {
-      const { bot_id } = req.query;
+      const { bot_id } = req.query; // ID del bot Avidanti por defecto
       const notas_credito_masivas = await NotasCreditoService.getNotasAvidanti(bot_id);
       res.status(200).json(notas_credito_masivas);
     } catch (err) {

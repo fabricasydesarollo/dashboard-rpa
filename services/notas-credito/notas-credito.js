@@ -5,7 +5,7 @@ import { Maquina } from '../../models/Maquina.js';
 import { extraerDatos } from './utils/extraerDatos.js';
 
 export const NotasCreditoService = {
-  async getNotasAvidanti(bot_id) {
+  async getNotasAvidanti(bot_id = 4) {
     try {
       //cargar todas las Notas credito masivas para el bot avidanti
       const notasCredito = await NotaCreditoMasiva.findAll({
