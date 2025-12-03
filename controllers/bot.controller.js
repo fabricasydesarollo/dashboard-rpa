@@ -6,6 +6,7 @@ import { AutorizacionBot } from '../models/AutorizacionBot.js';
 import { Paciente } from '../models/Paciente.js';
 import { Bot } from '../models/Bot.js';
 import path from 'path';
+import { extraerDatosSolicitudInactivacion } from '../utils/extraerDatosSolicitudInactivacion.js';
 
 
 export const BotController = {
@@ -139,6 +140,24 @@ export const BotController = {
     } catch (err) {
       console.error('Error en createSolicitud:', err);
       return res.status(err.status || 500).json({ error: err.error || 'Error al crear la solicitud del usuario' });
+    }
+  },
+
+  async createSolicitudMasiva(req, res) {
+    try {
+      const { bot_id } = req.query;
+      const archivo = req.file;
+      const user_id = req.user.user_id;
+      console.log('usuario: ',user_id);
+      const formArray = extraerDatosSolicitudInactivacion(archivo);
+      console.log('formArray: ',formArray);
+      /*const solicitudes = await BotRepository.createSolicitud( formArray, user_id, bot_id );
+      const io = req.app.get('io');
+      io.emit('nueva_solicitud', solicitudes, Number(user_id));  // se emite la solicitud creadaen tiempo real a los demas usuarios en este caso admin o supervisor 
+      */return res.status(200).json({ message: 'Solicitudes creadas correctamente' , data:formArray });
+    } catch (err) {
+      console.error('Error en createSolicitud:', err);
+      return res.status(err.status || 500).json({ error: err.message || 'Error al crear la solicitud del usuario' });
     }
   },
   async activateBotPatologia(req, res) {

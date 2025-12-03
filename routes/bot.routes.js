@@ -36,6 +36,8 @@ router.post('/add/bots/user',authenticateToken, BotController.addBotsToUser);
 router.post('/update/user/rol',authenticateToken, BotController.updateUserRol);
 // crea una solicitud para inactivar usuario avidanti
 router.post('/create/solicitud',authenticateToken, BotController.createSolicitud);
+// crea una solicitud para inactivar usuario avidanti de manera masiva
+router.post('/create/solicitud/masiva',authenticateToken, upload.single('archivo'), BotController.createSolicitudMasiva);
 // recibe el parametro en req.query debe ser la maquinaId
 router.get('/historias-clinicas/pendientes', HistoriaClinicaController.getHistoriasClinicasPendientes); 
 // obtiene todos los logs del bot, recibe parametro en req.query botId

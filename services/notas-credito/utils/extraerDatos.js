@@ -6,7 +6,7 @@ export async function extraerDatos(archivo, sede, bot_id) {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
     const rows = xlsx.utils.sheet_to_json(sheet, { defval: '' });
-    //console.log(Object.keys(rows[0])); para saber cuales son los nombres de las columnas
+    //console.log(Object.keys(rows[0])); //para saber cuales son los nombres de las columnas
     const datosProcesados = rows.map((row) => ({
       bot_id: bot_id,
       tipo: row['TIPO'] || '',
