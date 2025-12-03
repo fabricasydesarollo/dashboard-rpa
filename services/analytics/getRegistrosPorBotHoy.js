@@ -4,6 +4,7 @@ import { AutorizacionBot } from '../../models/AutorizacionBot.js'
 import { RegistroGeneral } from '../../models/RegistroGeneral.js'
 import { Bot } from '../../models/Bot.js'
 import { Op } from 'sequelize'
+import { NotaCreditoMasiva } from '../../models/NotaCreditoMasiva.js'
 
 function simplificarNombreBot(nombre) {
   const reglas = [
@@ -47,6 +48,7 @@ export const getRegistrosPorBotHoy = async () => {
 
   const botRetiroUsuarios = [1, 2, 3];
   const botHistoriasClinicasId = 7;
+  const botNotasCreditoAvidanti = 4;
   const botAutorizacionesId = 10;
 
   const bots = await Bot.findAll()
@@ -74,6 +76,14 @@ export const getRegistrosPorBotHoy = async () => {
     } else if (bot.id === botAutorizacionesId) {
       conteo = await AutorizacionBot.count({
         where: {
+          updatedAt: { [Op.between]: [inicioDia, finDia] }
+        }
+      });
+
+    } else if (bot.id === botNotasCreditoAvidanti) {
+      conteo = await NotaCreditoMasiva.count({
+        where: {
+          bot_id: bot.id,
           updatedAt: { [Op.between]: [inicioDia, finDia] }
         }
       });

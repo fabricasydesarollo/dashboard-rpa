@@ -3,6 +3,7 @@ import { Registro } from '../../models/Registro.js'
 import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js'
 import { AutorizacionBot } from '../../models/AutorizacionBot.js'
 import { RegistroGeneral } from '../../models/RegistroGeneral.js'
+import { NotaCreditoMasiva } from '../../models/NotaCreditoMasiva.js'
 
 export const getDistribucionEstados = async (bot_id) => {
 
@@ -16,6 +17,7 @@ export const getDistribucionEstados = async (bot_id) => {
   // ==== CONFIGURACIÓN DINÁMICA ====
   const botsRetiroUsuarios = [1, 2, 3]
   const botHistoriasClinicasId = 7
+  const botNotasCreditoAvidanti = 4
   const botAutorizacionesId = 10
 
   let modelo = Registro
@@ -33,6 +35,9 @@ export const getDistribucionEstados = async (bot_id) => {
     modelo = AutorizacionBot
     campoEstado = "estado"
 
+  } else if (Number(bot_id) === botNotasCreditoAvidanti) {
+    modelo = NotaCreditoMasiva
+    campoEstado = "estado"
   } else {
     modelo = RegistroGeneral
     campoEstado = "estado"

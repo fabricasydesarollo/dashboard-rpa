@@ -5,6 +5,7 @@ import { Registro } from '../../models/Registro.js'
 import { RegistroGeneral } from '../../models/RegistroGeneral.js'
 import { TrazabilidadEnvio } from '../../models/TrazabilidadEnvio.js'
 import { AutorizacionBot } from '../../models/AutorizacionBot.js'
+import { NotaCreditoMasiva } from '../../models/NotaCreditoMasiva.js';
 
 export const getProcesadosPorMaquina = async () => {
   const inicioDia = new Date()
@@ -17,6 +18,7 @@ export const getProcesadosPorMaquina = async () => {
 
   const botRetiroUsuarios = [1, 2, 3]
   const botHC = 7
+  const botNotasCreditoAvidanti = 4
   const botAutorizaciones = 10
 
   const bots = await Bot.findAll()
@@ -37,6 +39,9 @@ export const getProcesadosPorMaquina = async () => {
       campoEstado = 'estado_envio'
     } else if (bot.id === botAutorizaciones) {
       modelo = AutorizacionBot
+      filtro = {} // no tiene bot_id
+    } else if (bot.id === botNotasCreditoAvidanti) {
+      modelo = NotaCreditoMasiva
       filtro = {} // no tiene bot_id
     } else {
       modelo = RegistroGeneral

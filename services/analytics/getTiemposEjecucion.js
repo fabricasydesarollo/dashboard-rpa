@@ -3,6 +3,7 @@ import { Registro } from "../../models/Registro.js";
 import { TrazabilidadEnvio } from "../../models/TrazabilidadEnvio.js";
 import { AutorizacionBot } from "../../models/AutorizacionBot.js";
 import { RegistroGeneral } from "../../models/RegistroGeneral.js";
+import { NotaCreditoMasiva } from "../../models/NotaCreditoMasiva.js";
 
 // Helper para mostrar nombre de mes
 function obtenerNombreMes(idx) {
@@ -28,6 +29,7 @@ export const getTiemposEjecucion = async (modo = "semanal", bot_id, maquina_id) 
   // === CONFIG. DINÁMICA ===
   const botsRetiroUsuarios = [1, 2, 3];
   const botHistoriasClinicasId = 7;
+  const botNotasCreditoAvidanti = 4
   const botAutorizacionesId = 10;
 
   let modelo = Registro;
@@ -43,6 +45,8 @@ export const getTiemposEjecucion = async (modo = "semanal", bot_id, maquina_id) 
     modelo = TrazabilidadEnvio;
   } else if (Number(bot_id) === botAutorizacionesId) {
     modelo = AutorizacionBot;
+  } else if (Number(bot_id) === botNotasCreditoAvidanti) {
+    modelo = NotaCreditoMasiva;
   } else {
     modelo = RegistroGeneral;
   }
