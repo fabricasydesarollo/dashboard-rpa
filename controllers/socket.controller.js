@@ -14,10 +14,35 @@ import { LogController } from './logController.js';
 import { AutorizacionService } from '../services/autorizaciones.js'
 import { Maquina } from '../models/Maquina.js';
 import { now } from 'sequelize/lib/utils';
+import { NotasCreditoService } from '../services/notas-credito/notas-credito.js';
 
 //import { UserRepository } from '../services/repositories/user-repository.js';
 
 export const SocketController = {
+
+  async actualizarNotaCreditoAvidanti(req, res) {
+    try {
+      const notasCreditoActualizada = await NotasCreditoService.updateNotaCreditoAvidanti(req.body);
+      //console.log('notaCreditoActualizada: ',notasCreditoActualizada);
+      //Emitir socket para cada AUTORIZACION creada
+      const io = req.app.get('io');
+      for (const { notaCredito, bot, maquina } of notasCreditoActualizada) {
+        //console.log(' autorizacion; ', autorizacion, 'bot: ', bot);
+        io.emit('nueva_nota_credito', notaCredito, bot);
+        NotificationHelper.emitirNotificaciones(io, [
+          { modulo: maquina, tipo: 'maquina' }
+        ]);
+      }
+      if (notasCreditoActualizada.length > 0) {
+        res.json({ ok: true, notasCreditoActualizada });
+      } else {
+        res.status(400).json({ ok: false, error: 'Hubo un error al actualizar la nota credito' });
+      }
+    } catch (error) {
+      console.log('Error en SocketController.actualizarNotaCreditoAvidanti'),error;
+      res.json({ ok: false, error: 'Hubo un error al actualizar la nota credito' })
+    }
+  },
 
   async createAutorizacion(req, res) {
     try {

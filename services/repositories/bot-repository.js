@@ -11,6 +11,7 @@ import { RegistroGeneral } from '../../models/RegistroGeneral.js';
 import { AutorizacionBot } from '../../models/AutorizacionBot.js';
 import { Maquina } from '../../models/Maquina.js';
 import {Log } from '../../models/Log.js';
+import { NotaCreditoMasiva } from '../../models/NotaCreditoMasiva.js';
 import axios from 'axios';
 import { Op } from 'sequelize';
 
@@ -164,6 +165,7 @@ export class BotRepository {
 
       // 2️ Definir qué modelos usar
       const botRetiroUsuarios = [1, 2, 3];
+      const botnotaCreditoMasivo = 4
       const botHistoriasClinicasId = 7;
       const botAutorizacionesId = 10;
 
@@ -202,7 +204,17 @@ export class BotRepository {
             ],
             group: ['estado']
           });
-        } else {
+        } else if (bot.id === botnotaCreditoMasivo) {
+            resultados = await NotaCreditoMasiva.findAll({
+              where: { bot_id: bot.id },
+              attributes: [
+                'estado',
+                [sequelize.fn('COUNT', sequelize.col('estado')), 'total']
+              ],
+              group: ['estado']
+            });
+        }
+        else {
           resultados = await RegistroGeneral.findAll({
             where: { bot_id: bot.id },
             attributes: [

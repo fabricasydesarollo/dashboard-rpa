@@ -9,5 +9,6 @@ router.post('/nueva-historia-clinica', SocketController.createOrUpdateHistoriaCl
 router.post('/nuevo-registro-bots', SocketController.createRegistroGeneral);
 router.post('/nuevo-log-bot', SocketController.createLogBot);
 router.post('/nueva-autorizacion', SocketController.createAutorizacion);
+router.post('/actualizar-nota-credito-avidanti', SocketController.actualizarNotaCreditoAvidanti);
 
 export default router;
