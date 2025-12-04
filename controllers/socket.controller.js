@@ -25,15 +25,15 @@ export const SocketController = {
       const notasCreditoActualizada = await NotasCreditoService.updateNotaCreditoAvidanti(req.body);
       //console.log('notaCreditoActualizada: ',notasCreditoActualizada);
       //Emitir socket para cada AUTORIZACION creada
-      const io = req.app.get('io');
-      for (const { notaCredito, bot, maquina } of notasCreditoActualizada) {
-        //console.log(' autorizacion; ', autorizacion, 'bot: ', bot);
-        io.emit('nueva_nota_credito', notaCredito, bot);
-        NotificationHelper.emitirNotificaciones(io, [
-          { modulo: maquina, tipo: 'maquina' }
-        ]);
-      }
       if (notasCreditoActualizada.length > 0) {
+        const io = req.app.get('io');
+        for (const { notaCredito, bot, maquina } of notasCreditoActualizada) {
+          //console.log(' autorizacion; ', autorizacion, 'bot: ', bot);
+          io.emit('nueva_nota_credito', notaCredito, bot);
+          NotificationHelper.emitirNotificaciones(io, [
+            { modulo: maquina, tipo: 'maquina' }
+          ]);
+        }
         res.json({ ok: true, notasCreditoActualizada });
       } else {
         res.status(400).json({ ok: false, error: 'Hubo un error al actualizar la nota credito' });

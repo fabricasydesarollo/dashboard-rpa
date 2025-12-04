@@ -266,6 +266,9 @@ export class BotRepository {
     try {
       const botRetiroUsuarios = [1, 2, 3];
       const botHistoriasClinicasId = 7;
+      const botAutorizacionesId = 10;
+      const botnotaCreditoMasivo = 4;
+
 
       let Model;
       let estadoCampo = 'estado';
@@ -275,6 +278,11 @@ export class BotRepository {
       } else if (botId === botHistoriasClinicasId) {
         Model = TrazabilidadEnvio;
         estadoCampo = 'estado_envio';
+      } else if (botId === botnotaCreditoMasivo) {
+        Model = NotaCreditoMasiva;
+      } 
+      else if (botId === botAutorizacionesId) {
+        Model = AutorizacionBot;
       } else {
         Model = RegistroGeneral;
       }
