@@ -119,9 +119,19 @@ export const BotController = {
     }
   },
 
-  async descargarFormato(req, res){
+  async descargarFormatoNotaCredito(req, res){
     const filePath = path.resolve('public/formatos/Formato_Notas_Credito.xlsx');
     res.download(filePath, 'Formato_Notas_Credito.xlsx', (err) => {
+      if (err) {
+        console.error('Error al descargar archivo:', err);
+        res.status(500).json({ error: 'No se pudo descargar el archivo' });
+      }
+    });
+  },
+
+  async descargarFormatoRetiroUsuarios(req, res){
+    const filePath = path.resolve('public/formatos/plantilla.xlsx');
+    res.download(filePath, 'Formato_Retiro_Usuarios.xlsx', (err) => {
       if (err) {
         console.error('Error al descargar archivo:', err);
         res.status(500).json({ error: 'No se pudo descargar el archivo' });

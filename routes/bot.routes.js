@@ -28,8 +28,10 @@ router.get('/get/bots',authenticateToken, BotController.getBots);
 router.get('/get/solicitudes/usuario',authenticateToken, UserController.getSolicitudes);
 // obtiene todas las historias clinicas
 router.get('/get/historiasClinicas',authenticateToken, HistoriaClinicaController.get);
- // descarga el formato de historia clinica
-router.get('/descargar-formato',authenticateToken, BotController.descargarFormato);
+ // descarga el formato de Notas credito
+router.get('/descargar-formato/nota-credito',authenticateToken, BotController.descargarFormatoNotaCredito);
+ // descarga el formato de Retiro usuarios masivo
+router.get('/descargar-formato/retiro-usuarios',authenticateToken, BotController.descargarFormatoRetiroUsuarios);
 // agrega bots a un usuario
 router.post('/add/bots/user',authenticateToken, BotController.addBotsToUser);
 // actualiza el rol de un usuario
