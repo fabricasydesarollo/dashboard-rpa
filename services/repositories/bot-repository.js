@@ -629,7 +629,81 @@ export class BotRepository {
     return trazabilidades;
   }
 
- static async getHistoriasClinicasPendientes(maquinaId) {
+  static async getAutorizacionesPaginated({ search, fechaInicio, fechaFin, tipoDato }) {
+    const whereTraz = {};
+    const searchA = search ? search.toLowerCase() : '';
+
+    // --- Fecha por defecto (solo si NO hay búsqueda ni fechas)
+    if (!fechaInicio && !search) {
+      fechaInicio = new Date().toLocaleDateString('sv-SE');
+    }
+
+    // --- Filtro por rango de fechas (solo si hay fechas)
+    if (fechaInicio && fechaFin) {
+      whereTraz[tipoDato] = {
+        [Op.between]: [
+          `${fechaInicio} 00:00:00`,
+          `${fechaFin} 23:59:59`
+        ]
+      };
+    } else if (fechaInicio) {
+      whereTraz[tipoDato] = {
+        [Op.between]: [
+          `${fechaInicio} 00:00:00`,
+          `${fechaInicio} 23:59:59`
+        ]
+      };
+    } else if (fechaFin) {
+      whereTraz[tipoDato] = {
+        [Op.lte]: `${fechaFin} 23:59:59`
+      };
+    }
+
+    // ---  Filtro por búsqueda: combinar paciente + historia en un solo [Op.or]
+    if (search) {
+      const pattern = `%${searchA}%`;
+      whereTraz[Op.or] = [
+        // Paciente
+        { '$Paciente.nombre$': { [Op.like]: pattern } },
+        { '$Paciente.numero_identificacion$': { [Op.like]: pattern } },
+        // Campos directos de AutorizacionBot (case-insensitive en MySQL)
+        { numIngreso: { [Op.like]: pattern } },
+        { numFolio: { [Op.like]: pattern } },
+        { nroAutorizacionRadicado: { [Op.like]: pattern } },
+        { CUPS: { [Op.like]: pattern } },
+        { idOrden: { [Op.like]: pattern } }
+      ];
+    }
+
+    console.log('FilterWhere final:', whereTraz);
+    const autorizaciones = await AutorizacionBot.findAll({
+      where: whereTraz,
+      include: [
+        {
+          model: Paciente,
+          attributes: ['numero_identificacion', 'nombre', 'correo_electronico'],
+          required: true
+        },
+        {
+          model: Bot,
+          attributes: ['nombre']
+        }
+      ],
+      order: [[tipoDato, 'DESC']]
+    });
+    
+    
+    if (!autorizaciones.length) {
+      //console.log('autorizacion: ',autorizaciones);
+      const error = new Error('No se encontraron autorizaciones');
+      error.status = 404;
+      throw error;
+    }
+
+    return autorizaciones;
+  }
+
+  static async getHistoriasClinicasPendientes(maquinaId) {
     const trazabilidades = await TrazabilidadEnvio.findAll({
       include: [
         {

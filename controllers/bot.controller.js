@@ -219,6 +219,18 @@ export const BotController = {
       return res.status(err.status || 500).json({ error: err.message || 'Error al obtener las autorizaciones' });
     }
   },
+  async getAutorizacionesPaginated(req, res) {
+    try {
+      const { search = '', fechaInicio, fechaFin, tipoDato = 'createdAt' } = req.query;
+
+      const autorizaciones = await BotRepository.getAutorizacionesPaginated({ search, fechaInicio, fechaFin, tipoDato });
+      return res.status(200).json(autorizaciones);
+    } catch (err) {
+      console.log(err);
+      return res.status(err.status || 500).json({ error: err.message || 'Error al obtener las autorizaciones' });
+    }
+  },
+
   async createAutorizacion(req, res) {
     const data = req.body;
     const t = await sequelize.transaction();

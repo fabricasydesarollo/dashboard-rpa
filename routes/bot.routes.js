@@ -66,6 +66,8 @@ router.put('/reprocesar/historia-clinica/:id', authenticateToken, HistoriaClinic
 router.post('/autorizacion', BotController.createAutorizacion);
 // obtener todas las autorizaciones
 router.get('/autorizaciones', authenticateToken, BotController.getAutorizaciones);
+// obtener todas las autorizaciones recibiendo como parametros busqueda y fecha
+router.get('/autorizaciones/op', authenticateToken, BotController.getAutorizacionesPaginated);
 // cargar las notas credito masivas
 router.post('/cargar/notas-credito', authenticateToken, upload.single('archivo'), NotaCreditoController.cargarNotasCredito);
 // obtener las notas credito masivas del bot avidanti
