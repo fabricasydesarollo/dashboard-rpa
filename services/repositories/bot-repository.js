@@ -675,7 +675,7 @@ export class BotRepository {
       ];
     }
 
-    console.log('FilterWhere final:', whereTraz);
+    //console.log('FilterWhere final:', whereTraz);
     const autorizaciones = await AutorizacionBot.findAll({
       where: whereTraz,
       include: [
