@@ -12,7 +12,6 @@ import { AutorizacionBot } from '../../models/AutorizacionBot.js';
 import { Maquina } from '../../models/Maquina.js';
 import {Log } from '../../models/Log.js';
 import { NotaCreditoMasiva } from '../../models/NotaCreditoMasiva.js';
-import axios from 'axios';
 import { Op } from 'sequelize';
 
 export class BotRepository {
@@ -542,6 +541,94 @@ export class BotRepository {
 
     return trazabilidades;
   }
+
+  static async getHistoriasClinicasPaginated({ user_id, search, fechaInicio, fechaFin, tipoDato }) {
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      const error = new Error('Usuario No Autorizado');
+      error.status = 404;
+      throw error;
+    }
+
+    const whereTraz = {};
+    const searchA = search ? search.toLowerCase() : '';
+
+    // --- Fecha por defecto (solo si NO hay búsqueda ni fechas)
+    if (!fechaInicio && !search) {
+      fechaInicio = new Date().toLocaleDateString('sv-SE');
+    }
+
+    // --- Filtro por rango de fechas (solo si hay fechas)
+    if (fechaInicio && fechaFin) {
+      whereTraz[tipoDato] = {
+        [Op.between]: [
+          `${fechaInicio} 00:00:00`,
+          `${fechaFin} 23:59:59`
+        ]
+      };
+    } else if (fechaInicio) {
+      whereTraz[tipoDato] = {
+        [Op.between]: [
+          `${fechaInicio} 00:00:00`,
+          `${fechaInicio} 23:59:59`
+        ]
+      };
+    } else if (fechaFin) {
+      whereTraz[tipoDato] = {
+        [Op.lte]: `${fechaFin} 23:59:59`
+      };
+    }
+
+    // ---  Filtro por búsqueda: combinar paciente + historia en un solo [Op.or]
+    if (search) {
+      const pattern = `%${searchA}%`;
+      // Añadimos el filtro de búsqueda AL where principal (en TrazabilidadEnvio)
+      whereTraz[Op.or] = [
+        // Búsqueda en Paciente.nombre
+        { '$HistoriaClinica.Paciente.nombre$': { [Op.like]: pattern } },
+        // Búsqueda en Paciente.numero_identificacion
+        { '$HistoriaClinica.Paciente.numero_identificacion$': { [Op.like]: pattern } },
+        // Búsqueda en HistoriaClinica.ingreso (ignorando NULLs)
+        sequelize.where(
+          sequelize.fn('LOWER', sequelize.col('HistoriaClinica.ingreso')),
+          'LIKE',
+          pattern.toLowerCase()
+        ),
+        // Búsqueda en HistoriaClinica.folio
+        sequelize.where(
+          sequelize.fn('LOWER', sequelize.col('HistoriaClinica.folio')),
+          'LIKE',
+          pattern.toLowerCase()
+        )
+      ];
+    }
+
+    //console.log('FilterWhere final:', whereTraz);
+
+    const trazabilidades = await TrazabilidadEnvio.findAll({
+      where: whereTraz,
+      include: [
+        {
+          model: HistoriaClinica,
+          attributes: ['ingreso', 'fecha_historia', 'folio', 'empresa', 'sede'],
+          include: [
+            {
+              model: Paciente,
+              attributes: ['nombre', 'numero_identificacion', 'correo_electronico'],
+            }
+          ]
+        },
+        {
+          model: Bot,
+          attributes: ['nombre']
+        }
+      ],
+      order: [[tipoDato, 'DESC']],
+    });
+
+    return trazabilidades;
+  }
+
  static async getHistoriasClinicasPendientes(maquinaId) {
     const trazabilidades = await TrazabilidadEnvio.findAll({
       include: [

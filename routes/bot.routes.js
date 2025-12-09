@@ -28,6 +28,8 @@ router.get('/get/bots',authenticateToken, BotController.getBots);
 router.get('/get/solicitudes/usuario',authenticateToken, UserController.getSolicitudes);
 // obtiene todas las historias clinicas
 router.get('/get/historiasClinicas',authenticateToken, HistoriaClinicaController.get);
+// obtiene todas las historias clinicas recibiendo parametros como busqueda y fecha 
+router.get('/get/historiasClinicas/op',authenticateToken, HistoriaClinicaController.getPaginated);
  // descarga el formato de Notas credito
 router.get('/descargar-formato/nota-credito',authenticateToken, BotController.descargarFormatoNotaCredito);
  // descarga el formato de Retiro usuarios masivo
