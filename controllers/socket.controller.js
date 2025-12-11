@@ -117,7 +117,7 @@ export const SocketController = {
           solicitud_id: registro.solicitud_id,
           maquina_id: registro.maquina_id || 1,
           mensaje: registro.mensaje,
-          estado: registro.estado,
+          estado: registro.estado.toLowerCase(),
           fecha_ejecucion: registro.fecha_ejecucion || new Date(),
           duracion: registro.duracion
         }, { transaction: t }),
