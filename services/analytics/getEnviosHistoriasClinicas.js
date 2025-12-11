@@ -11,12 +11,16 @@ export const getEnviosHistoriasClinicas = async (modo = "semanal") => {
   let inicio, fin;
 
   if (modo === "semanal") {
-    // ÚLTIMA SEMANA COMPLETA (lunes a domingo de la semana pasada)
+    // SEMANA ACTUAL (lunes a domingo que contiene hoy)
     const diaSemana = hoy.getDay(); // 0 = dom, 1 = lun, ..., 6 = sáb
-    const diasHastaLunesPasado = diaSemana === 0 ? -13 : -6 - diaSemana;
+    // Calcular cuántos días restar para llegar al lunes de esta semana
+    // Si hoy es lunes (1) → -0 días
+    // Si hoy es martes (2) → -1 día
+    // Si hoy es domingo (0) → -6 días
+    const diasHastaLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
 
     inicio = new Date(hoy);
-    inicio.setDate(hoy.getDate() + diasHastaLunesPasado);
+    inicio.setDate(hoy.getDate() + diasHastaLunes);
     inicio.setHours(0, 0, 0, 0);
 
     fin = new Date(inicio);
