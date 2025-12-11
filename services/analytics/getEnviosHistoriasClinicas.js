@@ -78,7 +78,7 @@ function procesarSemanal(registros, inicioSemana, finSemana) {
     }
   });
 
-  return { labels: dias, values: valores, };
+  return { label: dias, valor: valores };
 }
 
 function procesarMensual(registros) {
