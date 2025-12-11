@@ -10,19 +10,22 @@ export const getSolicitudesInactivacion = async (modo = "semanal") => {
   let inicio, fin;
 
   if (modo === "semanal") {
-    // ÚLTIMA SEMANA COMPLETA (lunes a domingo anterior)
-    const hoy = new Date();
-    const diaSemana = hoy.getDay(); // 0 = dom, 1 = lun, ..., 6 = sáb
-    const diasHastaLunesPasado = diaSemana === 0 ? -13 : -6 - diaSemana;
+  // SEMANA ACTUAL (lunes a domingo que contiene hoy)
+  const diaSemana = hoy.getDay(); // 0 = dom, 1 = lun, ..., 6 = sáb
+  // Calcular cuántos días restar para llegar al lunes de esta semana
+  // Si hoy es lunes (1) → -0 días
+  // Si hoy es martes (2) → -1 día
+  // Si hoy es domingo (0) → -6 días
+  const diasHastaLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
 
-    inicio = new Date(hoy);
-    inicio.setDate(hoy.getDate() + diasHastaLunesPasado);
-    inicio.setHours(0, 0, 0, 0);
+  inicio = new Date(hoy);
+  inicio.setDate(hoy.getDate() + diasHastaLunes);
+  inicio.setHours(0, 0, 0, 0);
 
-    fin = new Date(inicio);
-    fin.setDate(inicio.getDate() + 6);
-    fin.setHours(23, 59, 59, 999);
-  } else if (modo === "mensual") {
+  fin = new Date(inicio);
+  fin.setDate(inicio.getDate() + 6);
+  fin.setHours(23, 59, 59, 999);
+} else if (modo === "mensual") {
     inicio = new Date(año, mes, 1);
     fin = new Date(año, mes + 1, 0, 23, 59, 59);
   } else if (modo === "anual") {
