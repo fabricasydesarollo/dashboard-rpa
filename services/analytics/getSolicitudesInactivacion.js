@@ -1,4 +1,4 @@
-import { Op, fn, col } from "sequelize";
+import { Op } from "sequelize";
 import { Registro } from "../../models/Registro.js";
 
 // Servicio para obtener solicitudes de inactivación por rango de tiempo
@@ -9,17 +9,28 @@ export const getSolicitudesInactivacion = async (modo = "semanal") => {
 
   let inicio, fin;
 
-  if (modo === "semanal" || modo === "mensual") {
-    // Rango mes actual
-    inicio = new Date(año, mes, 1, 0, 0, 0);
+  if (modo === "semanal") {
+    // ÚLTIMA SEMANA COMPLETA (lunes a domingo anterior)
+    const hoy = new Date();
+    const diaSemana = hoy.getDay(); // 0 = dom, 1 = lun, ..., 6 = sáb
+    const diasHastaLunesPasado = diaSemana === 0 ? -13 : -6 - diaSemana;
+
+    inicio = new Date(hoy);
+    inicio.setDate(hoy.getDate() + diasHastaLunesPasado);
+    inicio.setHours(0, 0, 0, 0);
+
+    fin = new Date(inicio);
+    fin.setDate(inicio.getDate() + 6);
+    fin.setHours(23, 59, 59, 999);
+  } else if (modo === "mensual") {
+    inicio = new Date(año, mes, 1);
     fin = new Date(año, mes + 1, 0, 23, 59, 59);
-  } else {
-    // Anual
-    inicio = new Date(año, 0, 1, 0, 0, 0);
+  } else if (modo === "anual") {
+    inicio = new Date(año, 0, 1);
     fin = new Date(año, 11, 31, 23, 59, 59);
   }
 
-  // Traer todos los registros del rango
+  // Traer registros en el rango
   const registros = await Registro.findAll({
     where: {
       fecha_ejecucion: { [Op.between]: [inicio, fin] }
@@ -30,7 +41,7 @@ export const getSolicitudesInactivacion = async (modo = "semanal") => {
   // Procesamiento según modo
   switch (modo) {
     case "semanal":
-      return { semanal: procesarSemanal(registros) };
+      return { semanal: procesarSemanal(registros, inicio, fin) };
     case "mensual":
       return { mensual: procesarMensual(registros) };
     case "anual":
@@ -40,35 +51,44 @@ export const getSolicitudesInactivacion = async (modo = "semanal") => {
   }
 };
 
-// Procesamiento semanal
-function procesarSemanal(registros) {
+// Procesamiento semanal → solo para 7 días consecutivos (lunes a domingo)
+function procesarSemanal(registros, inicioSemana, finSemana) {
   const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
   const valores = Array(7).fill(0);
 
+  // Generar mapa de fecha → índice (para evitar ambigüedad)
+  const mapaFechas = {};
+  for (let i = 0; i < 7; i++) {
+    const fecha = new Date(inicioSemana);
+    fecha.setDate(inicioSemana.getDate() + i);
+    const key = fecha.toISOString().split('T')[0]; // "YYYY-MM-DD"
+    mapaFechas[key] = i;
+  }
+
+  // Contar por día real
   registros.forEach(r => {
     const fecha = new Date(r.fecha_ejecucion);
-    let dia = fecha.getDay(); // 0 = domingo
-    dia = dia === 0 ? 6 : dia - 1; // lunes = 0
-    valores[dia]++;
+    const key = fecha.toISOString().split('T')[0];
+    const idx = mapaFechas[key];
+    if (idx !== undefined) {
+      valores[idx]++;
+    }
   });
 
-  return { labels: dias, values: valores };
+  return { labels: dias, values: valores, };
 }
 
-// Procesamiento mensual (semanas 1 a 4)
+// Procesamiento mensual (semanas 1 a 4+)
 function procesarMensual(registros) {
   const semanas = [0, 0, 0, 0];
 
   registros.forEach(r => {
     const dia = new Date(r.fecha_ejecucion).getDate();
-    const idx = Math.min(3, Math.ceil(dia / 7) - 1);
+    const idx = Math.min(3, Math.ceil(dia / 7) - 1); // Sem 1: días 1-7, Sem 2: 8-14, etc.
     semanas[idx]++;
   });
 
-  return {
-    labels: ["Sem 1", "Sem 2", "Sem 3", "Sem 4"],
-    values: semanas
-  };
+  return { labels: ["Sem 1", "Sem 2", "Sem 3", "Sem 4"], values: semanas };
 }
 
 // Procesamiento anual
