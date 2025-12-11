@@ -10,24 +10,13 @@ export const getEnviosHistoriasClinicas = async (modo) => {
 
   let inicio, fin;
 
-  if (modo === "semanal") {
-    // ÚLTIMA SEMANA COMPLETA (lunes a domingo anterior)
-    const hoy = new Date();
-    const diaSemana = hoy.getDay(); // 0 = dom, 1 = lun, ..., 6 = sáb
-    const diasHastaLunesPasado = diaSemana === 0 ? -13 : -6 - diaSemana;
-
-    inicio = new Date(hoy);
-    inicio.setDate(hoy.getDate() + diasHastaLunesPasado);
-    inicio.setHours(0, 0, 0, 0);
-
-    fin = new Date(inicio);
-    fin.setDate(inicio.getDate() + 6);
-    fin.setHours(23, 59, 59, 999);
-  } else if (modo === "mensual") {
-    inicio = new Date(año, mes, 1);
+  if (modo === "semanal" || modo === "mensual") {
+    // Rango del mes actual
+    inicio = new Date(año, mes, 1, 0, 0, 0);
     fin = new Date(año, mes + 1, 0, 23, 59, 59);
-  } else if (modo === "anual") {
-    inicio = new Date(año, 0, 1);
+  } else {
+    // ANUAL
+    inicio = new Date(año, 0, 1, 0, 0, 0);
     fin = new Date(año, 11, 31, 23, 59, 59);
   }
   // TRAER REGISTROS DEL RANGO
@@ -42,7 +31,7 @@ export const getEnviosHistoriasClinicas = async (modo) => {
   // PROCESAMIENTO SEGÚN MODO
   switch (modo) {
     case "semanal":
-      return { semanal: procesarSemanal(registros, inicio, fin) };
+      return { semanal: procesarSemanal(registros) };
 
     case "mensual":
       return { mensual: procesarMensual(registros) };
@@ -55,30 +44,24 @@ export const getEnviosHistoriasClinicas = async (modo) => {
   }
 };
 
-function procesarSemanal(registros, inicioSemana, finSemana) {
+function procesarSemanal(registros) {
   const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-  const valores = Array(7).fill(0);
+  const conteo = Array(7).fill(0);
 
-  // Generar mapa de fecha → índice (para evitar ambigüedad)
-  const mapaFechas = {};
-  for (let i = 0; i < 7; i++) {
-    const fecha = new Date(inicioSemana);
-    fecha.setDate(inicioSemana.getDate() + i);
-    const key = fecha.toISOString().split('T')[0]; // "YYYY-MM-DD"
-    mapaFechas[key] = i;
-  }
-
-  // Contar por día real
   registros.forEach(r => {
     const fecha = new Date(r.updatedAt);
-    const key = fecha.toISOString().split('T')[0];
-    const idx = mapaFechas[key];
-    if (idx !== undefined) {
-      valores[idx]++;
-    }
+    let dia = fecha.getDay(); // 0=Dom → 6=Sab
+
+    // Convertir para que Lunes sea 0
+    dia = dia === 0 ? 6 : dia - 1;
+
+    conteo[dia]++;
   });
 
-  return { label: dias, valor: valores };
+  return dias.map((d, i) => ({
+    label: d,
+    valor: conteo[i]
+  }));
 }
 
 function procesarMensual(registros) {
