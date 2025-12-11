@@ -42,7 +42,7 @@ export const getEnviosHistoriasClinicas = async (modo) => {
   // PROCESAMIENTO SEGÚN MODO
   switch (modo) {
     case "semanal":
-      return { semanal: procesarSemanal(registros) };
+      return { semanal: procesarSemanal(registros, inicio, fin) };
 
     case "mensual":
       return { mensual: procesarMensual(registros) };
