@@ -553,57 +553,83 @@ export class BotRepository {
     const whereTraz = {};
     const searchA = search ? search.toLowerCase() : '';
 
-    // --- Fecha por defecto (solo si NO hay búsqueda ni fechas)
+    // 1. CONFIGURACIÓN DE CAMPO DE FILTRO Y ORDENAMIENTO
+    // Determinamos si estamos filtrando por la tabla principal o la asociada
+    const isFechaHistoria = tipoDato === 'fecha_historia';
+
+    // Si es historia, usamos la sintaxis de asociación ($Modelo.campo$). Si es envío, campo normal.
+    const campoFiltro = isFechaHistoria ? '$HistoriaClinica.fecha_historia$' : 'fecha_envio';
+
+    // El ordenamiento también cambia de estructura
+    let ordenamiento;
+    if (isFechaHistoria) {
+      // Ordenar por modelo asociado
+      ordenamiento = [[{ model: HistoriaClinica }, 'fecha_historia', 'DESC']];
+    } else {
+      // Ordenar por modelo principal (por defecto fecha_envio DESC)
+      ordenamiento = [['fecha_envio', 'DESC']];
+    }
+
+    // --- Fecha por defecto (solo si NO hay búsqueda ni fechas explícitas)
     if (!fechaInicio && !search) {
       fechaInicio = new Date().toLocaleDateString('sv-SE');
     }
 
-    // --- Filtro por rango de fechas (solo si hay fechas)
-    if (fechaInicio && fechaFin) {
-      whereTraz[tipoDato] = {
-        [Op.between]: [
-          `${fechaInicio} 00:00:00`,
-          `${fechaFin} 23:59:59`
-        ]
-      };
-    } else if (fechaInicio) {
-      whereTraz[tipoDato] = {
-        [Op.between]: [
-          `${fechaInicio} 00:00:00`,
-          `${fechaInicio} 23:59:59`
-        ]
-      };
+    // --- LÓGICA DE FECHAS ---
+    if (fechaInicio) {
+      const inicioStr = `${fechaInicio} 00:00:00`;
+      const finStr = fechaFin ? `${fechaFin} 23:59:59` : `${fechaInicio} 23:59:59`;
+
+      if (isFechaHistoria) {
+        // CASO A: Filtro por Fecha de Historia (Modelo Asociado)
+        // Aquí NO nos importa si fecha_envio es null o no, solo miramos la fecha del documento
+        whereTraz[campoFiltro] = {
+          [Op.between]: [inicioStr, finStr]
+        };
+      } else {
+        // CASO B: Filtro por Fecha de Envío (Modelo Principal)
+        
+        // Si estamos buscando por defecto (sin search y solo fechaInicio "hoy"), 
+        // incluimos los pendientes (NULL) para que no se pierdan.
+        if (!search && !fechaFin) {
+          whereTraz[Op.or] = [
+            { [campoFiltro]: { [Op.between]: [inicioStr, finStr] } },
+            { [campoFiltro]: null } // <--- Incluye los pendientes ('null')
+          ];
+        } else {
+          // Si es una búsqueda específica de rango, respetamos el rango estricto
+          whereTraz[campoFiltro] = {
+            [Op.between]: [inicioStr, finStr]
+          };
+        }
+      }
     } else if (fechaFin) {
-      whereTraz[tipoDato] = {
+      // Lógica solo fechaFin
+      whereTraz[campoFiltro] = {
         [Op.lte]: `${fechaFin} 23:59:59`
       };
     }
 
-    // ---  Filtro por búsqueda: combinar paciente + historia en un solo [Op.or]
+    // --- Filtro por búsqueda (Search) ---
     if (search) {
       const pattern = `%${searchA}%`;
-      // Añadimos el filtro de búsqueda AL where principal (en TrazabilidadEnvio)
-      whereTraz[Op.or] = [
-        // Búsqueda en Paciente.nombre
-        { '$HistoriaClinica.Paciente.nombre$': { [Op.like]: pattern } },
-        // Búsqueda en Paciente.numero_identificacion
-        { '$HistoriaClinica.Paciente.numero_identificacion$': { [Op.like]: pattern } },
-        // Búsqueda en HistoriaClinica.ingreso (ignorando NULLs)
-        sequelize.where(
-          sequelize.fn('LOWER', sequelize.col('HistoriaClinica.ingreso')),
-          'LIKE',
-          pattern.toLowerCase()
-        ),
-        // Búsqueda en HistoriaClinica.folio
-        sequelize.where(
-          sequelize.fn('LOWER', sequelize.col('HistoriaClinica.folio')),
-          'LIKE',
-          pattern.toLowerCase()
-        )
-      ];
-    }
+      // Nota: Si ya usaste Op.or arriba para las fechas, aquí hay conflicto.
+      // Para asegurarnos, usamos Op.and para combinar "Filtro Fechas" AND "Filtro Search" 
+      // si fuera necesario, pero como search suele limpiar el filtro por defecto, lo manejamos así:
+      
+      // Si queremos mantener lo que ya hay en whereTraz y sumar el Search con AND:
+      const searchCondition = {
+        [Op.or]: [
+          { '$HistoriaClinica.Paciente.nombre$': { [Op.like]: pattern } },
+          { '$HistoriaClinica.Paciente.numero_identificacion$': { [Op.like]: pattern } },
+          sequelize.where(sequelize.fn('LOWER', sequelize.col('HistoriaClinica.ingreso')), 'LIKE', pattern.toLowerCase()),
+          sequelize.where(sequelize.fn('LOWER', sequelize.col('HistoriaClinica.folio')), 'LIKE', pattern.toLowerCase())
+        ]
+      };
 
-    //console.log('FilterWhere final:', whereTraz);
+      // Combinamos con lo que ya exista en whereTraz (sea fecha o nada)
+      Object.assign(whereTraz, searchCondition);
+    }
 
     const trazabilidades = await TrazabilidadEnvio.findAll({
       where: whereTraz,
@@ -623,7 +649,7 @@ export class BotRepository {
           attributes: ['nombre']
         }
       ],
-      order: [[tipoDato, 'DESC']],
+      order: ordenamiento, // <--- Usamos la variable dinámica
     });
 
     return trazabilidades;
