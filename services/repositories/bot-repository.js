@@ -589,12 +589,9 @@ export class BotRepository {
       } else {
         // CASO B: Filtro por Fecha de Envío (Modelo Principal)
         
-        // Si estamos buscando por defecto (sin search y solo fechaInicio "hoy"), 
-        // incluimos los pendientes (NULL) para que no se pierdan.
         if (!search && !fechaFin) {
           whereTraz[Op.or] = [
             { [campoFiltro]: { [Op.between]: [inicioStr, finStr] } },
-            { [campoFiltro]: null } // <--- Incluye los pendientes ('null')
           ];
         } else {
           // Si es una búsqueda específica de rango, respetamos el rango estricto
@@ -613,11 +610,7 @@ export class BotRepository {
     // --- Filtro por búsqueda (Search) ---
     if (search) {
       const pattern = `%${searchA}%`;
-      // Nota: Si ya usaste Op.or arriba para las fechas, aquí hay conflicto.
-      // Para asegurarnos, usamos Op.and para combinar "Filtro Fechas" AND "Filtro Search" 
-      // si fuera necesario, pero como search suele limpiar el filtro por defecto, lo manejamos así:
-      
-      // Si queremos mantener lo que ya hay en whereTraz y sumar el Search con AND:
+
       const searchCondition = {
         [Op.or]: [
           { '$HistoriaClinica.Paciente.nombre$': { [Op.like]: pattern } },
