@@ -33,6 +33,7 @@ app.use(coockieParser()) // Middleware para parsear cookies
 // Middlewares
 const allowedOrigins = [
   FRONTEND_URL, // dominio de producción
+  //'https://tablerocontrolzentria.netlify.app', // dominio de producción
   'http://localhost:5173' // para desarrollo
 ];
 
