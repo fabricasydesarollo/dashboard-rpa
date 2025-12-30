@@ -74,5 +74,7 @@ router.post('/cargar/notas-credito', authenticateToken, upload.single('archivo')
 router.get('/notas-credito-avidanti', authenticateToken, NotaCreditoController.get);
 // obtener las notas credito pendientes para que el bot las procese
 router.get('/notas-credito-pendientes', NotaCreditoController.getNotasCreditotoBotPendientes);
+// obtener las historias clinicas que tienen motivo de fallo 'Error al procesar en indigo'
+router.get('/historias-clinicas/error-indigo', HistoriaClinicaController.getHistoriasClinicasWithErrorIndigo);
 
 export default router;

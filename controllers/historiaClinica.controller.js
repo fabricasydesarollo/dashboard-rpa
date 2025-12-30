@@ -42,6 +42,7 @@ export const HistoriaClinicaController = {
       res.status(err.status || 400).json({ error: err.message || 'Error al obtener las historias_clínicas' });
     }
   },
+
   async reprocesarHistoriaClinica(req, res) {
     try {
       const { id } = req.params; // se usa para rutas tipo: /reprocesar/historia-clinica/:id y en el axios del front va asi: `reprocesar/historia-clinica/${id}`
@@ -52,6 +53,17 @@ export const HistoriaClinicaController = {
     catch (err) {
       console.error(err);
       return res.status(err.status || 400).json({ error: err.error || 'Error al reprocesar la trazabilidad' });
+    }
+  },
+
+  async getHistoriasClinicasWithErrorIndigo(req, res) {
+    try {
+      const historias_clinicas = await BotRepository.getHistoriasClinicasWithError()
+      res.status(200).json(historias_clinicas);
+    }
+    catch (err){
+      console.error(err);
+      res.status(err.status || 400).json({ error: err.message || 'Error al obtener las historias_clínicas con error en indigo' });
     }
   }
 };
