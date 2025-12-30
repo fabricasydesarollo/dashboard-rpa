@@ -852,7 +852,33 @@ export class BotRepository {
         ],
         order: [[HistoriaClinica, 'fecha_historia', 'ASC']]
       });
-      return historias;
+
+      if (!historias.length) {
+        const error = new Error('No se encontraron historias clínicas');
+        error.status = 404;
+        throw error;
+      }
+
+      // 🔹 Aplanar los datos
+      const historiasAplanadas = historias.map(t => {
+        const h = t.HistoriaClinica;
+        const p = h?.Paciente;
+
+        return {
+          empresa: h?.empresa || null,
+          sede: h?.sede || null,
+          maquina_id: t?.maquina_id,
+          numero_identificacion: p?.numero_identificacion || null,
+          nombre: p?.nombre || null,
+          correo_electronico: p?.correo_electronico || null,
+          ingreso: h?.ingreso || null,
+          fecha_historia: h?.fecha_historia || null,
+          folio: h?.folio || null
+        };
+      });
+
+      return historiasAplanadas;
+
     } catch (error) {
       console.error( 'Error en BotRepository.getHistoriasClinicasWithError:', error );
       throw new Error('Error al obtener las historias clínicas con error en indigo');
