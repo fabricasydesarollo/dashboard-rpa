@@ -277,7 +277,7 @@ export const SocketController = {
         });
 
         if (trazabilidad) {
-          if (trazabilidad.estado_envio === 'pendiente'){
+          if (trazabilidad.estado_envio !== 'exito'){
             await trazabilidad.update({
               estado_envio: data.estado_envio || 'pendiente',
               motivo_fallo: data.motivo_fallo || null,
