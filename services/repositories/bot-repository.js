@@ -833,4 +833,30 @@ export class BotRepository {
       throw new Error('Error al activar el bot de patología');
     }
   }
+
+  static async getHistoriasClinicasWithError() {
+    try {
+      const historias = await TrazabilidadEnvio.findAll({
+        where: { estado_envio: 'error', motivo_fallo: { [Op.like]: '%Error al procesar en indigo%' } },
+        include: [
+          {
+            model: HistoriaClinica,
+            attributes: ['ingreso', 'fecha_historia', 'folio', 'empresa', 'sede'],
+            include: [
+              {
+                model: Paciente,
+                attributes: ['nombre', 'numero_identificacion', 'correo_electronico']
+              }
+            ]
+          }
+        ],
+        order: [[HistoriaClinica, 'fecha_historia', 'ASC']]
+      });
+      return historias;
+    } catch (error) {
+      console.error( 'Error en BotRepository.getHistoriasClinicasWithError:', error );
+      throw new Error('Error al obtener las historias clínicas con error en indigo');
+    }
+  }
+
 }
