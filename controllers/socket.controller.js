@@ -238,6 +238,13 @@ export const SocketController = {
             nombre: data.nombre,
             correo_electronico: data.correo_electronico,
           }, { transaction: t });
+        } else {
+          // SI EXISTE: Validar si el correo cambió
+          if (paciente.correo_electronico !== data.correo_electronico) {
+            await Paciente.update({
+              correo_electronico: data.correo_electronico
+            }, {where: {numero_identificacion: data.numero_identificacion}}, { transaction: t });
+          }
         }
 
         // 2. Buscar o crear historia clínica
