@@ -240,7 +240,7 @@ export const SocketController = {
           }, { transaction: t });
         } else {
           // SI EXISTE: Validar si el correo cambió
-          if (data.correo_electronico && paciente.correo_electronico !== data.correo_electronico) {
+          if (paciente.correo_electronico !== data.correo_electronico) {
             await paciente.update({
               correo_electronico: data.correo_electronico
             }, { transaction: t });
