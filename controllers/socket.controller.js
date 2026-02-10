@@ -241,9 +241,9 @@ export const SocketController = {
         } else {
           // SI EXISTE: Validar si el correo cambió
           if (paciente.correo_electronico !== data.correo_electronico) {
-            await Paciente.update({
-              correo_electronico: data.correo_electronico
-            }, {where: {numero_identificacion: data.numero_identificacion}}, { transaction: t });
+            await paciente.update(
+              {correo_electronico: data.correo_electronico},
+              { transaction: t });
           }
         }
 
