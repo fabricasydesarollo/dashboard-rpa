@@ -6,6 +6,7 @@ import { HistoriaClinicaController } from '../controllers/historiaClinica.contro
 import { LogController } from '../controllers/logController.js';
 import { NotaCreditoController } from '../controllers/notaCreditoController.js';
 import multer from 'multer';
+import { botArmenia } from '../controllers/botArmenia.controller.js';
 const upload = multer({ storage: multer.memoryStorage() }); // guardamos en memoria (buffer)
 
 const router = Router();
@@ -76,5 +77,8 @@ router.get('/notas-credito-avidanti', authenticateToken, NotaCreditoController.g
 router.get('/notas-credito-pendientes', NotaCreditoController.getNotasCreditotoBotPendientes);
 // obtener las historias clinicas que tienen motivo de fallo 'Error al procesar en indigo'
 router.get('/historias-clinicas/error-indigo', HistoriaClinicaController.getHistoriasClinicasWithErrorIndigo);
+
+// obtener pacientes de armenia (requiere fecha_inicio y fecha_fin en formato YYYYMMDD)
+router.get('/pacientes-armenia', authenticateToken, botArmenia.getPacientes);
 
 export default router;
