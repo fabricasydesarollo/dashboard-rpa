@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import coockieParser from 'cookie-parser' // Importar cookie-parser para manejar cookies
 import { testConnection } from './db/database.js';
+import { connectPool } from './db/go_database.js';
 import authRoutes from './routes/auth.routes.js'; // Ajusta el path si está en otra carpeta
 import botRoutes from './routes/bot.routes.js'; // 
 import socketRoutes from './routes/socket.routes.js'; // 
@@ -116,6 +117,7 @@ app.get('/', (req, res) => {
 // Si el BASE_URL comienza con "https", arrancar HTTPS
 server.listen(PORT, async () => {
   await testConnection();
+  await connectPool();
   console.log(`Servidor corriendo en ${BASE_URL}:${PORT}`);
 });
 
