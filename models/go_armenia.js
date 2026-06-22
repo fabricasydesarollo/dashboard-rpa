@@ -62,8 +62,13 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                 ORDER BY BSAPD.codeCategory`
 
         const resultado = await executeQuery(query);
-        return resultado
-
+        const formateada = resultado.recordset.map(item => ({
+            ...item,
+            Id: `${item.NumAtencion}-${item.NumVenta}`, // Genera un ID único combinando NumAtencion y NumVenta
+            EstadoProceso: 'pendiente',
+            Observacion: '' // Campo para observaciones, inicialmente vacío
+        }));
+        return formateada;
     } catch (error) {
         console.error('Error en getDetalleVentasGo:', error.message);
         throw new Error('Error al obtener detalle de ventas: ' + error.message);
