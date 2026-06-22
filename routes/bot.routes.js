@@ -80,5 +80,6 @@ router.get('/historias-clinicas/error-indigo', HistoriaClinicaController.getHist
 
 // obtener pacientes de armenia (requiere fecha_inicio y fecha_fin en formato YYYYMMDD)
 router.get('/pacientes-armenia', botArmenia.getPacientes);
+router.get('/detalle-ventas-armenia', botArmenia.getDetalleVentasGo); // requiere documento y atencion_go como parametros
 
 export default router;
