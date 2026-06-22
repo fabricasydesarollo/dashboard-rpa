@@ -32,3 +32,40 @@ export async function getPacientesGo (fecha_inicio, fecha_fin) {
         throw new Error('Error al obtener pacientes: ' + error.message);
     }
 }
+
+export async function getDetalleVentasGo (numDoc, numAte) {
+    try {
+        const query = `
+            --------DETALLE------
+                DECLARE @Empresa int 
+                DECLARE @NumDoc int
+                DECLARE @NumAte int 
+                --DECLARE @Contrato int 
+
+                SET @Empresa = 740006
+                SET @NumDoc = ${numDoc}
+                SET @NumAte = ${numAte}
+                --SET @Contrato = 1039
+
+
+                SELECT BSAE.EncounterClass AS TipoAtencion, BSAE.Patient AS Paciente, BSAE.documentNumber AS identificacion, BSAE.dateRegister AS FechaIngreso, E.dateDischarge AS FechaEgreso, 
+                    BSAE.dateDischarge AS FechaEC, DATEDIFF(day, BSAE.dateRegister, E.dateDischarge) AS Estancia, BSAE.EncounterNumber AS NumAtencion, BSAH.number AS NumEC, BSAH.status AS EstadoEC, BSAI.valueTotal AS ValorFacturaTotal, 
+                    PT.name AS TipoProducto, BSAPD.categoryName AS Categoria, BSAPD.quantity AS Cantidad, BSAPD.saleNumber AS NumVenta, BSAPD.dateSale AS FechaVenta, BSAPD.codeProduct AS CodigoProducto, BSAPD.nameProduct AS Producto, 
+                    BSAPD.value AS ValUnitario,	BSAPD.ValueCharges AS ValRecargo, BSAPD.valueDiscount AS ValDescuento, BSAPD.ValueTax AS ValImpuesto, BSAPD.valueNet AS ValorTotal
+                FROM BillStateOfAccountEncounters BSAE
+                    INNER JOIN encounters E WITH (NOLOCK) ON BSAE.idencounter = E.idencounter
+                    INNER JOIN BillStateOfAccountHeader BSAH WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAH.idStateOfAccountHeader
+                    INNER JOIN BillStateOfAccountInvoices BSAI WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAI.idStateOfAccountHeader AND BSAI.isPrincipal = 1
+                    INNER JOIN BillStateOfAccountProductDetails BSAPD WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAPD.idStateOfAccountHeader
+                    INNER JOIN productTypes PT ON PT.idProductType = BSAPD.idProductType
+                WHERE E.idUserCompany = @Empresa AND BSAE.documentNumber = @NumDoc AND BSAE.EncounterNumber = @NumAte
+                ORDER BY BSAPD.codeCategory`
+
+        const resultado = await executeQuery(query);
+        return resultado
+
+    } catch (error) {
+        console.error('Error en getDetalleVentasGo:', error.message);
+        throw new Error('Error al obtener detalle de ventas: ' + error.message);
+    }
+}
