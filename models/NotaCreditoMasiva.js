@@ -17,7 +17,7 @@ NotaCreditoMasiva.init({
       model: 'bots',
       key: 'id'
     },
-    onDelete: 'SET NULL'
+    onDelete: 'RESTRICT'
   },
 
   maquina_id: {

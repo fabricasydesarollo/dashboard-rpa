@@ -1,4 +1,5 @@
 import { getDetalleVentasGo, getPacientesGo } from "../models/go_armenia.js";
+import { FacturacionCAABotService } from "../services/facturacion_caa.js";
 
 
 export const botArmenia = {
@@ -17,7 +18,7 @@ export const botArmenia = {
                 return res.status(400).json({message: "Las fechas deben estar en formato YYYYMMDD (sin separadores)"});
             }
             
-            const pacientes = await getPacientesGo(fecha_inicio, fecha_fin);
+            const pacientes = await FacturacionCAABotService.getFacturacionCAAGo(fecha_inicio, fecha_fin);
             res.status(200).json({status: 'success', data: pacientes.recordset || pacientes});
 
         } catch (err) {
@@ -32,11 +33,37 @@ export const botArmenia = {
             if (!documento || !atencion_go) {
                 return res.status(400).json({message: "Se requieren documento y atencion_go como parámetros"});
             }
-            const detalleVentas = await getDetalleVentasGo(documento, atencion_go);
+            const detalleVentas = await FacturacionCAABotService.getDetalleVentasGo(documento, atencion_go);
             res.status(200).json({status: 'success', data: detalleVentas.recordset || detalleVentas});
         } catch (err) {
             console.error('Error en getDetalleVentasGo:', err);
             return res.status(500).json({ error: err.message || 'Error al obtener detalle de ventas' });
+        }
+    },
+    async createFacturacionCAABot(req, res) {
+        try {
+            const { bot_id, maquina_id, doc_paciente, nom_paciente, tipo_atencion, fecha_ingreso, fecha_egreso, num_atencion_go, num_atencion_indigo, num_estado_cuenta } = req.body;
+
+            if (!bot_id || !maquina_id || !doc_paciente || !nom_paciente || !tipo_atencion || !fecha_ingreso || !fecha_egreso || !num_atencion_go || !num_atencion_indigo || !num_estado_cuenta) {
+                return res.status(400).json({ message: "Faltan datos requeridos para crear la facturación CAA" });
+            }
+
+            const facturacionData = await FacturacionCAABotService.createFacturacionCAABot({
+                bot_id,
+                maquina_id,
+                doc_paciente,
+                nom_paciente,
+                tipo_atencion,
+                fecha_ingreso,
+                fecha_egreso,
+                num_atencion_go,
+                num_atencion_indigo,
+                num_estado_cuenta
+            });
+            res.status(201).json({ status: 'success', message: 'Facturación CAA creada exitosamente' });
+        } catch (err) {
+            console.error('Error en createFacturacionCAABot:', err);
+            return res.status(500).json({ error: err.message || 'Error al crear facturación CAA' });
         }
     }
 };

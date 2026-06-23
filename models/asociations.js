@@ -12,6 +12,8 @@ import { AutorizacionBot } from './AutorizacionBot.js';
 import { Maquina } from './Maquina.js';
 import { Log } from './Log.js';
 import { NotaCreditoMasiva } from './NotaCreditoMasiva.js';
+import { FacturacionCAABot } from './FacturacionCAABot.js';
+import { DetalleFacturacionCAABot } from './DetalleFacturacionCAA.js';
 
 
 User.belongsToMany(Bot, {
@@ -138,6 +140,43 @@ AutorizacionBot.belongsTo(Bot, {
   foreignKey: 'bot_id'
 });
 
+// Paciente -> FacturacionCAABot
+Paciente.hasMany(FacturacionCAABot, {
+  foreignKey: 'paciente_id',
+  onDelete: 'SET NULL'  // si se elimina un paciente, las facturaciones no se borran, solo se setea null
+});
+
+// FacturacionCAABot -> Paciente
+FacturacionCAABot.belongsTo(Paciente, {
+  foreignKey: 'paciente_id'
+});
+
+// Bot -> FacturacionCAABot
+Bot.hasMany(FacturacionCAABot, {
+  foreignKey: 'bot_id',
+  onDelete: 'SET NULL', // o SET NULL si quieres conservar historial aunque el bot se elimine
+});
+
+// FacturacionCAABot -> Bot
+FacturacionCAABot.belongsTo(Bot, {
+  foreignKey: 'bot_id'
+});
+
+// Maquina -> FacturacionCAABot
+Maquina.hasMany(FacturacionCAABot, {
+  foreignKey: 'maquina_id',
+  onDelete: 'SET NULL' // o SET NULL si quieres conservar historial aunque la máquina se elimine
+});
+
+// FacturacionCAABot -> Maquina
+FacturacionCAABot.belongsTo(Maquina, {
+  foreignKey: 'maquina_id'
+});
+
+// DetalleFacturacionCAABot ->  
+DetalleFacturacionCAABot.belongsTo(FacturacionCAABot, {
+  foreignKey: 'facturacion_caa_id'
+})
 
 // relaciones de Maquina
 // Bot -> Maquinas

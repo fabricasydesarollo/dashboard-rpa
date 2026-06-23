@@ -38,8 +38,8 @@ export async function getDetalleVentasGo (numDoc, numAte) {
         const query = `
             --------DETALLE------
                 DECLARE @Empresa int 
-                DECLARE @NumDoc int
-                DECLARE @NumAte int 
+                DECLARE @NumDoc bigint
+                DECLARE @NumAte bigint 
                 --DECLARE @Contrato int 
 
                 SET @Empresa = 740006
@@ -62,13 +62,7 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                 ORDER BY BSAPD.codeCategory`
 
         const resultado = await executeQuery(query);
-        const formateada = resultado.recordset.map(item => ({
-            ...item,
-            Id: `${item.NumAtencion}-${item.NumVenta}`, // Genera un ID único combinando NumAtencion y NumVenta
-            EstadoProceso: 'pendiente',
-            Observacion: '' // Campo para observaciones, inicialmente vacío
-        }));
-        return formateada;
+        return resultado
     } catch (error) {
         console.error('Error en getDetalleVentasGo:', error.message);
         throw new Error('Error al obtener detalle de ventas: ' + error.message);

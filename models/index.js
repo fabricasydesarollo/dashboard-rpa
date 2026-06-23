@@ -13,4 +13,6 @@ import './AutorizacionBot.js'
 import './Maquina.js'
 import './NotaCreditoMasiva.js'
 import './asociations.js'
+import './FacturacionCAABot.js'
+import './DetalleFacturacionCAA.js'
 console.log('Models imported successfully');
