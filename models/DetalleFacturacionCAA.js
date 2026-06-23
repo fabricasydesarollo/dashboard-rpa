@@ -39,6 +39,10 @@ DetalleFacturacionCAABot.init({
         type: DataTypes.STRING,
         allowNull: false
     },
+    categoria: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     cantidad: {
         type: DataTypes.INTEGER,
         allowNull: true

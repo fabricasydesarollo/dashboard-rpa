@@ -107,6 +107,7 @@ export const FacturacionCAABotService = {
                     num_venta: DetalleFacturacionCAAGo.recordset[0].NumVenta,
                     num_estado_cuenta: data.num_estado_cuenta,
                     cod_producto: DetalleFacturacionCAAGo.recordset[0].CodigoProducto,
+                    categoria: DetalleFacturacionCAAGo.recordset[0].Categoria,
                     cantidad: DetalleFacturacionCAAGo.recordset[0].Cantidad
                 }
             });
@@ -114,6 +115,25 @@ export const FacturacionCAABotService = {
             return facturacionCAABot;
         } catch (error) {
             throw new Error('Error al crear facturación CAA: ' + error.message);
+        }
+    },
+    async factutasProcesar(maquina_id) {
+        try {
+            const facturasCAA = await FacturacionCAABot.findAll({
+                where: {
+                    maquina_id,
+                    estado_proceso: 'pendiente'
+                },
+                include: [
+                    {
+                        model: DetalleFacturacionCAABot,
+                        as: 'detalles'
+                    }
+                ]
+            });
+            return facturasCAA;
+        } catch (error) {
+            throw new Error("Error al obtener las facturas a procesar CAA: " + error.message);
         }
     }
 };

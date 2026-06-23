@@ -84,5 +84,5 @@ router.get('/detalle-ventas-armenia', botArmenia.getDetalleVentasGo); // requier
 router.post('/facturacion-caa', botArmenia.createFacturacionCAABot); // requiere los datos de facturación CAA en el body
 
 // rutas para los bots y maquinas
-
+router.get('/facturas-caa-procesar', botArmenia.factutasProcesarBot)
 export default router;

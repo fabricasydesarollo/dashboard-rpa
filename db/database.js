@@ -32,7 +32,7 @@ export const testConnection = async () => {
 // force: true - elimina y recrea tablas (PIERDE TODOS LOS DATOS - usar solo en desarrollo)
 export const syncDatabase = async () => {
   try {
-    await sequelize.sync({ alter: false }); // alter: true intenta modificar tablas existentes
+    await sequelize.sync({ alter: true }); // alter: true intenta modificar tablas existentes
     console.log('✅ Modelos sincronizados correctamente (alter: false - datos mantenidos)');
   } catch (error) {
     console.error('❌ Error al sincronizar BD:', error.message);

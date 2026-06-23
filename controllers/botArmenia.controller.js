@@ -65,5 +65,17 @@ export const botArmenia = {
             console.error('Error en createFacturacionCAABot:', err);
             return res.status(500).json({ error: err.message || 'Error al crear facturación CAA' });
         }
+    },
+    async factutasProcesarBot(req, res) {
+        try {
+            const { maquina_id } = req.query
+            if (!maquina_id) {
+                return res.status(400).json({ message: "Falta maquina_id para procesar la busqueda em CAA" })
+            }
+            const taskPending = await FacturacionCAABotService.factutasProcesar(maquina_id)
+            res.status(201).json({ status: 'success', data: taskPending });
+        } catch (err) {
+            return res.status(500).json({error: err.message || 'Error al obtener las tareas CAA'})
+        }
     }
 };

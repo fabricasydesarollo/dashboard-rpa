@@ -176,7 +176,13 @@ FacturacionCAABot.belongsTo(Maquina, {
 // DetalleFacturacionCAABot ->  
 DetalleFacturacionCAABot.belongsTo(FacturacionCAABot, {
   foreignKey: 'facturacion_caa_id'
-})
+});
+
+// FacturacionCAABot -> DetalleFacturacionCAABot
+FacturacionCAABot.hasMany(DetalleFacturacionCAABot, {
+  foreignKey: 'facturacion_caa_id',
+  as: 'detalles'
+});
 
 // relaciones de Maquina
 // Bot -> Maquinas
