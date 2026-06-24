@@ -42,25 +42,40 @@ export const botArmenia = {
     },
     async createFacturacionCAABot(req, res) {
         try {
-            const { bot_id, maquina_id, doc_paciente, nom_paciente, tipo_atencion, fecha_ingreso, fecha_egreso, num_atencion_go, num_atencion_indigo, num_estado_cuenta } = req.body;
+            const registros = req.body
 
-            if (!bot_id || !maquina_id || !doc_paciente || !nom_paciente || !tipo_atencion || !fecha_ingreso || !fecha_egreso || !num_atencion_go || !num_atencion_indigo || !num_estado_cuenta) {
-                return res.status(400).json({ message: "Faltan datos requeridos para crear la facturación CAA" });
+            if (!Array.isArray(registros) || registros.length === 0) {
+                return res.status(400).json({ 
+                    status: 'error',
+                    message: "Debe ser una lista de registros con al menos 1 elemento" 
+                });
             }
+            const facturacionDataList = [];
+            
+            for (const registro of registros) {
+                const { bot_id, maquina_id, doc_paciente, nom_paciente, tipo_atencion, fecha_ingreso, fecha_egreso, num_atencion_go, num_atencion_indigo, num_estado_cuenta } = registro;
 
-            const facturacionData = await FacturacionCAABotService.createFacturacionCAABot({
-                bot_id,
-                maquina_id,
-                doc_paciente,
-                nom_paciente,
-                tipo_atencion,
-                fecha_ingreso,
-                fecha_egreso,
-                num_atencion_go,
-                num_atencion_indigo,
-                num_estado_cuenta
-            });
-            res.status(201).json({ status: 'success', message: 'Facturación CAA creada exitosamente' });
+                if (!bot_id || !maquina_id || !doc_paciente || !nom_paciente || !tipo_atencion || !fecha_ingreso || !fecha_egreso || !num_atencion_go || !num_atencion_indigo || !num_estado_cuenta) {
+                    return res.status(400).json({ message: "Faltan datos requeridos para crear la facturación CAA" });
+                }
+
+                const facturacionData = await FacturacionCAABotService.createFacturacionCAABot({
+                    bot_id,
+                    maquina_id,
+                    doc_paciente,
+                    nom_paciente,
+                    tipo_atencion,
+                    fecha_ingreso,
+                    fecha_egreso,
+                    num_atencion_go,
+                    num_atencion_indigo,
+                    num_estado_cuenta
+                });
+                
+                facturacionDataList.push(facturacionData);
+            }
+            
+            res.status(201).json({ status: 'success', message: 'Facturación CAA creada exitosamente', data: facturacionDataList });
         } catch (err) {
             console.error('Error en createFacturacionCAABot:', err);
             return res.status(500).json({ error: err.message || 'Error al crear facturación CAA' });

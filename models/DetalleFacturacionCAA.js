@@ -64,7 +64,7 @@ DetalleFacturacionCAABot.init({
     timestamps: true,
     indexes: [
         {
-            unique: true, fields: ['num_atencion_go', 'num_estado_cuenta']
+            unique: true, fields: ['num_atencion_go', 'num_venta']
         }
     ]
 })

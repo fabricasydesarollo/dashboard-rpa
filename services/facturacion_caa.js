@@ -63,7 +63,7 @@ export const FacturacionCAABotService = {
         try {
             const DetalleFacturacionCAAGo = await getDetalleVentasGo(data.doc_paciente, data.num_atencion_go);
 
-            if(!DetalleFacturacionCAAGo || DetalleFacturacionCAAGo.length === 0) {
+            if (!DetalleFacturacionCAAGo || !DetalleFacturacionCAAGo.recordset || DetalleFacturacionCAAGo.recordset.length === 0) {
                 throw new Error('No se pudo obtener el detalle de la Factura');
             }
             
@@ -97,20 +97,22 @@ export const FacturacionCAABotService = {
                 );
             }
 
-            const DetalleFactBot = await DetalleFacturacionCAABot.findOrCreate({
-                where: {
-                    facturacion_caa_id: facturacionCAABot.id
-                },
-                defaults: {
-                    doc_paciente: data.doc_paciente,
-                    num_atencion_go: data.num_atencion_go,
-                    num_venta: DetalleFacturacionCAAGo.recordset[0].NumVenta,
-                    num_estado_cuenta: data.num_estado_cuenta,
-                    cod_producto: DetalleFacturacionCAAGo.recordset[0].CodigoProducto,
-                    categoria: DetalleFacturacionCAAGo.recordset[0].Categoria,
-                    cantidad: DetalleFacturacionCAAGo.recordset[0].Cantidad
-                }
-            });
+            for (const detalle of DetalleFacturacionCAAGo.recordset) {
+                await DetalleFacturacionCAABot.findOrCreate({
+                    where: {
+                        num_venta: detalle.NumVenta,
+                        num_atencion_go: data.num_atencion_go
+                    },
+                    defaults: {
+                        facturacion_caa_id: facturacionCAABot.id,
+                        doc_paciente: data.doc_paciente,
+                        num_estado_cuenta: data.num_estado_cuenta,
+                        cod_producto: detalle.CodigoProducto,
+                        categoria: detalle.Categoria,
+                        cantidad: detalle.Cantidad
+                    }
+                });
+            }
 
             return facturacionCAABot;
         } catch (error) {
