@@ -65,5 +65,25 @@ export const HistoriaClinicaController = {
       console.error(err);
       res.status(err.status || 400).json({ error: err.message || 'Error al obtener las historias_clínicas con error en indigo' });
     }
+  },
+
+  async updateEmailPaciente(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { numero_identificacion } = req.params;
+      const { correo_electronico } = req.body;
+      const paciente = await Paciente.findOne({ where: { numero_identificacion } }, { transaction });
+      if (!paciente) {
+        return res.status(404).json({ error: 'Paciente no encontrado' });
+      }
+      await Paciente.update({ correo_electronico }, { where: { numero_identificacion } }, { transaction });
+      await transaction.commit();
+      res.status(200).json({ message: 'Correo electrónico actualizado correctamente' });
+    } catch (err) {
+      console.error(err);
+      await transaction.rollback();
+      res.status(err.status || 400).json({ error: err.message || 'Error al actualizar el correo electrónico del paciente' });
+    }
   }
+
 };

@@ -83,6 +83,10 @@ router.get('/pacientes-armenia', botArmenia.getPacientes);
 router.get('/detalle-ventas-armenia', botArmenia.getDetalleVentasGo); // requiere documento y atencion_go como parametros
 router.post('/facturacion-caa', botArmenia.createFacturacionCAABot); // requiere los datos de facturación CAA en el body
 
+// actualizar el email de un paciente
+router.put('/paciente/:numero_identificacion', authenticateToken, HistoriaClinicaController.updateEmailPaciente);
+
 // rutas para los bots y maquinas
-router.get('/facturas-caa-procesar', botArmenia.factutasProcesarBot)
+router.get('/facturas-caa-procesar', botArmenia.factutasProcesarBot);
+
 export default router;
