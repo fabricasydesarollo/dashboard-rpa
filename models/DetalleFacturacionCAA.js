@@ -55,6 +55,10 @@ DetalleFacturacionCAABot.init({
     observacion: {
         type: DataTypes.TEXT,
         allowNull: true
+    },
+    tipo_producto: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 },
 {

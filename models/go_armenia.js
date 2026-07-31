@@ -21,7 +21,8 @@ export async function getPacientesGo (fecha_inicio, fecha_fin) {
                 INNER JOIN encounters E WITH (NOLOCK) ON BSAE.idencounter = E.idencounter
                 INNER JOIN BillStateOfAccountHeader BSAH WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAH.idStateOfAccountHeader
             WHERE E.idUserCompany = @Empresa AND BSAH.status = 'FC' AND BSAE.documentNumber != ''
-                AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin;
+                AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin
+            ORDER BY FechaIngreso DESC;
             `
 
         const resultado = await executeQuery(query);

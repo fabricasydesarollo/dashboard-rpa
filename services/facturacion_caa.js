@@ -49,6 +49,7 @@ export const FacturacionCAABotService = {
             });
             const detalleVentasFormateada = detalleVentas.recordset.map(item => ({
                 ...item,
+                Categoria: ['medicamentos','insumos'].includes(item.TipoProducto?.toLowerCase()) ? 'Medicamentos' : 'Procedimientos',
                 EstadoProceso: detalleBot?.estado_proceso || 'pendiente',
                 Observacion: detalleBot?.observacion || null
             }));
@@ -109,7 +110,8 @@ export const FacturacionCAABotService = {
                         num_estado_cuenta: data.num_estado_cuenta,
                         cod_producto: detalle.CodigoProducto,
                         categoria: detalle.Categoria,
-                        cantidad: detalle.Cantidad
+                        cantidad: detalle.Cantidad,
+                        tipo_producto: detalle.TipoProducto
                     }
                 });
             }
@@ -132,6 +134,13 @@ export const FacturacionCAABotService = {
                         as: 'detalles'
                     }
                 ]
+            });
+            facturasCAA.forEach((factura) => {
+                factura.detalles.forEach((detalle) => {
+                    if (detalle.categoria) {
+                        detalle.tipo_producto = ['medicamentos', 'insumos'] .includes(detalle.tipo_producto?.toLowerCase()) ? 'Medicamentos' : 'Procedimientos';
+                    }
+                });
             });
             return facturasCAA;
         } catch (error) {
