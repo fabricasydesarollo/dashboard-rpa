@@ -6,12 +6,12 @@ export async function getPacientesGo (fecha_inicio, fecha_fin) {
             DECLARE @Empresa int 
             DECLARE @fecEgrInicio datetime
             DECLARE @fecEgrFin datetime
-            --DECLARE @Contrato int 
+            DECLARE @Contrato int 
 
             SET @Empresa = 740006
             SET @fecEgrInicio = '${fecha_inicio} 00:00:01'
             SET @fecEgrFin = '${fecha_fin} 23:59:59'
-            --SET @Contrato = 1039
+            SET @Contrato = 1039
 
             SELECT BSAE.EncounterClass AS TipoAtencion, BSAE.documentNumber AS Identificacion, BSAE.Patient AS Paciente, 
                 BSAE.dateRegister AS FechaIngreso, E.dateDischarge AS FechaEgreso, 
@@ -20,9 +20,11 @@ export async function getPacientesGo (fecha_inicio, fecha_fin) {
             FROM BillStateOfAccountEncounters BSAE
                 INNER JOIN encounters E WITH (NOLOCK) ON BSAE.idencounter = E.idencounter
                 INNER JOIN BillStateOfAccountHeader BSAH WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAH.idStateOfAccountHeader
-            WHERE E.idUserCompany = @Empresa AND BSAH.status = 'FC' AND BSAE.documentNumber != ''
-                AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin
-            ORDER BY FechaIngreso DESC;
+                INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
+                INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
+                INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract 
+            WHERE E.idUserCompany = @Empresa AND BSAH.status = 'FC' AND BSAE.documentNumber != '' AND C.idContract = @Contrato
+                AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin;
             `
 
         const resultado = await executeQuery(query);
@@ -41,12 +43,12 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                 DECLARE @Empresa int 
                 DECLARE @NumDoc bigint
                 DECLARE @NumAte bigint 
-                --DECLARE @Contrato int 
+                DECLARE @Contrato int 
 
                 SET @Empresa = 740006
                 SET @NumDoc = ${numDoc}
                 SET @NumAte = ${numAte}
-                --SET @Contrato = 1039
+                SET @Contrato = 1039
 
 
                 SELECT BSAE.EncounterClass AS TipoAtencion, BSAE.Patient AS Paciente, BSAE.documentNumber AS identificacion, BSAE.dateRegister AS FechaIngreso, E.dateDischarge AS FechaEgreso, 
@@ -59,7 +61,10 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                     INNER JOIN BillStateOfAccountInvoices BSAI WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAI.idStateOfAccountHeader AND BSAI.isPrincipal = 1
                     INNER JOIN BillStateOfAccountProductDetails BSAPD WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAPD.idStateOfAccountHeader
                     INNER JOIN productTypes PT ON PT.idProductType = BSAPD.idProductType
-                WHERE E.idUserCompany = @Empresa AND BSAE.documentNumber = @NumDoc AND BSAE.EncounterNumber = @NumAte
+                    INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
+                    INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
+                    INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract 
+                WHERE E.idUserCompany = @Empresa AND BSAE.documentNumber = @NumDoc AND BSAE.EncounterNumber = @NumAte AND C.idContract = @Contrato
                 ORDER BY BSAPD.codeCategory`
 
         const resultado = await executeQuery(query);
