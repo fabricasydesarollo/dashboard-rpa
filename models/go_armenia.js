@@ -23,8 +23,9 @@ export async function getPacientesGo (fecha_inicio, fecha_fin) {
                 INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
                 INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
                 INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract 
-            WHERE E.idUserCompany = @Empresa AND BSAH.status = 'FC' AND BSAE.documentNumber != '' AND C.idContract = @Contrato
-                AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin;
+            WHERE E.idUserCompany = @Empresa AND BSAH.status = 'AC' AND BSAE.documentNumber != '' AND C.idContract = @Contrato
+                AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin
+            ORDER BY FechaIngreso DESC;
             `
 
         const resultado = await executeQuery(query);
@@ -64,7 +65,7 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                     INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
                     INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
                     INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract 
-                WHERE E.idUserCompany = @Empresa AND BSAE.documentNumber = @NumDoc AND BSAE.EncounterNumber = @NumAte AND C.idContract = @Contrato
+                WHERE E.idUserCompany = @Empresa AND BSAE.documentNumber = @NumDoc AND BSAE.EncounterNumber = @NumAte AND C.idContract = @Contrato --AND BSAH.status != 'AN'
                 ORDER BY BSAPD.codeCategory`
 
         const resultado = await executeQuery(query);

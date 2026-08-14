@@ -1,8 +1,9 @@
-import { Op } from "sequelize";
-import { FacturacionCAABot } from "../models/FacturacionCAABot.js";
-import { getDetalleVentasGo, getPacientesGo } from "../models/go_armenia.js";
-import { Paciente } from "../models/Paciente.js";
-import { DetalleFacturacionCAABot } from "../models/DetalleFacturacionCAA.js";
+import {Op} from "sequelize";
+import {FacturacionCAABot} from "../models/FacturacionCAABot.js";
+import {getDetalleVentasGo, getPacientesGo} from "../models/go_armenia.js";
+import {Paciente} from "../models/Paciente.js";
+import {DetalleFacturacionCAABot} from "../models/DetalleFacturacionCAA.js";
+import {sequelize} from "../db/database.js";
 
 export const FacturacionCAABotService = {
     async getFacturacionCAAGo(fecha_inicio, fecha_fin) {
@@ -14,7 +15,7 @@ export const FacturacionCAABotService = {
 
             const facturacionBot = await FacturacionCAABot.findAll({
                 where: {
-                    fecha_ingreso: {
+                    fecha_egreso: {
                         [Op.between]: [fecha_inicio, fecha_fin]
                     }
                 }
@@ -39,22 +40,40 @@ export const FacturacionCAABotService = {
     async getDetalleVentasGo(documento, atencion_go) {
         try {
             const detalleVentas = await getDetalleVentasGo(documento, atencion_go);
-            if (!detalleVentas) {
-                throw new Error('Detalle de ventas no encontrado');
-            }
-            const detalleBot = await DetalleFacturacionCAABot.findOne({
-                where: {
-                    doc_paciente: documento, num_atencion_go: atencion_go
-                }
-            });
-            const detalleVentasFormateada = detalleVentas.recordset.map(item => ({
-                ...item,
-                Categoria: ['medicamentos','insumos'].includes(item.TipoProducto?.toLowerCase()) ? 'Medicamentos' : 'Procedimientos',
-                EstadoProceso: detalleBot?.estado_proceso || 'pendiente',
-                Observacion: detalleBot?.observacion || null
-            }));
-            
-            return detalleVentasFormateada;
+            // console.debug("Detalles de venta (query):", detalleVentas);
+            // if (!detalleVentas) {
+            //     throw new Error('Detalle de ventas no encontrado');
+            // }
+            // const detalleBot = await DetalleFacturacionCAABot.findOne({
+            //     where: {
+            //         doc_paciente: documento, num_atencion_go: atencion_go
+            //     }
+            // });
+            // console.info(detalleBot)
+            // const detalleVentasFormateada = detalleVentas.recordset.map(item => ({
+            //     ...item,
+            //     // Categoria: ['medicamentos','insumos'].includes(item.TipoProducto?.toLowerCase()) ? 'Medicamentos' : 'Procedimientos',
+            //     EstadoProceso: detalleBot?.estado_proceso || 'pendiente',
+            //     Observacion: detalleBot?.observacion || null
+            // }));
+
+            return await Promise.all(
+                detalleVentas.recordset.map(async item => {
+                    const detalleBot = await DetalleFacturacionCAABot.findOne({
+                        where: {
+                            doc_paciente: documento,
+                            num_atencion_go: atencion_go,
+                            num_venta: item.NumVenta
+                        }
+                    });
+
+                    return {
+                        ...item,
+                        EstadoProceso: detalleBot?.estado_proceso || 'pendiente',
+                        Observacion: detalleBot?.observacion || null
+                    };
+                })
+            );
 
         } catch (error) {
             throw new Error('Error al obtener detalle de ventas: ' + error.message);
@@ -126,12 +145,19 @@ export const FacturacionCAABotService = {
             const facturasCAA = await FacturacionCAABot.findAll({
                 where: {
                     maquina_id,
-                    estado_proceso: 'pendiente'
+                    estado_proceso: {
+                        [Op.in]: ['pendiente', 'error']
+                    }
                 },
                 include: [
                     {
                         model: DetalleFacturacionCAABot,
-                        as: 'detalles'
+                        as: 'detalles',
+                        where: {
+                            estado_proceso: {
+                                [Op.in]: ['pendiente', 'error']
+                            }
+                        }
                     }
                 ]
             });
@@ -145,6 +171,109 @@ export const FacturacionCAABotService = {
             return facturasCAA;
         } catch (error) {
             throw new Error("Error al obtener las facturas a procesar CAA: " + error.message);
+        }
+    },
+    async updateEstadoDetalles(data) {
+        const transaction = await sequelize.transaction();
+
+        try {
+            const registroDetalleFactura =
+                await DetalleFacturacionCAABot.findOne({
+                    where: {
+                        doc_paciente: data.doc_paciente,
+                        num_atencion_go: data.num_atencion_go,
+                        num_venta: data.num_venta,
+                    },
+                    transaction
+                });
+
+            if (!registroDetalleFactura) {
+                throw new Error(
+                    'Registro de detalle de la factura no encontrado'
+                );
+            }
+
+            await registroDetalleFactura.update(
+                {
+                    estado_proceso: data.estado,
+                    observacion: data.mensaje
+                },
+                { transaction }
+            );
+
+            await transaction.commit();
+
+            return registroDetalleFactura;
+
+        } catch (error) {
+
+            await transaction.rollback();
+
+            throw new Error(
+                `Error al actualizar el estado de la factura: ${error.message}`
+            );
+        }
+    },
+    async updateEstadoCabecera(data){
+        try{
+
+            function obtenerEstadoCabecera(detalles) {
+                if (!detalles?.length) {
+                    console.debug("detalles vacio")
+                    return "pendiente";
+                }
+
+                if (detalles.some(d => d.estado_proceso === "error")) {
+                    return "error";
+                }
+
+                if (detalles.every(d => d.estado_proceso === "procesado")) {
+                    return "procesado";
+                }
+
+                return "pendiente";
+            }
+
+            // const registrosDetalleFactura = await getDetalleVentasGo(data.doc_paciente, data.num_atencion_go);
+            const registrosDetalleFactura = await DetalleFacturacionCAABot.findAll({
+                where: {
+                    doc_paciente: data.doc_paciente,
+                    num_atencion_go: data.num_atencion_go,
+                }
+            });
+
+            const estadoCabecera = obtenerEstadoCabecera(registrosDetalleFactura);
+
+            const transaction = await sequelize.transaction();
+
+            const registroCabeceraFactura = await FacturacionCAABot.findOne(
+                {
+                    where: {paciente_id: data.paciente_id, maquina_id: data.maquina_id, num_atencion_go: data.num_atencion_go},
+                    transaction
+                }
+            )
+
+            if (!registroCabeceraFactura) {
+                throw new Error('Registro de detalle de la factura no encontrado');
+            }
+
+            await registroCabeceraFactura.update(
+                {
+                    estado_proceso: estadoCabecera,
+                },
+                { transaction }
+            );
+
+            await transaction.commit();
+
+            return registroCabeceraFactura;
+
+        }catch(error){
+            await transaction.rollback();
+
+            throw new Error(
+                `Error al actualizar el estado de la factura: ${error.message}`
+            );
         }
     }
 };

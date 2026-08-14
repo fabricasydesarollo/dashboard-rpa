@@ -92,5 +92,83 @@ export const botArmenia = {
         } catch (err) {
             return res.status(500).json({error: err.message || 'Error al obtener las tareas CAA'})
         }
+    },
+    async updateEstadoDetalles(req, res) {
+        try {
+            const {paciente_id, doc_paciente, num_atencion_go, num_venta, estado, mensaje} = req.body;
+            // console.info('Datos recibidos en updateEstadoDetalles:', req.body);
+            if (!num_atencion_go || !paciente_id || !num_venta || !doc_paciente || !estado ||!mensaje) {
+                return res.status(400).json({status: 'error', message: 'Faltan datos requeridos para actualizar el estado de detalles de la factura'});
+            }
+
+            const response = await FacturacionCAABotService.updateEstadoDetalles({
+                paciente_id,
+                doc_paciente,
+                num_atencion_go,
+                num_venta,
+                estado,
+                mensaje
+            });
+
+            res.status(200).json({status: 'success', message: 'Estado de factura actualizado exitosamente', data: response});
+
+        } catch (err) {
+            console.error('Error en updateEstadoDetalles:', err);
+            return res.status(500).json({status: 'error', message: err.message || 'Error al actualizar el estado de detalle de la factura'});
+        }
+    },
+    async updateEstadoCabecera(req, res) {
+        try {
+            const {paciente_id, maquina_id, doc_paciente, num_atencion_go} = req.body;
+            // console.info('Datos recibidos en updateEstadoCabecera:', req.body);
+
+            if (!paciente_id || !maquina_id || !num_atencion_go || !doc_paciente) {
+                return res.status(400).json({status: 'error', message: 'Faltan datos requeridos para actualizar el estado de la factura'});
+            }
+
+            const response = await FacturacionCAABotService.updateEstadoCabecera({paciente_id, maquina_id, num_atencion_go, doc_paciente})
+            res.status(200).json({status: 'success', message: 'Estado de factura actualizado exitosamente', data: response});
+
+        }catch (err) {
+            console.error('Error en updateEstadoCabecera:', err);
+            return res.status(500).json({status: 'error', message: err.message || 'Error al actualizar el estado de la factura'});
+        }
+    },
+    async ejecutarProcesoBot(req, res) {
+        try {
+            const url = `${process.env.RPA_API_URL}/ejecutar-rpa`
+
+            const respuesta = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            const data = await respuesta.json()
+
+            if (!respuesta.ok) {
+                return res.status(respuesta.status).json({
+                    success: false,
+                    message: data?.detail || 'Error al ejecutar el microservicio RPA',
+                    error: data
+                })
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: 'Proceso RPA ejecutado correctamente',
+                data
+            })
+
+        } catch (err) {
+            console.error('Error ejecutando proceso RPA:', err)
+
+            return res.status(500).json({
+                success: false,
+                message: 'No fue posible comunicarse con el microservicio RPA',
+                error: err.message
+            })
+        }
     }
 };

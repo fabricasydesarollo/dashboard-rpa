@@ -88,5 +88,7 @@ router.put('/paciente/:numero_identificacion', authenticateToken, HistoriaClinic
 
 // rutas para los bots y maquinas
 router.get('/facturas-caa-procesar', botArmenia.factutasProcesarBot);
-
+router.put('/actualizar-estado-detalle', botArmenia.updateEstadoDetalles);
+router.put('/actualizar-estado-factura', botArmenia.updateEstadoCabecera);
+// router.post('/ejecutar-rpa', botArmenia.ejecutarProcesoBot);
 export default router;
