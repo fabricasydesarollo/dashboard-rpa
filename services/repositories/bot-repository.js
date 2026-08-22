@@ -885,4 +885,23 @@ export class BotRepository {
     }
   }
 
+  static async getMaquinaId(maquinaId) {
+    try {
+      const maquina = await Maquina.findOne({
+        where: { id: maquinaId }
+      });
+
+      if (!maquina) {
+        const error = new Error('Máquina no encontrada');
+        error.status = 404;
+        throw error;
+      }
+
+      return maquina;
+    } catch (error) {
+      console.error('Error en BotRepository.getMaquinaId:', error);
+      throw error.status ? error : new Error('Error al obtener la máquina en la base de datos');
+    }
+  }
+
 }

@@ -396,5 +396,12 @@ export const SocketController = {
       res.status(500).json({ ok: false, error: 'Error al crear/actualizar historia clínica' });
     }
   },
-
+  async createRegistroGeneralBot(req, res){
+    try {
+      const { nuevoRegistro, bot, maquina } = await RegistroGeneralController.create(req, res);
+      res.json({ ok: true, nuevoRegistro, bot});
+    } catch (error) {
+      console.error('Error en SocketController.createRegistroGeneral:', error);
+    }
+  }
 };

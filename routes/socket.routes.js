@@ -11,4 +11,6 @@ router.post('/nuevo-log-bot', SocketController.createLogBot);
 router.post('/nueva-autorizacion', SocketController.createAutorizacion);
 router.post('/actualizar-nota-credito-avidanti', SocketController.actualizarNotaCreditoAvidanti);
 
+router.post('/nuevo-registro-general', SocketController.createRegistroGeneralBot);
+
 export default router;

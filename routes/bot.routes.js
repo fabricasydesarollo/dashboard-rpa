@@ -79,9 +79,11 @@ router.get('/notas-credito-pendientes', NotaCreditoController.getNotasCreditotoB
 router.get('/historias-clinicas/error-indigo', HistoriaClinicaController.getHistoriasClinicasWithErrorIndigo);
 
 // obtener pacientes de armenia (requiere fecha_inicio y fecha_fin en formato YYYYMMDD)
-router.get('/pacientes-armenia', botArmenia.getPacientes);
-router.get('/detalle-ventas-armenia', botArmenia.getDetalleVentasGo); // requiere documento y atencion_go como parametros
-router.post('/facturacion-caa', botArmenia.createFacturacionCAABot); // requiere los datos de facturación CAA en el body
+router.get('/pacientes-armenia', authenticateToken, botArmenia.getPacientes);
+router.get('/detalle-ventas-armenia', authenticateToken, botArmenia.getDetalleVentasGo); // requiere documento y atencion_go como parametros
+router.post('/facturacion-caa', authenticateToken, botArmenia.createFacturacionCAABot); // requiere los datos de facturación CAA en el body
+router.get('/get/maquina', authenticateToken, BotController.getMaquinaId);
+router.get('/get/maquina/stream', authenticateToken, BotController.getMaquinaStreamId);
 
 // actualizar el email de un paciente
 router.put('/paciente/:numero_identificacion', authenticateToken, HistoriaClinicaController.updateEmailPaciente);

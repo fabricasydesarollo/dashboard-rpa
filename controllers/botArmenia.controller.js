@@ -1,5 +1,7 @@
 import { getDetalleVentasGo, getPacientesGo } from "../models/go_armenia.js";
 import { FacturacionCAABotService } from "../services/facturacion_caa.js";
+import {RegistroGeneralController} from "./registroGeneral.controller.js";
+import {RegistroGeneralService} from "../services/registro-general.js";
 
 
 export const botArmenia = {
@@ -146,6 +148,20 @@ export const botArmenia = {
             })
 
             const data = await respuesta.json()
+            const esExitoso = Boolean(data?.status);
+
+            const reqRegistro = {
+                ...req,
+                body: {
+                    bot_id: 12,
+                    maquina_id: 14,
+                    estado: esExitoso ? "proceso" : "error",
+                    estado_bot: esExitoso ? "ejecucion" : "error",
+                    mensaje: esExitoso ? "El bot inició el procesamiento correctamente" : (data?.detail || "Error en el bot")
+                }
+            };
+
+            await RegistroGeneralController.create(reqRegistro, res);
 
             if (!respuesta.ok) {
                 return res.status(respuesta.status).json({

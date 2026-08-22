@@ -323,6 +323,54 @@ export const BotController = {
       });
     }
   },
+
+  async getMaquinaId(req, res) {
+    try{
+      const { id } = req.query;
+      const maquina = await BotRepository.getMaquinaId(Number(id))
+      res.status(200).json(maquina)
+    }catch(err){
+      console.error(err);
+      return res.status(err.status || 400).json({ error: err.error || 'Error al obtener la maquina' });
+    }
+  },
+  async getMaquinaStreamId(req, res) {
+    try {
+      const { id } = req.query;
+
+      if (!id) {
+        return res.status(400).json({ error: 'El ID de la máquina es requerido' });
+      }
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders();
+
+      const enviarEstadoActual = async () => {
+        try {
+          const maquina = await BotRepository.getMaquinaId(Number(id));
+          // SSE exige la estructura 'data: <string_json>\n\n'
+          res.write(`data: ${JSON.stringify(maquina)}\n\n`);
+        } catch (err) {
+          console.error('Error al emitir SSE:', err);
+        }
+      };
+
+      await enviarEstadoActual();
+
+      const intervalId = setInterval(enviarEstadoActual, 2000);
+
+      req.on('close', () => {
+        clearInterval(intervalId);
+        res.end();
+      });
+
+    } catch (err) {
+      console.error('Error en BotController.getMaquinaStreamId:', err);
+      return res.status(err.status || 500).json({ error: err.message || 'Error en el servidor' });
+    }
+  }
   
 };
 
