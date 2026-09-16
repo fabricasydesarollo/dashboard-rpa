@@ -56,6 +56,8 @@ export const FacturacionCAABotService = {
             //     EstadoProceso: detalleBot?.estado_proceso || 'pendiente',
             //     Observacion: detalleBot?.observacion || null
             // }));
+            //
+            // return detalleVentasFormateada;
 
             return await Promise.all(
                 detalleVentas.recordset.map(async item => {
@@ -117,23 +119,38 @@ export const FacturacionCAABotService = {
                 );
             }
 
-            for (const detalle of DetalleFacturacionCAAGo.recordset) {
-                await DetalleFacturacionCAABot.findOrCreate({
-                    where: {
-                        num_venta: detalle.NumVenta,
-                        num_atencion_go: data.num_atencion_go
-                    },
-                    defaults: {
-                        facturacion_caa_id: facturacionCAABot.id,
-                        doc_paciente: data.doc_paciente,
-                        num_estado_cuenta: data.num_estado_cuenta,
-                        cod_producto: detalle.CodigoProducto,
-                        categoria: detalle.Categoria,
-                        cantidad: detalle.Cantidad,
-                        tipo_producto: detalle.TipoProducto
-                    }
-                });
-            }
+            // for (const detalle of DetalleFacturacionCAAGo.recordset) {
+            //     await DetalleFacturacionCAABot.findOrCreate({
+            //         where: {
+            //             num_venta: detalle.NumVenta,
+            //             num_atencion_go: data.num_atencion_go,
+            //             cod_producto: detalle.CodigoProducto,
+            //         },
+            //         defaults: {
+            //             facturacion_caa_id: facturacionCAABot.id,
+            //             doc_paciente: data.doc_paciente,
+            //             num_estado_cuenta: data.num_estado_cuenta,
+            //             cod_producto: detalle.CodigoProducto,
+            //             categoria: detalle.Categoria,
+            //             cantidad: detalle.Cantidad,
+            //             tipo_producto: detalle.TipoProducto
+            //         }
+            //     });
+            // }
+
+            const registrosAInsertar = DetalleFacturacionCAAGo.recordset.map(detalle => ({
+                facturacion_caa_id: facturacionCAABot.id,
+                num_venta: detalle.NumVenta,
+                num_atencion_go: data.num_atencion_go,
+                doc_paciente: data.doc_paciente,
+                num_estado_cuenta: data.num_estado_cuenta,
+                cod_producto: detalle.CodigoProducto,
+                categoria: detalle.Categoria,
+                cantidad: detalle.Cantidad,
+                tipo_producto: detalle.TipoProducto
+            }));
+
+            await DetalleFacturacionCAABot.bulkCreate(registrosAInsertar);
 
             return facturacionCAABot;
         } catch (error) {
@@ -274,6 +291,91 @@ export const FacturacionCAABotService = {
             throw new Error(
                 `Error al actualizar el estado de la factura: ${error.message}`
             );
+        }
+    },
+    async updateDetallesBot(data) {
+        const transaction = await sequelize.transaction();
+        try {
+            const respuestaGo = await getDetalleVentasGo(data.documento, data.atencion_go);
+            const registrosActualizados = respuestaGo?.recordset || [];
+
+            const detallesActivosDB = await DetalleFacturacionCAABot.findAll({
+                where: {
+                    num_atencion_go: data.atencion_go,
+                    estado: 1
+                },
+                raw: true,
+                transaction
+            });
+
+            const getKey = (item) => `${item.NumVenta ?? item.num_venta}-${item.CodigoProducto ?? item.cod_producto}`;
+
+            const keysBD = new Set(detallesActivosDB.map(getKey));
+            const keysFrescas = new Set(registrosActualizados.map(getKey));
+
+            const idsDesactivar = detallesActivosDB
+                .filter(r => !keysFrescas.has(getKey(r)))
+                .map(r => r.id);
+
+            if (idsDesactivar.length > 0) {
+                await DetalleFacturacionCAABot.update(
+                    { estado: 0 },
+                    {
+                        where: { id: idsDesactivar },
+                        transaction
+                    }
+                );
+            }
+
+            const nuevosRegistros = registrosActualizados.filter(r => !keysBD.has(getKey(r)));
+
+            if (nuevosRegistros.length > 0) {
+                const nuevosFormatted = nuevosRegistros.map(detalle => ({
+                    num_venta: detalle.NumVenta,
+                    num_atencion_go: detalle.NumAtencion ?? data.atencion_go,
+                    doc_paciente: detalle.identificacion ?? data.documento,
+                    num_estado_cuenta: detalle.NumEC,
+                    cod_producto: detalle.CodigoProducto,
+                    categoria: detalle.Categoria,
+                    cantidad: detalle.Cantidad,
+                    tipo_producto: detalle.TipoProducto,
+                    estado: 1
+                }));
+
+                await DetalleFacturacionCAABot.bulkCreate(nuevosFormatted, { transaction });
+            }
+
+            await transaction.commit();
+
+            const totalDesactivados = idsDesactivar.length;
+            const totalInsertados = nuevosRegistros.length;
+
+            let mensaje = "No se encontraron cambios en los detalles; la información ya está al día.";
+
+            if (totalDesactivados > 0 && totalInsertados > 0) {
+                mensaje = `Sincronización completada: se desactivaron ${totalDesactivados} registros y se insertaron ${totalInsertados} nuevos.`;
+            } else if (totalDesactivados > 0) {
+                mensaje = `Sincronización completada: se desactivaron ${totalDesactivados} registros obsoletos.`;
+            } else if (totalInsertados > 0) {
+                mensaje = `Sincronización completada: se insertaron ${totalInsertados} registros nuevos.`;
+            }
+
+            return {
+                success: true,
+                mensaje,
+                modificado: totalDesactivados > 0 || totalInsertados > 0,
+                metricas: {
+                    desactivados: totalDesactivados,
+                    insertados: totalInsertados
+                }
+            };
+
+        } catch (error) {
+            if (transaction && !transaction.finished) {
+                await transaction.rollback();
+            }
+
+            throw new Error(`Error al actualizar los detalles de la factura: ${error.message}`);
         }
     }
 };

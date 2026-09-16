@@ -2,33 +2,69 @@ import { executeQuery } from "../db/go_database.js";
 
 export async function getPacientesGo (fecha_inicio, fecha_fin) {
     try {
-        const query = `
-            DECLARE @Empresa int 
+        // const query = `
+        //     DECLARE @Empresa int
+        //     DECLARE @fecEgrInicio datetime
+        //     DECLARE @fecEgrFin datetime
+        //     DECLARE @Contrato int
+        //
+        //     SET @Empresa = 740006
+        //     SET @fecEgrInicio = '${fecha_inicio} 00:00:01'
+        //     SET @fecEgrFin = '${fecha_fin} 23:59:59'
+        //     SET @Contrato = 1039
+        //
+        //     SELECT BSAE.EncounterClass AS TipoAtencion, BSAE.documentNumber AS Identificacion, BSAE.Patient AS Paciente,
+        //         BSAE.dateRegister AS FechaIngreso, E.dateDischarge AS FechaEgreso,
+        //         BSAE.dateDischarge AS FechaEstadoCuenta, DATEDIFF(day, BSAE.dateRegister, E.dateDischarge) AS Estancia,
+        //         BSAE.EncounterNumber AS NumAtencion, BSAH.number AS NumEstadoCuenta, BSAH.status AS EstadoCuenta
+        //     FROM BillStateOfAccountEncounters BSAE
+        //         INNER JOIN encounters E WITH (NOLOCK) ON BSAE.idencounter = E.idencounter
+        //         INNER JOIN BillStateOfAccountHeader BSAH WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAH.idStateOfAccountHeader
+        //         INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
+        //         INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
+        //         INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract
+        //     WHERE E.idUserCompany = @Empresa AND BSAH.status = 'AC' AND BSAE.documentNumber != '' AND C.idContract = @Contrato
+        //         AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin
+        //     ORDER BY FechaIngreso DESC;
+        //     `
+
+        const query2 = `
+            ------ENCABEZADO
+            DECLARE @Empresa int
             DECLARE @fecEgrInicio datetime
             DECLARE @fecEgrFin datetime
-            DECLARE @Contrato int 
+            DECLARE @Contrato int
 
             SET @Empresa = 740006
             SET @fecEgrInicio = '${fecha_inicio} 00:00:01'
             SET @fecEgrFin = '${fecha_fin} 23:59:59'
             SET @Contrato = 1039
-
-            SELECT BSAE.EncounterClass AS TipoAtencion, BSAE.documentNumber AS Identificacion, BSAE.Patient AS Paciente, 
-                BSAE.dateRegister AS FechaIngreso, E.dateDischarge AS FechaEgreso, 
-                BSAE.dateDischarge AS FechaEstadoCuenta, DATEDIFF(day, BSAE.dateRegister, E.dateDischarge) AS Estancia,
-                BSAE.EncounterNumber AS NumAtencion, BSAH.number AS NumEstadoCuenta, BSAH.status AS EstadoCuenta
+            
+            SELECT 
+                BSAE.EncounterClass AS TipoAtencion,
+                BSAE.documentNumber AS Identificacion,
+                BSAE.Patient AS Paciente,
+                BSAE.dateRegister AS FechaIngreso,
+                E.dateDischarge AS FechaEgreso,
+                BSAE.dateDischarge AS FechaEstadoCuenta,
+                DATEDIFF(day, BSAE.dateRegister, E.dateDischarge) AS Estancia,
+                BSAE.EncounterNumber AS NumAtencion,
+                BSAH.number AS NumEstadoCuenta,
+                BSAH.status AS EstadoCuenta,
+                C.idContract AS Contrato,
+                CP.idPlan AS PlanNum
             FROM BillStateOfAccountEncounters BSAE
                 INNER JOIN encounters E WITH (NOLOCK) ON BSAE.idencounter = E.idencounter
-                INNER JOIN BillStateOfAccountHeader BSAH WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAH.idStateOfAccountHeader
-                INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
-                INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
-                INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract 
-            WHERE E.idUserCompany = @Empresa AND BSAH.status = 'AC' AND BSAE.documentNumber != '' AND C.idContract = @Contrato
-                AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin
-            ORDER BY FechaIngreso DESC;
-            `
+	            INNER JOIN BillStateOfAccountHeader BSAH WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAH.idStateOfAccountHeader
+	            INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
+	            INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
+	            INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract
+	        WHERE E.idUserCompany = @Empresa AND BSAH.status = 'AC' AND BSAE.documentNumber != '' AND C.idContract = @Contrato
+	            AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin
+	        ORDER BY FechaIngreso DESC;
+        `
 
-        const resultado = await executeQuery(query);
+        const resultado = await executeQuery(query2);
         return resultado
 
     } catch (error) {
@@ -41,21 +77,22 @@ export async function getDetalleVentasGo (numDoc, numAte) {
     try {
         const query = `
             --------DETALLE------
-                DECLARE @Empresa int 
+                DECLARE @Empresa int
                 DECLARE @NumDoc bigint
-                DECLARE @NumAte bigint 
-                DECLARE @Contrato int 
+                DECLARE @NumAte bigint
+                DECLARE @Contrato int
+                DECLARE @PlanNum int 
 
                 SET @Empresa = 740006
                 SET @NumDoc = ${numDoc}
                 SET @NumAte = ${numAte}
                 SET @Contrato = 1039
-
+                SET @PlanNum = 3600
 
                 SELECT BSAE.EncounterClass AS TipoAtencion, BSAE.Patient AS Paciente, BSAE.documentNumber AS identificacion, BSAE.dateRegister AS FechaIngreso, E.dateDischarge AS FechaEgreso, 
                     BSAE.dateDischarge AS FechaEC, DATEDIFF(day, BSAE.dateRegister, E.dateDischarge) AS Estancia, BSAE.EncounterNumber AS NumAtencion, BSAH.number AS NumEC, BSAH.status AS EstadoEC, BSAI.valueTotal AS ValorFacturaTotal, 
                     PT.name AS TipoProducto, BSAPD.categoryName AS Categoria, BSAPD.quantity AS Cantidad, BSAPD.saleNumber AS NumVenta, BSAPD.dateSale AS FechaVenta, BSAPD.codeProduct AS CodigoProducto, BSAPD.nameProduct AS Producto, 
-                    BSAPD.value AS ValUnitario,	BSAPD.ValueCharges AS ValRecargo, BSAPD.valueDiscount AS ValDescuento, BSAPD.ValueTax AS ValImpuesto, BSAPD.valueNet AS ValorTotal
+                    BSAPD.value AS ValUnitario,	BSAPD.ValueCharges AS ValRecargo, BSAPD.valueDiscount AS ValDescuento, BSAPD.ValueTax AS ValImpuesto, BSAPD.valueNet AS ValorTotal, BSAI.idplan AS PlanNum
                 FROM BillStateOfAccountEncounters BSAE
                     INNER JOIN encounters E WITH (NOLOCK) ON BSAE.idencounter = E.idencounter
                     INNER JOIN BillStateOfAccountHeader BSAH WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAH.idStateOfAccountHeader
@@ -65,10 +102,11 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                     INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
                     INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
                     INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract 
-                WHERE E.idUserCompany = @Empresa AND BSAE.documentNumber = @NumDoc AND BSAE.EncounterNumber = @NumAte AND C.idContract = @Contrato --AND BSAH.status != 'AN'
+                WHERE E.idUserCompany = @Empresa AND BSAE.documentNumber = @NumDoc AND BSAE.EncounterNumber = @NumAte AND C.idContract = @Contrato AND BSAPD.idPlan = @PlanNum --AND BSAH.status != 'AN'
                 ORDER BY BSAPD.codeCategory`
 
         const resultado = await executeQuery(query);
+        // console.log(resultado)
         return resultado
     } catch (error) {
         console.error('Error en getDetalleVentasGo:', error.message);

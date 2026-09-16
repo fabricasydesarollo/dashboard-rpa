@@ -36,6 +36,7 @@ export const botArmenia = {
                 return res.status(400).json({message: "Se requieren documento y atencion_go como parámetros"});
             }
             const detalleVentas = await FacturacionCAABotService.getDetalleVentasGo(documento, atencion_go);
+            console.log(detalleVentas)
             res.status(200).json({status: 'success', data: detalleVentas.recordset || detalleVentas});
         } catch (err) {
             console.error('Error en getDetalleVentasGo:', err);
@@ -185,6 +186,20 @@ export const botArmenia = {
                 message: 'No fue posible comunicarse con el microservicio RPA',
                 error: err.message
             })
+        }
+    },
+    async updateDetallesBot(req, res) {
+        try {
+            const { documento, atencion_go } = req.query;
+            // Validar que numDoc y numAte estén presentes
+            if (!documento || !atencion_go) {
+                return res.status(400).json({message: "Se requieren documento y atencion_go como parámetros"});
+            }
+            const response = await FacturacionCAABotService.updateDetallesBot({documento, atencion_go});
+            res.status(200).json({status: 'success', message: response.mensaje, data: response});
+        } catch (err) {
+            console.error('Error en updateDetallesBot:', err);
+            return res.status(500).json({ error: err.message || 'Error al actualizar los detalles de ventas' });
         }
     }
 };
