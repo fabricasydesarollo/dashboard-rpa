@@ -98,9 +98,9 @@ export const botArmenia = {
     },
     async updateEstadoDetalles(req, res) {
         try {
-            const {paciente_id, doc_paciente, num_atencion_go, num_venta, estado, mensaje} = req.body;
+            const {paciente_id, doc_paciente, num_atencion_go, num_venta, cod_producto, estado, mensaje} = req.body;
             // console.info('Datos recibidos en updateEstadoDetalles:', req.body);
-            if (!num_atencion_go || !paciente_id || !num_venta || !doc_paciente || !estado ||!mensaje) {
+            if (!num_atencion_go || !paciente_id || !num_venta || !doc_paciente || !cod_producto || !estado ||!mensaje) {
                 return res.status(400).json({status: 'error', message: 'Faltan datos requeridos para actualizar el estado de detalles de la factura'});
             }
 
@@ -109,6 +109,7 @@ export const botArmenia = {
                 doc_paciente,
                 num_atencion_go,
                 num_venta,
+                cod_producto,
                 estado,
                 mensaje
             });

@@ -200,6 +200,7 @@ export const FacturacionCAABotService = {
                         doc_paciente: data.doc_paciente,
                         num_atencion_go: data.num_atencion_go,
                         num_venta: data.num_venta,
+                        cod_producto: data.cod_producto
                     },
                     transaction
                 });
