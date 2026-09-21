@@ -1,8 +1,8 @@
-import { executeQuery } from "../db/go_database.js";
+import { executeQuery } from '../db/go_database.js'
 
 export async function getPacientesGo (fecha_inicio, fecha_fin) {
-    try {
-        const query = `
+  try {
+    const query = `
             ------ENCABEZADO
             DECLARE @Empresa int
             DECLARE @fecEgrInicio datetime
@@ -41,18 +41,17 @@ export async function getPacientesGo (fecha_inicio, fecha_fin) {
 	        ORDER BY FechaIngreso DESC;
         `
 
-        const resultado = await executeQuery(query);
-        return resultado
-
-    } catch (error) {
-        console.error('Error en getPacientesGo:', error.message);
-        throw new Error('Error al obtener pacientes: ' + error.message);
-    }
+    const resultado = await executeQuery(query)
+    return resultado
+  } catch (error) {
+    console.error('Error en getPacientesGo:', error.message)
+    throw new Error('Error al obtener pacientes: ' + error.message)
+  }
 }
 
 export async function getDetalleVentasGo (numDoc, numAte) {
-    try {
-        const query = `
+  try {
+    const query = `
             --------DETALLE------
                 DECLARE @Empresa int
                 DECLARE @NumDoc bigint
@@ -109,11 +108,11 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                     --AND BSAH.status != 'AN'
                 ORDER BY BSAPD.codeCategory`
 
-        const resultado = await executeQuery(query);
-        // console.log(resultado)
-        return resultado
-    } catch (error) {
-        console.error('Error en getDetalleVentasGo:', error.message);
-        throw new Error('Error al obtener detalle de ventas: ' + error.message);
-    }
+    const resultado = await executeQuery(query)
+    // console.log(resultado)
+    return resultado
+  } catch (error) {
+    console.error('Error en getDetalleVentasGo:', error.message)
+    throw new Error('Error al obtener detalle de ventas: ' + error.message)
+  }
 }
