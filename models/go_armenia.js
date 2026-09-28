@@ -29,15 +29,18 @@ export async function getPacientesGo (fecha_inicio, fecha_fin) {
                 CP.idPlan AS PlanNum
             FROM BillStateOfAccountEncounters BSAE
                 INNER JOIN encounters E WITH (NOLOCK) ON BSAE.idencounter = E.idencounter
+                INNER JOIN encounterConfClass ECC WITH (NOLOCK) ON E.idEncounterClass = ECC.idEncounterClass
 	            INNER JOIN BillStateOfAccountHeader BSAH WITH (NOLOCK) ON BSAE.idStateOfAccountHeader = BSAH.idStateOfAccountHeader
 	            INNER JOIN encounterRecords ER WITH (NOLOCK) ON E.idEncounter = ER.idEncounter
 	            INNER JOIN contractplans CP WITH (NOLOCK) ON ER.idPrincipalContract = CP.idContract AND ER.idPrincipalPlan = CP.idPlan
 	            INNER JOIN contracts C WITH (NOLOCK) ON CP.idContract = C.idContract
 	        WHERE E.idUserCompany = @Empresa 
 	            AND BSAH.status = 'AC' 
-	            --AND BSAE.documentNumber != '' 
+	            AND BSAE.documentNumber != ''
 	            AND C.idContract = @Contrato
-	            AND BSAE.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin
+	            AND CP.idPlan != 0
+	            AND ECC.idEncounterClassType = 4 --HOSPITALIZACIONES
+	            AND E.dateDischarge BETWEEN @fecEgrInicio AND @fecEgrFin
 	        ORDER BY FechaIngreso DESC;
         `
 
@@ -104,8 +107,7 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                     AND BSAE.documentNumber = @NumDoc
                     AND BSAE.EncounterNumber = @NumAte
                     AND C.idContract = @Contrato
-                    AND BSAPD.idPlan = @PlanNum 
-                    --AND BSAH.status != 'AN'
+                    AND BSAPD.idPlan = @PlanNum
                 ORDER BY BSAPD.codeCategory`
 
     const resultado = await executeQuery(query)

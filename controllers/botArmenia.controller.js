@@ -88,8 +88,23 @@ export const botArmenia = {
       if (!maquina_id) {
         return res.status(400).json({ message: 'Falta maquina_id para procesar la busqueda em CAA' })
       }
+      
       const taskPending = await FacturacionCAABotService.factutasProcesar(maquina_id)
-      res.status(201).json({ status: 'success', data: taskPending })
+      
+      const prioridadEstado = {
+        'pendiente': 1,
+        'error': 99
+      }
+      
+      const dataOrdenada = Array.isArray(taskPending)
+          ? [...taskPending].sort((a, b) => {
+            const pesoA = prioridadEstado[a.estado_proceso] ?? 50
+            const pesoB = prioridadEstado[b.estado_proceso] ?? 50
+            return pesoA - pesoB
+          })
+          : taskPending
+      
+      res.status(200).json({ status: 'success', data: dataOrdenada })
     } catch (err) {
       return res.status(500).json({ error: err.message || 'Error al obtener las tareas CAA' })
     }
