@@ -63,6 +63,10 @@ DetalleFacturacionCAABot.init({
     estado: {
         type: DataTypes.TINYINT,
         allowNull: false
+    },
+    existe_producto: {
+        type: DataTypes.TINYINT,
+        allowNull: false
     }
 },
 {

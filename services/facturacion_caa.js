@@ -56,7 +56,8 @@ export const FacturacionCAABotService = {
 					return {
 						...item,
 						EstadoProceso: detalleBot?.estado_proceso || 'pendiente',
-						Observacion: detalleBot?.observacion || null
+						Observacion: detalleBot?.observacion || null,
+						ExisteProducto: detalleBot?.existe_producto || null,
 					}
 				})
 			)
@@ -355,6 +356,58 @@ export const FacturacionCAABotService = {
 			}
 
 			throw new Error(`Error al actualizar los detalles de la factura: ${error.message}`)
+		}
+	},
+	async updateExistenciaProducto(data) {
+		const transaction = await sequelize.transaction()
+		try {
+			const { facturacion_caa_id, codigos, estado = 0 } = data
+
+			if (!facturacion_caa_id) {
+				throw new Error('El parámetro facturacion_caa_id es requerido')
+			}
+
+			const listaCodigos = (Array.isArray(codigos) ? codigos : (codigos ? [codigos] : []))
+				.map(c => String(c).trim())
+				.filter(Boolean)
+
+			if (listaCodigos.length === 0) {
+				await transaction.commit()
+				return {
+					success: true,
+					mensaje: 'No se proporcionaron códigos para actualizar',
+					actualizados: 0
+				}
+			}
+
+			const nuevoEstado = estado !== undefined ? Number(estado) : 0
+
+			const [filasAfectadas] = await DetalleFacturacionCAABot.update(
+				{ existe_producto: nuevoEstado },
+				{
+					where: {
+						facturacion_caa_id,
+						cod_producto: {
+							[Op.in]: listaCodigos
+						}
+					},
+					transaction
+				}
+			)
+
+			await transaction.commit()
+
+			return {
+				success: true,
+				mensaje: `Se actualizó la existencia de ${filasAfectadas} producto(s) correctamente`,
+				actualizados: filasAfectadas
+			}
+		} catch (error) {
+			if (transaction && !transaction.finished) {
+				await transaction.rollback()
+			}
+
+			throw new Error(`Error al actualizar la existencia de los productos: ${error.message}`)
 		}
 	}
 }
