@@ -216,7 +216,13 @@ export const botArmenia = {
   async updateExistenciaProducto(req, res) {
     try {
       // 1. Extraer los datos enviados desde Python
-      const { facturacion_caa_id, codigos, estado } = req.body;
+      const {
+        facturacion_caa_id,
+        codigos,
+        estado,
+        estado_producto,
+        observacion
+      } = req.body;
 
       if (!facturacion_caa_id) {
         return res.status(400).json({
@@ -226,17 +232,21 @@ export const botArmenia = {
       }
 
       // 2. Imprimir en consola de forma clara y legible
-      console.log('--- Datos recibidos desde RPA ---');
+      console.log('--- Datos recibidos desde RPA (Actualizar Existencia) ---');
       console.log('Facturacion CAA ID:', facturacion_caa_id);
       console.log('Códigos:', codigos);
-      console.log('Estado:', estado);
+      console.log('Estado (existencia):', estado);
+      console.log('Estado Producto (proceso):', estado_producto);
+      console.log('Observación:', observacion);
       console.log('Payload completo:', JSON.stringify(req.body, null, 2));
 
       // 3. Actualizar en base de datos mediante el servicio
       const response = await FacturacionCAABotService.updateExistenciaProducto({
         facturacion_caa_id,
         codigos,
-        estado
+        estado,
+        estado_producto,
+        observacion
       });
 
       // 4. Responder a Python con código 200
