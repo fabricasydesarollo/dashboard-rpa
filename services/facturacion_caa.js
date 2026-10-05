@@ -40,15 +40,26 @@ export const FacturacionCAABotService = {
   async getDetalleVentasGo(documento, atencion_go) {
     try {
       const detalleVentas = await getDetalleVentasGo(documento, atencion_go)
+      const registros = detalleVentas?.recordset || []
+
+      const clavesVistas = new Set()
+      const registrosUnicos = registros.filter(item => {
+        const numAtencion = item.NumAtencion ?? atencion_go
+        const key = `${numAtencion}-${item.NumVenta}-${item.CodigoProducto}`
+        if (clavesVistas.has(key)) {
+          return false
+        }
+        clavesVistas.add(key)
+        return true
+      })
 
       return await Promise.all(
-        detalleVentas.recordset.map(async item => {
+        registrosUnicos.map(async item => {
           const detalleBot = await DetalleFacturacionCAABot.findOne({
             where: {
               doc_paciente: documento,
               num_atencion_go: atencion_go,
               num_venta: item.NumVenta,
-              num_estado_cuenta: item.EstadoEC,
               cod_producto: item.CodigoProducto,
               cantidad: item.Cantidad
             }
@@ -139,7 +150,8 @@ export const FacturacionCAABotService = {
             where: {
               estado_proceso: {
                 [Op.in]: ['pendiente', 'error']
-              }
+              },
+              existe_producto: 1
             }
           }
         ]
