@@ -4,7 +4,7 @@ import { RegistroGeneralController } from './registroGeneral.controller.js'
 import { RegistroGeneralService } from '../services/registro-general.js'
 
 export const botArmenia = {
-  async getPacientes(req, res) {
+  async getPacientes (req, res) {
     try {
       const { fecha_inicio, fecha_fin } = req.query
 
@@ -26,7 +26,7 @@ export const botArmenia = {
       return res.status(500).json({ error: err.message || 'Error al obtener datos' })
     }
   },
-  async getDetalleVentasGo(req, res) {
+  async getDetalleVentasGo (req, res) {
     try {
       const { documento, atencion_go } = req.query
       // Validar que numDoc y numAte estén presentes
@@ -41,9 +41,14 @@ export const botArmenia = {
       return res.status(500).json({ error: err.message || 'Error al obtener detalle de ventas' })
     }
   },
-  async createFacturacionCAABot(req, res) {
+  async createFacturacionCAABot (req, res) {
     try {
       const registros = req.body
+
+      const CAMPOS_REQUERIDOS = [
+        'bot_id', 'maquina_id', 'doc_paciente', 'nom_paciente', 'tipo_atencion',
+        'fecha_ingreso', 'fecha_egreso', 'num_atencion_go', 'num_atencion_indigo', 'num_estado_cuenta'
+      ]
 
       if (!Array.isArray(registros) || registros.length === 0) {
         return res.status(400).json({
@@ -51,38 +56,32 @@ export const botArmenia = {
           message: 'Debe ser una lista de registros con al menos 1 elemento'
         })
       }
-      const facturacionDataList = []
 
-      for (const registro of registros) {
-        const { bot_id, maquina_id, doc_paciente, nom_paciente, tipo_atencion, fecha_ingreso, fecha_egreso, num_atencion_go, num_atencion_indigo, num_estado_cuenta } = registro
+      // 1. Validar que ningún registro tenga campos faltantes
+      const datosValidos = registros.every(reg =>
+        CAMPOS_REQUERIDOS.every(campo => reg?.[campo])
+      )
 
-        if (!bot_id || !maquina_id || !doc_paciente || !nom_paciente || !tipo_atencion || !fecha_ingreso || !fecha_egreso || !num_atencion_go || !num_atencion_indigo || !num_estado_cuenta) {
-          return res.status(400).json({ message: 'Faltan datos requeridos para crear la facturación CAA' })
-        }
-
-        const facturacionData = await FacturacionCAABotService.createFacturacionCAABot({
-          bot_id,
-          maquina_id,
-          doc_paciente,
-          nom_paciente,
-          tipo_atencion,
-          fecha_ingreso,
-          fecha_egreso,
-          num_atencion_go,
-          num_atencion_indigo,
-          num_estado_cuenta
-        })
-
-        facturacionDataList.push(facturacionData)
+      if (!datosValidos) {
+        return res.status(400).json({ message: 'Faltan datos requeridos para crear la facturación CAA' })
       }
 
-      res.status(201).json({ status: 'success', message: 'Facturación CAA creada exitosamente', data: facturacionDataList })
+      // 2. Procesar los registros en paralelo
+      const data = await Promise.all(
+        registros.map(reg => FacturacionCAABotService.createFacturacionCAABot(reg))
+      )
+
+      return res.status(201).json({
+        status: 'success',
+        message: 'Facturación CAA creada exitosamente',
+        data
+      })
     } catch (err) {
       console.error('Error en createFacturacionCAABot:', err)
       return res.status(500).json({ error: err.message || 'Error al crear facturación CAA' })
     }
   },
-  async factutasProcesarBot(req, res) {
+  async factutasProcesarBot (req, res) {
     try {
       const { maquina_id } = req.query
       if (!maquina_id) {
@@ -92,16 +91,16 @@ export const botArmenia = {
       const taskPending = await FacturacionCAABotService.factutasProcesar(maquina_id)
 
       const prioridadEstado = {
-        'pendiente': 1,
-        'error': 99
+        pendiente: 1,
+        error: 99
       }
 
       const dataOrdenada = Array.isArray(taskPending)
         ? [...taskPending].sort((a, b) => {
-          const pesoA = prioridadEstado[a.estado_proceso] ?? 50
-          const pesoB = prioridadEstado[b.estado_proceso] ?? 50
-          return pesoA - pesoB
-        })
+            const pesoA = prioridadEstado[a.estado_proceso] ?? 50
+            const pesoB = prioridadEstado[b.estado_proceso] ?? 50
+            return pesoA - pesoB
+          })
         : taskPending
 
       res.status(200).json({ status: 'success', data: dataOrdenada })
@@ -109,7 +108,7 @@ export const botArmenia = {
       return res.status(500).json({ error: err.message || 'Error al obtener las tareas CAA' })
     }
   },
-  async updateEstadoDetalles(req, res) {
+  async updateEstadoDetalles (req, res) {
     try {
       const { paciente_id, doc_paciente, num_atencion_go, num_venta, cod_producto, estado, mensaje } = req.body
       // console.info('Datos recibidos en updateEstadoDetalles:', req.body);
@@ -133,7 +132,7 @@ export const botArmenia = {
       return res.status(500).json({ status: 'error', message: err.message || 'Error al actualizar el estado de detalle de la factura' })
     }
   },
-  async updateEstadoCabecera(req, res) {
+  async updateEstadoCabecera (req, res) {
     try {
       const { paciente_id, maquina_id, doc_paciente, num_atencion_go } = req.body
       // console.info('Datos recibidos en updateEstadoCabecera:', req.body);
@@ -149,7 +148,7 @@ export const botArmenia = {
       return res.status(500).json({ status: 'error', message: err.message || 'Error al actualizar el estado de la factura' })
     }
   },
-  async ejecutarProcesoBot(req, res) {
+  async ejecutarProcesoBot (req, res) {
     try {
       const url = `${process.env.RPA_API_URL}/ejecutar-rpa`
 
@@ -199,7 +198,7 @@ export const botArmenia = {
       })
     }
   },
-  async updateDetallesBot(req, res) {
+  async updateDetallesBot (req, res) {
     try {
       const { documento, atencion_go } = req.query
       // Validar que numDoc y numAte estén presentes
@@ -213,7 +212,7 @@ export const botArmenia = {
       return res.status(500).json({ error: err.message || 'Error al actualizar los detalles de ventas' })
     }
   },
-  async updateExistenciaProducto(req, res) {
+  async updateExistenciaProducto (req, res) {
     try {
       // 1. Extraer los datos enviados desde Python
       const {
@@ -222,23 +221,23 @@ export const botArmenia = {
         estado,
         estado_producto,
         observacion
-      } = req.body;
+      } = req.body
 
       if (!facturacion_caa_id) {
         return res.status(400).json({
           status: 'error',
           message: 'El campo facturacion_caa_id es requerido'
-        });
+        })
       }
 
       // 2. Imprimir en consola de forma clara y legible
-      console.log('--- Datos recibidos desde RPA (Actualizar Existencia) ---');
-      console.log('Facturacion CAA ID:', facturacion_caa_id);
-      console.log('Códigos:', codigos);
-      console.log('Estado (existencia):', estado);
-      console.log('Estado Producto (proceso):', estado_producto);
-      console.log('Observación:', observacion);
-      console.log('Payload completo:', JSON.stringify(req.body, null, 2));
+      console.log('--- Datos recibidos desde RPA (Actualizar Existencia) ---')
+      console.log('Facturacion CAA ID:', facturacion_caa_id)
+      console.log('Códigos:', codigos)
+      console.log('Estado (existencia):', estado)
+      console.log('Estado Producto (proceso):', estado_producto)
+      console.log('Observación:', observacion)
+      console.log('Payload completo:', JSON.stringify(req.body, null, 2))
 
       // 3. Actualizar en base de datos mediante el servicio
       const response = await FacturacionCAABotService.updateExistenciaProducto({
@@ -247,21 +246,20 @@ export const botArmenia = {
         estado,
         estado_producto,
         observacion
-      });
+      })
 
       // 4. Responder a Python con código 200
       return res.status(200).json({
         status: 'success',
         message: response.mensaje || 'Existencias actualizadas correctamente',
         data: response
-      });
-
+      })
     } catch (err) {
-      console.error('Error en updateExistenciaProducto:', err);
+      console.error('Error en updateExistenciaProducto:', err)
       return res.status(500).json({
         status: 'error',
         error: err.message || 'Error al actualizar la existencia de productos'
-      });
+      })
     }
   }
 }

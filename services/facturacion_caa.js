@@ -79,9 +79,14 @@ export const FacturacionCAABotService = {
   },
   async createFacturacionCAABot(data) {
     try {
-      const DetalleFacturacionCAAGo = await getDetalleVentasGo(data.doc_paciente, data.num_atencion_go)
+      const DetalleFacturacionCAAGo = await FacturacionCAABotService.getDetalleVentasGo(data.doc_paciente, data.num_atencion_go)
 
-      if (!DetalleFacturacionCAAGo || !DetalleFacturacionCAAGo.recordset || DetalleFacturacionCAAGo.recordset.length === 0) {
+      // Soportar tanto Array directo como objeto con .recordset
+      const detalles = Array.isArray(DetalleFacturacionCAAGo)
+        ? DetalleFacturacionCAAGo
+        : (DetalleFacturacionCAAGo?.recordset || [])
+
+      if (!detalles || detalles.length === 0) {
         throw new Error('No se pudo obtener el detalle de la Factura')
       }
 
@@ -107,7 +112,6 @@ export const FacturacionCAABotService = {
         }
       })
 
-      // Actualizar si la facturación ya existía y cambió num_atencion_indigo
       if (!created && facturacionCAABot.num_atencion_indigo !== data.num_atencion_indigo) {
         await FacturacionCAABot.update(
           { num_atencion_indigo: data.num_atencion_indigo },
@@ -115,7 +119,8 @@ export const FacturacionCAABotService = {
         )
       }
 
-      const registrosAInsertar = DetalleFacturacionCAAGo.recordset.map(detalle => ({
+      // Mapear directamente sobre el array normalizado
+      const registrosAInsertar = detalles.map(detalle => ({
         facturacion_caa_id: facturacionCAABot.id,
         num_venta: detalle.NumVenta,
         num_atencion_go: data.num_atencion_go,
@@ -124,7 +129,8 @@ export const FacturacionCAABotService = {
         cod_producto: detalle.CodigoProducto,
         categoria: detalle.Categoria,
         cantidad: detalle.Cantidad,
-        tipo_producto: detalle.TipoProducto
+        tipo_producto: detalle.TipoProducto,
+        fecha_venta: detalle.FechaVenta
       }))
 
       await DetalleFacturacionCAABot.bulkCreate(registrosAInsertar)
