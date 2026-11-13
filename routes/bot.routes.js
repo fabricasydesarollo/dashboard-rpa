@@ -7,6 +7,7 @@ import { LogController } from '../controllers/logController.js'
 import { NotaCreditoController } from '../controllers/notaCreditoController.js'
 import multer from 'multer'
 import { botArmenia } from '../controllers/botArmenia.controller.js'
+import { GlosasController } from '../controllers/glosas.controller.js'
 const upload = multer({ storage: multer.memoryStorage() }) // guardamos en memoria (buffer)
 
 const router = Router()
@@ -95,4 +96,8 @@ router.put('/actualizar-estado-detalle', botArmenia.updateEstadoDetalles)
 router.put('/actualizar-estado-factura', botArmenia.updateEstadoCabecera)
 router.post('/ejecutar-rpa', botArmenia.ejecutarProcesoBot)
 router.put('/actualizar-existencia-producto', botArmenia.updateExistenciaProducto)
+
+// rutas para rpa de glosas
+router.get('/get/encabezado-glosas-fidu', GlosasController.getEncabezadoGlosasFidu)
+router.get('/get/detallado-glosas-fidu', GlosasController.getDetalladoGlosasFidu)
 export default router

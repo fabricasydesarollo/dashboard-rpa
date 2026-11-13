@@ -3,6 +3,7 @@ import cors from 'cors'
 import coockieParser from 'cookie-parser' // Importar cookie-parser para manejar cookies
 import { testConnection, syncDatabase } from './db/database.js';
 import { connectPool } from './db/go_database.js';
+import { connectGlosasPool } from './db/glosas_db.js';
 import authRoutes from './routes/auth.routes.js'; // Ajusta el path si está en otra carpeta
 import botRoutes from './routes/bot.routes.js'; // 
 import socketRoutes from './routes/socket.routes.js'; // 
@@ -119,6 +120,7 @@ server.listen(PORT, async () => {
   await testConnection();
   await syncDatabase(); 
   await connectPool();
+  await connectGlosasPool();
   console.log(`Servidor corriendo en ${BASE_URL}:${PORT}`);
 });
 
