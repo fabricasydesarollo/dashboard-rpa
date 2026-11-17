@@ -100,4 +100,5 @@ router.put('/actualizar-existencia-producto', botArmenia.updateExistenciaProduct
 // rutas para rpa de glosas
 router.get('/get/encabezado-glosas-fidu', GlosasController.getEncabezadoGlosasFidu)
 router.get('/get/detallado-glosas-fidu', GlosasController.getDetalladoGlosasFidu)
+router.post('/replicar-glosas', GlosasController.replicarGlosas)
 export default router

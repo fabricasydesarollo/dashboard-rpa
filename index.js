@@ -28,7 +28,7 @@ const CERT_KEY = process.env.cert_key || null;
 const CERT_CRT = process.env.cert_crt || null;
 const FRONTEND_URL = process.env.FRONTEND_REDIRECT_URL || 'http://localhost:5173';
 const app = express()
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 app.use(coockieParser()) // Middleware para parsear cookies
 
 

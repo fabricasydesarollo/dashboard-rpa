@@ -15,4 +15,6 @@ import './NotaCreditoMasiva.js'
 import './asociations.js'
 import './FacturacionCAABot.js'
 import './DetalleFacturacionCAA.js'
+import './ArCuGlosas.js'
+import './ArCuGlosasDet.js'
 console.log('Models imported successfully');

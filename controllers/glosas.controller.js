@@ -1,4 +1,5 @@
 import { getEncabezadoGlosasFidu, getDetalladoGlosasFidu } from '../models/glosas_fidu.js'
+import { replicarGlosas } from '../services/glosas-replica.js'
 
 const getParam = (query, ...keys) => {
   for (const k of keys) {
@@ -40,6 +41,17 @@ export const GlosasController = {
     } catch (err) {
       console.error('Error en getDetalladoGlosasFidu:', err)
       return res.status(500).json({ error: err.message || 'Error al obtener detallado de glosas' })
+    }
+  },
+
+  async replicarGlosas (req, res) {
+    try {
+      const data = await replicarGlosas(req.body)
+      return res.status(200).json({ status: 'success', data })
+    } catch (err) {
+      const status = err.status === 400 ? 400 : 500
+      if (status === 500) console.error('Error en replicarGlosas:', err)
+      return res.status(status).json({ status: 'error', error: err.message || 'Error al replicar glosas' })
     }
   }
 }
