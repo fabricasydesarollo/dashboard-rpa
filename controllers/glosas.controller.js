@@ -10,10 +10,30 @@ const getParam = (query, ...keys) => {
   return ''
 }
 
+const normalizeDateParam = (val) => {
+  const s = String(val ?? '').trim()
+  if (/^\d{8}$/.test(s)) {
+    return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`
+  }
+  return s.replace(/\//g, '-')
+}
+
 export const GlosasController = {
   async getEncabezadoGlosasFidu (req, res) {
     try {
-      const data = await getEncabezadoGlosasFidu()
+      const q = req.query || {}
+      const fechaInicial = normalizeDateParam(
+        getParam(q, 'fecha_inicio', 'fechaInicial', 'p_fechaInicial')
+      )
+      const fechaFinal = normalizeDateParam(
+        getParam(q, 'fecha_fin', 'fechaFinal', 'p_fechaFinal')
+      )
+
+      if (!fechaInicial || !fechaFinal) {
+        return res.status(400).json({ message: 'Se requieren fecha_inicio y fecha_fin' })
+      }
+
+      const data = await getEncabezadoGlosasFidu({ fechaInicial, fechaFinal })
       return res.status(200).json({ status: 'success', data })
     } catch (err) {
       console.error('Error en getEncabezadoGlosasFidu:', err)
@@ -25,15 +45,8 @@ export const GlosasController = {
     try {
       const q = req.query || {}
       const params = {
-        CodEmp: getParam(q, 'CodEmp', 'codEmp', 'cod_emp'),
-        NomEmp: getParam(q, 'NomEmp', 'nomEmp', 'nom_emp'),
-        CodFact: getParam(q, 'CodFact', 'codFact', 'cod_fact'),
-        CodCups: getParam(q, 'CodCups', 'codCups', 'cod_cups'),
-        CodAseg: getParam(q, 'CodAseg', 'codAseg', 'cod_aseg'),
-        ValFac: getParam(q, 'ValFac', 'valFac', 'val_fac'),
-        CodEst: getParam(q, 'CodEst', 'codEst', 'cod_est'),
-        NomEst: getParam(q, 'NomEst', 'nomEst', 'nom_est'),
-        ResServ: getParam(q, 'ResServ', 'resServ', 'res_serv')
+        CodEmp: getParam(q, 'CodEmp', 'codEmp', 'cod_emp', 'p_CodEmp'),
+        CodFac: getParam(q, 'CodFac', 'codFac', 'cod_fac', 'CodFact', 'codFact', 'cod_fact', 'p_CodFac')
       }
 
       const data = await getDetalladoGlosasFidu(params)
