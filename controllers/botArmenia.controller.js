@@ -34,7 +34,7 @@ export const botArmenia = {
         return res.status(400).json({ message: 'Se requieren documento y atencion_go como parámetros' })
       }
       const detalleVentas = await FacturacionCAABotService.getDetalleVentasGo(documento, atencion_go)
-      // console.log(detalleVentas)
+      console.log('Longitud del detalle', detalleVentas.length)
       res.status(200).json({ status: 'success', data: detalleVentas.recordset || detalleVentas })
     } catch (err) {
       console.error('Error en getDetalleVentasGo:', err)
@@ -59,16 +59,23 @@ export const botArmenia = {
 
       // 1. Validar que ningún registro tenga campos faltantes
       const datosValidos = registros.every(reg =>
-        CAMPOS_REQUERIDOS.every(campo => reg?.[campo])
+        CAMPOS_REQUERIDOS.every(campo => String(reg?.[campo] ?? '').trim() !== '')
       )
 
       if (!datosValidos) {
         return res.status(400).json({ message: 'Faltan datos requeridos para crear la facturación CAA' })
       }
 
+      // Deduplicar por (num_atencion_go, num_estado_cuenta) conservando la última edición del lote
+      const registrosUnicos = [
+        ...new Map(
+          registros.map(reg => [`${reg.num_atencion_go}-${reg.num_estado_cuenta}`, reg])
+        ).values()
+      ]
+
       // 2. Procesar los registros en paralelo
       const data = await Promise.all(
-        registros.map(reg => FacturacionCAABotService.createFacturacionCAABot(reg))
+        registrosUnicos.map(reg => FacturacionCAABotService.createFacturacionCAABot(reg))
       )
 
       return res.status(201).json({

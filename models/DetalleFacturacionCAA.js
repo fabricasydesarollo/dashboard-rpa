@@ -61,11 +61,13 @@ DetalleFacturacionCAABot.init({
   },
   estado: {
     type: DataTypes.TINYINT,
-    allowNull: false
+    allowNull: false,
+    defaultValue: 1
   },
   existe_producto: {
     type: DataTypes.TINYINT,
-    allowNull: false
+    allowNull: false,
+    defaultValue: 1
   },
   fecha_venta: {
     type: DataTypes.DATE,
@@ -79,7 +81,7 @@ DetalleFacturacionCAABot.init({
   timestamps: true,
   indexes: [
     {
-      unique: true, fields: ['num_atencion_go', 'num_venta']
+      unique: true, fields: ['num_atencion_go', 'num_venta', 'cod_producto']
     }
   ]
 })

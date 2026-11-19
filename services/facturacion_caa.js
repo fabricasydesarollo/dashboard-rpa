@@ -39,8 +39,10 @@ export const FacturacionCAABotService = {
   },
   async getDetalleVentasGo(documento, atencion_go) {
     try {
+      console.info(`IdPaciente: ${documento}, NumAtencion: ${atencion_go}`)
       const detalleVentas = await getDetalleVentasGo(documento, atencion_go)
       const registros = detalleVentas?.recordset || []
+      console.info('Registros de detalles: ', registros)
 
       const clavesVistas = new Set()
       const registrosUnicos = registros.filter(item => {
@@ -53,31 +55,34 @@ export const FacturacionCAABotService = {
         return true
       })
 
-      return await Promise.all(
-        registrosUnicos.map(async item => {
-          const detalleBot = await DetalleFacturacionCAABot.findOne({
-            where: {
-              doc_paciente: documento,
-              num_atencion_go: atencion_go,
-              num_venta: item.NumVenta,
-              cod_producto: item.CodigoProducto,
-              cantidad: item.Cantidad
-            }
-          })
+      const detallesBD = await DetalleFacturacionCAABot.findAll({
+        where: {
+          doc_paciente: documento,
+          num_atencion_go: atencion_go
+        },
+        raw: true
+      })
 
-          return {
-            ...item,
-            EstadoProceso: detalleBot?.estado_proceso || 'pendiente',
-            Observacion: detalleBot?.observacion || null,
-            ExisteProducto: detalleBot?.existe_producto || null
-          }
-        })
+      const mapaDetallesBD = new Map(
+        detallesBD.map(d => [`${d.num_venta}-${d.cod_producto}`, d])
       )
+
+      return registrosUnicos.map(item => {
+        const detalleBot = mapaDetallesBD.get(`${item.NumVenta}-${item.CodigoProducto}`)
+
+        return {
+          ...item,
+          EstadoProceso: detalleBot?.estado_proceso || 'pendiente',
+          Observacion: detalleBot?.observacion || null,
+          ExisteProducto: detalleBot?.existe_producto ?? null
+        }
+      })
     } catch (error) {
       throw new Error('Error al obtener detalle de ventas: ' + error.message)
     }
   },
   async createFacturacionCAABot(data) {
+    let transaction
     try {
       const DetalleFacturacionCAAGo = await FacturacionCAABotService.getDetalleVentasGo(data.doc_paciente, data.num_atencion_go)
 
@@ -90,32 +95,40 @@ export const FacturacionCAABotService = {
         throw new Error('No se pudo obtener el detalle de la Factura')
       }
 
+      transaction = await sequelize.transaction()
+
       const paciente = await Paciente.findOrCreate({
-        where: { numero_identificacion: data.doc_paciente },
+        where: { numero_identificacion: String(data.doc_paciente) },
         defaults: {
           nombre: data.nom_paciente
-        }
+        },
+        transaction
       })
 
       const [facturacionCAABot, created] = await FacturacionCAABot.findOrCreate({
         where: {
-          paciente_id: paciente[0].id, num_atencion_go: data.num_atencion_go
+          num_atencion_go: String(data.num_atencion_go),
+          num_estado_cuenta: String(data.num_estado_cuenta)
         },
         defaults: {
+          paciente_id: paciente[0].id,
           bot_id: data.bot_id,
           maquina_id: data.maquina_id,
           tipo_atencion: data.tipo_atencion,
           fecha_ingreso: data.fecha_ingreso,
           fecha_egreso: data.fecha_egreso,
-          num_atencion_indigo: data.num_atencion_indigo,
-          num_estado_cuenta: data.num_estado_cuenta
-        }
+          num_atencion_indigo: data.num_atencion_indigo
+        },
+        transaction
       })
 
-      if (!created && facturacionCAABot.num_atencion_indigo !== data.num_atencion_indigo) {
+      if (!created && (facturacionCAABot.num_atencion_indigo !== data.num_atencion_indigo || !facturacionCAABot.paciente_id)) {
         await FacturacionCAABot.update(
-          { num_atencion_indigo: data.num_atencion_indigo },
-          { where: { id: facturacionCAABot.id } }
+          {
+            num_atencion_indigo: data.num_atencion_indigo,
+            paciente_id: facturacionCAABot.paciente_id || paciente[0].id
+          },
+          { where: { id: facturacionCAABot.id }, transaction }
         )
       }
 
@@ -130,13 +143,23 @@ export const FacturacionCAABotService = {
         categoria: detalle.Categoria,
         cantidad: detalle.Cantidad,
         tipo_producto: detalle.TipoProducto,
-        fecha_venta: detalle.FechaVenta
+        fecha_venta: detalle.FechaVenta,
+        estado: 1,
+        existe_producto: 1
       }))
 
-      await DetalleFacturacionCAABot.bulkCreate(registrosAInsertar)
+      await DetalleFacturacionCAABot.bulkCreate(registrosAInsertar, {
+        updateOnDuplicate: ['facturacion_caa_id', 'num_estado_cuenta', 'categoria', 'cantidad', 'tipo_producto', 'fecha_venta', 'estado', 'updatedAt'],
+        transaction
+      })
+
+      await transaction.commit()
 
       return facturacionCAABot
     } catch (error) {
+      if (transaction && !transaction.finished) {
+        await transaction.rollback()
+      }
       throw new Error('Error al crear facturación CAA: ' + error.message)
     }
   },
@@ -275,10 +298,27 @@ export const FacturacionCAABotService = {
     }
   },
   async updateDetallesBot(data) {
-    const transaction = await sequelize.transaction()
+    let transaction
     try {
       const respuestaGo = await getDetalleVentasGo(data.documento, data.atencion_go)
-      const registrosActualizados = respuestaGo?.recordset || []
+      const getKey = (item) => `${item.NumVenta ?? item.num_venta}-${item.CodigoProducto ?? item.cod_producto}`
+
+      const registrosActualizados = [
+        ...new Map(
+          (respuestaGo?.recordset || []).map(item => [getKey(item), item])
+        ).values()
+      ]
+
+      transaction = await sequelize.transaction()
+
+      const cabecera = await FacturacionCAABot.findOne({
+        where: { num_atencion_go: String(data.atencion_go) },
+        transaction
+      })
+
+      if (!cabecera) {
+        throw new Error('No existe encabezado guardado para esta atención')
+      }
 
       const detallesActivosDB = await DetalleFacturacionCAABot.findAll({
         where: {
@@ -288,8 +328,6 @@ export const FacturacionCAABotService = {
         raw: true,
         transaction
       })
-
-      const getKey = (item) => `${item.NumVenta ?? item.num_venta}-${item.CodigoProducto ?? item.cod_producto}`
 
       const keysBD = new Set(detallesActivosDB.map(getKey))
       const keysFrescas = new Set(registrosActualizados.map(getKey))
@@ -312,18 +350,24 @@ export const FacturacionCAABotService = {
 
       if (nuevosRegistros.length > 0) {
         const nuevosFormatted = nuevosRegistros.map(detalle => ({
+          facturacion_caa_id: cabecera.id,
           num_venta: detalle.NumVenta,
           num_atencion_go: detalle.NumAtencion ?? data.atencion_go,
           doc_paciente: detalle.identificacion ?? data.documento,
-          num_estado_cuenta: detalle.NumEC,
+          num_estado_cuenta: detalle.NumEC ?? cabecera.num_estado_cuenta,
           cod_producto: detalle.CodigoProducto,
           categoria: detalle.Categoria,
           cantidad: detalle.Cantidad,
           tipo_producto: detalle.TipoProducto,
-          estado: 1
+          fecha_venta: detalle.FechaVenta,
+          estado: 1,
+          existe_producto: 1
         }))
 
-        await DetalleFacturacionCAABot.bulkCreate(nuevosFormatted, { transaction })
+        await DetalleFacturacionCAABot.bulkCreate(nuevosFormatted, {
+          updateOnDuplicate: ['facturacion_caa_id', 'num_estado_cuenta', 'categoria', 'cantidad', 'tipo_producto', 'fecha_venta', 'estado', 'updatedAt'],
+          transaction
+        })
       }
 
       await transaction.commit()

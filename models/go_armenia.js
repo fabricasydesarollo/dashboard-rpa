@@ -111,7 +111,7 @@ export async function getDetalleVentasGo (numDoc, numAte) {
                 ORDER BY BSAPD.codeCategory`
 
     const resultado = await executeQuery(query)
-    // console.log(resultado)
+    // console.log('Resultado de detalles desde la DB:', resultado)
     return resultado
   } catch (error) {
     console.error('Error en getDetalleVentasGo:', error.message)
