@@ -1,4 +1,10 @@
-import { getEncabezadoGlosasFidu, getDetalladoGlosasFidu } from '../models/glosas_fidu.js'
+import {
+  DEFAULT_COD_EMP,
+  getEmpresasGlosasFidu,
+  getEncabezadoGlosasFidu,
+  getDetalladoGlosasFidu,
+  getExportacionGlosasFidu
+} from '../models/glosas_fidu.js'
 import { replicarGlosas } from '../services/glosas-replica.js'
 
 const getParam = (query, ...keys) => {
@@ -19,6 +25,16 @@ const normalizeDateParam = (val) => {
 }
 
 export const GlosasController = {
+  async getEmpresasGlosasFidu (req, res) {
+    try {
+      const data = await getEmpresasGlosasFidu()
+      return res.status(200).json({ status: 'success', data })
+    } catch (err) {
+      console.error('Error en getEmpresasGlosasFidu:', err)
+      return res.status(500).json({ error: err.message || 'Error al obtener empresas de glosas' })
+    }
+  },
+
   async getEncabezadoGlosasFidu (req, res) {
     try {
       const q = req.query || {}
@@ -28,12 +44,13 @@ export const GlosasController = {
       const fechaFinal = normalizeDateParam(
         getParam(q, 'fecha_fin', 'fechaFinal', 'p_fechaFinal')
       )
+      const codEmp = getParam(q, 'CodEmp', 'codEmp', 'cod_emp', 'p_codEmp').trim() || DEFAULT_COD_EMP
 
       if (!fechaInicial || !fechaFinal) {
         return res.status(400).json({ message: 'Se requieren fecha_inicio y fecha_fin' })
       }
 
-      const data = await getEncabezadoGlosasFidu({ fechaInicial, fechaFinal })
+      const data = await getEncabezadoGlosasFidu({ fechaInicial, fechaFinal, codEmp })
       return res.status(200).json({ status: 'success', data })
     } catch (err) {
       console.error('Error en getEncabezadoGlosasFidu:', err)
@@ -54,6 +71,29 @@ export const GlosasController = {
     } catch (err) {
       console.error('Error en getDetalladoGlosasFidu:', err)
       return res.status(500).json({ error: err.message || 'Error al obtener detallado de glosas' })
+    }
+  },
+
+  async exportarGlosasFidu (req, res) {
+    try {
+      const q = req.query || {}
+      const fechaInicial = normalizeDateParam(
+        getParam(q, 'fecha_inicio', 'fechaInicial', 'p_fechaInicial')
+      )
+      const fechaFinal = normalizeDateParam(
+        getParam(q, 'fecha_fin', 'fechaFinal', 'p_fechaFinal')
+      )
+      const codEmp = getParam(q, 'CodEmp', 'codEmp', 'cod_emp', 'p_codEmp').trim() || DEFAULT_COD_EMP
+
+      if (!fechaInicial || !fechaFinal) {
+        return res.status(400).json({ message: 'Se requieren fecha_inicio y fecha_fin' })
+      }
+
+      const data = await getExportacionGlosasFidu({ fechaInicial, fechaFinal, codEmp })
+      return res.status(200).json({ status: 'success', data })
+    } catch (err) {
+      console.error('Error en exportarGlosasFidu:', err)
+      return res.status(500).json({ error: err.message || 'Error al exportar glosas' })
     }
   },
 
