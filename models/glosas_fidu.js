@@ -26,7 +26,7 @@ export async function getEmpresasGlosasFidu () {
         ace.NomEmp AS NomEmp,
         ace.NitEmp AS NitEmp,
         ace.Org AS Siglas
-      FROM arcuemp ace
+      FROM ArCuEmp ace
       ORDER BY ace.CodEmp ASC`,
       { type: QueryTypes.SELECT }
     )
